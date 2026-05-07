@@ -1,0 +1,15 @@
+{
+  "id": "生成时替换为UUID",
+  "scriptName": "预设简称-类别-描述（日期）",
+  "findRegex": "/正则表达式/标志",
+  "replaceString": "替换内容",
+  "trimStrings": [],
+  "placement": [2],
+  "disabled": false,
+  "markdownOnly": true,
+  "promptOnly": true,
+  "runOnEdit": false,
+  "substituteRegex": 0,
+  "minDepth": null,
+  "maxDepth": null
+}
