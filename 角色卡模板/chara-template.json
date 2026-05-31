@@ -1,0 +1,31 @@
+{
+  "spec": "chara_card_v3",
+  "spec_version": "3.0",
+  "data": {
+    "avatar": "charaCard/xxx.png",
+    "name": "{{角色卡名称}}",
+    "description": "# ──────────\n# No.1 {{角色名}}\n# ──────────\n- id: \"{{pinyin_id}}\"\n  name: \"{{角色名}}\"\n  gender: \"{{性别}}\"\n  race: \"{{种族}}\"\n  age: {{年龄}}\n  level: \"{{等级}}\"\n  appearance: \"{{外貌描写}}\"\n  weapons:\n    - \"{{武器1}}\"\n  ability:\n    name: \"{{能力名称}}\"\n    description: \"{{能力描述}}\"\n  personality: \"{{性格特征}}\"\n  preferences: \"{{喜好}}\"\n  background: >\n    {{背景故事}}\n  speech_style: >\n    {{说话风格}}\n  combat_notes: \"{{战斗风格备注}}\"\n  personal_assets: \"{{个人资产或身份}}\"\n  public_persona: \"{{公众形象}}\"\n  rank: {{排名}}",
+    "first_mes": "{{开场白内容}}",
+    "personality": "",
+    "scenario": "",
+    "mes_example": "",
+    "creator_notes": "{{创作者备注}}",
+    "system_prompt": "",
+    "post_history_instructions": "",
+    "alternate_greetings": null,
+    "character_book": {
+      "name": "{{世界书名称}}",
+      "entries": []
+    },
+    "tags": ["{{标签}}"],
+    "creator": "{{创作者}}",
+    "character_version": "1.0",
+    "nickname": null,
+    "creator_notes_multilingual": null,
+    "source": null,
+    "group_only_greetings": [],
+    "creation_date": {{时间戳}},
+    "modification_date": {{时间戳}},
+    "extensions": {}
+  }
+}
