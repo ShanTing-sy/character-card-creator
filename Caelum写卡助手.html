@@ -1,0 +1,916 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Caelum写卡助手</title>
+<style>
+  :root, [data-theme="dark"] {
+    --bg:#0f1117; --surface:#1a1d27; --surface2:#22263a; --border:#2e3350;
+    --accent:#7c6af7; --accent2:#5eead4; --text:#e2e8f0; --text-muted:#7c8bad;
+    --danger:#f87171; --success:#4ade80; --warning:#fbbf24;
+    --shadow:rgba(0,0,0,.45); --scrollbar:#2e3350; --badge-text:#fff;
+    --ai-user:#7c6af7; --ai-bot:#5eead4;
+  }
+  [data-theme="light"] {
+    --bg:#f0f2f8; --surface:#fff; --surface2:#eef0f8; --border:#d0d5e8;
+    --accent:#5b4fd4; --accent2:#0d9488; --text:#1e2240; --text-muted:#6b7280;
+    --danger:#dc2626; --success:#16a34a; --warning:#d97706;
+    --shadow:rgba(0,0,0,.12); --scrollbar:#c5cae0; --badge-text:#fff;
+    --ai-user:#5b4fd4; --ai-bot:#0d9488;
+  }
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  body{
+    background:var(--bg);color:var(--text);
+    font-family:'Segoe UI','PingFang SC','Helvetica Neue',sans-serif;
+    height:100vh;overflow:hidden;display:flex;flex-direction:column;
+    transition:background .25s,color .25s;
+  }
+
+  /* Header */
+  header{
+    background:var(--surface);border-bottom:1px solid var(--border);
+    padding:0 20px;height:52px;flex-shrink:0;display:flex;align-items:center;gap:12px;
+    z-index:200;box-shadow:0 2px 8px var(--shadow);
+    transition:background .25s,border-color .25s,box-shadow .25s;
+  }
+  header h1{font-size:1.05rem;font-weight:700;letter-spacing:.03em;white-space:nowrap}
+  header h1 span{color:var(--accent)}
+  .header-logo{font-size:1.4rem;line-height:1}
+  .header-actions{margin-left:auto;display:flex;align-items:center;gap:7px}
+  .theme-toggle{display:flex;align-items:center;background:var(--surface2);border:1px solid var(--border);border-radius:18px;padding:2px;gap:1px}
+  .theme-btn{display:flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:14px;border:none;cursor:pointer;font-size:.8rem;background:transparent;color:var(--text-muted);transition:background .18s,color .18s}
+  .theme-btn.active{background:var(--accent);color:#fff}
+  .theme-divider{width:1px;height:18px;background:var(--border);margin:0 3px}
+
+  /* Buttons */
+  .btn{display:inline-flex;align-items:center;gap:4px;padding:6px 12px;border-radius:7px;border:none;font-size:.8rem;font-weight:600;cursor:pointer;white-space:nowrap;transition:filter .15s,transform .1s,background .2s}
+  .btn:hover{filter:brightness(1.12)} .btn:active{transform:scale(.96)}
+  .btn-primary{background:var(--accent);color:#fff}
+  .btn-secondary{background:var(--surface2);color:var(--text);border:1px solid var(--border)}
+  .btn-danger{background:color-mix(in srgb,var(--danger) 15%,var(--surface2));color:var(--danger);border:1px solid color-mix(in srgb,var(--danger) 35%,var(--border))}
+  .btn-success{background:color-mix(in srgb,var(--success) 15%,var(--surface2));color:var(--success);border:1px solid color-mix(in srgb,var(--success) 35%,var(--border))}
+  .btn-warning{background:color-mix(in srgb,var(--warning) 15%,var(--surface2));color:var(--warning);border:1px solid color-mix(in srgb,var(--warning) 35%,var(--border))}
+  .btn-sm{padding:4px 9px;font-size:.74rem}
+  .btn-xs{padding:3px 7px;font-size:.68rem;border-radius:5px}
+
+  /* Workspace */
+  .workspace{display:grid;grid-template-columns:1fr 360px;flex:1;min-height:0;overflow:hidden}
+
+  /* Editor Panel */
+  .editor-panel{display:flex;flex-direction:column;min-height:0;overflow:hidden;background:var(--bg);transition:background .25s}
+  .editor-toolbar{background:var(--surface);border-bottom:1px solid var(--border);padding:6px 14px;display:flex;align-items:center;gap:8px;flex-shrink:0;font-size:.73rem;color:var(--text-muted)}
+  .editor-body{flex:1;display:flex;flex-direction:column;min-height:0;overflow:hidden}
+
+  /* Bottom Tabs */
+  .bottom-tabs{background:var(--surface);border-top:1px solid var(--border);padding:0 10px;display:flex;align-items:center;gap:1px;flex-shrink:0;height:38px;transition:background .25s,border-color .25s}
+  .bottom-tab{padding:5px 12px;font-size:.74rem;font-weight:600;cursor:pointer;color:var(--text-muted);border:none;background:transparent;border-bottom:3px solid transparent;transition:color .15s,border-color .15s;white-space:nowrap;border-radius:0}
+  .bottom-tab.active{color:var(--accent2);border-bottom-color:var(--accent2)}
+  .bottom-tab:hover:not(.active){color:var(--text)}
+
+  /* Editor Panes */
+  .editor-pane{display:none;flex:1;flex-direction:column;min-height:0;overflow-y:auto}
+  .editor-pane.active{display:flex}
+
+  /* Two-panel split (preset/wb/regex) */
+  .editor-split{display:flex;flex:1;min-height:0;overflow:hidden}
+  .editor-list-panel{width:272px;flex-shrink:0;border-right:1px solid var(--border);display:flex;flex-direction:column;min-height:0;overflow:hidden;background:color-mix(in srgb,var(--surface) 70%,var(--bg))}
+  .editor-list-header{padding:8px 10px;border-bottom:1px solid var(--border);font-size:.7rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+  .editor-list-body{flex:1;overflow-y:auto;padding:4px}
+  .editor-detail-panel{flex:1;min-height:0;overflow-y:auto;padding:14px 18px;display:flex;flex-direction:column;gap:12px}
+
+  /* Entry items */
+  .entry-item{display:flex;align-items:center;gap:6px;padding:6px 8px;border-radius:6px;cursor:pointer;border:1px solid transparent;margin-bottom:2px;transition:background .12s,border-color .12s;user-select:none;font-size:.75rem}
+  .entry-item:hover{background:var(--surface2)}
+  .entry-item.active{background:var(--surface2);border-color:var(--accent)}
+  .entry-item.drag-over{border-color:var(--accent2);background:color-mix(in srgb,var(--accent2) 10%,var(--surface2))}
+  .drag-handle{cursor:grab;color:var(--text-muted);font-size:.7rem;flex-shrink:0}
+  .drag-handle:active{cursor:grabbing}
+
+  /* Right Panel */
+  .right-panel{background:var(--surface);border-left:1px solid var(--border);display:flex;flex-direction:column;min-height:0;overflow:hidden;transition:background .25s,border-color .25s}
+  .right-tabs{display:flex;border-bottom:1px solid var(--border);flex-shrink:0}
+  .right-tab{flex:1;padding:8px 6px;font-size:.71rem;font-weight:600;text-align:center;cursor:pointer;color:var(--text-muted);border:none;background:transparent;border-bottom:2px solid transparent;transition:color .15s,border-color .15s;white-space:nowrap}
+  .right-tab.active{color:var(--accent2);border-bottom-color:var(--accent2)}
+  .right-tab:hover:not(.active){color:var(--text)}
+  .right-pane{display:none;flex:1;flex-direction:column;min-height:0;overflow:hidden}
+  .right-pane.active{display:flex}
+
+  /* JSON Preview */
+  .preview-body{flex:1;overflow-y:auto;padding:12px}
+  .preview-body pre{font-family:'Cascadia Code','Fira Code','Consolas',monospace;font-size:.72rem;line-height:1.65;color:var(--accent2);white-space:pre-wrap;word-break:break-all;transition:color .25s}
+
+  /* AI Assistant */
+  .ai-config-bar{padding:8px 10px;border-bottom:1px solid var(--border);flex-shrink:0;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+  .ai-config-bar input,.ai-config-bar select{width:auto;font-size:.7rem;padding:4px 7px;min-width:0}
+  .ai-config-bar input[type="password"]{width:130px}
+  .ai-config-bar input[type="text"]{width:150px}
+  .ai-chat-area{flex:1;overflow-y:auto;padding:10px;display:flex;flex-direction:column;gap:8px}
+  .ai-msg{max-width:95%;padding:8px 11px;border-radius:10px;font-size:.76rem;line-height:1.55;white-space:pre-wrap;word-break:break-word;animation:fadeIn .2s}
+  .ai-msg.user{align-self:flex-end;background:var(--ai-user);color:#fff;border-bottom-right-radius:3px;margin-left:20px}
+  .ai-msg.assistant{align-self:flex-start;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-bottom-left-radius:3px;margin-right:20px}
+  .ai-msg.system{font-size:.7rem;color:var(--text-muted);align-self:center;text-align:center;background:transparent;padding:4px}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+  .ai-input-row{display:flex;gap:6px;padding:8px 10px;border-top:1px solid var(--border);flex-shrink:0}
+  .ai-input-row textarea{flex:1;min-height:40px;max-height:80px;font-size:.76rem;resize:none;padding:7px 10px}
+  .ai-loading{display:flex;align-items:center;gap:6px;padding:8px;font-size:.72rem;color:var(--text-muted)}
+  .ai-loading .spinner{width:14px;height:14px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  /* Form Elements */
+  .field-group{background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:13px;transition:background .25s,border-color .25s}
+  .field-group>label,.field-group>.group-label{display:block;font-size:.72rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:9px;font-weight:700}
+  .sub-label{font-size:.71rem;color:var(--text-muted);margin-bottom:4px;display:block}
+  input[type="text"],input[type="number"],input[type="password"],select,textarea{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:inherit;font-size:.84rem;padding:7px 10px;outline:none;transition:border-color .15s,background .25s,color .25s}
+  input:focus,select:focus,textarea:focus{border-color:var(--accent)}
+  textarea{resize:vertical;min-height:110px;font-family:'Cascadia Code','Fira Code',monospace;font-size:.78rem;line-height:1.6}
+  textarea.short{min-height:45px}
+  select option{background:var(--surface2);color:var(--text)}
+  .field-row{display:flex;gap:10px}.field-row>*{flex:1}
+  .checkbox-row{display:flex;align-items:center;gap:8px;padding:2px 0}
+  .checkbox-row input[type="checkbox"]{width:14px;height:14px;accent-color:var(--accent);cursor:pointer;flex-shrink:0}
+  .checkbox-row label{margin:0;text-transform:none;letter-spacing:0;font-size:.81rem;color:var(--text);cursor:pointer}
+  .param-label{font-size:.7rem;color:var(--text-muted);margin-bottom:4px;display:flex;align-items:center;gap:4px}
+  .param-label span{font-weight:700}
+  .param-hint{font-size:.65rem;color:var(--text-muted);opacity:.75;margin-top:2px}
+  .slider-row{display:flex;align-items:center;gap:7px}
+  .slider-row input[type="range"]{flex:1;accent-color:var(--accent);height:4px;padding:0;border:none;background:transparent;cursor:pointer}
+  .slider-row input[type="number"]{width:60px;flex-shrink:0;padding:4px 6px;font-size:.78rem;text-align:center}
+  .param-section{background:var(--surface);border:1px solid var(--border);border-radius:9px;overflow:hidden;transition:background .25s,border-color .25s}
+  .param-section-header{padding:7px 11px;background:color-mix(in srgb,var(--accent) 8%,var(--surface));border-bottom:1px solid var(--border);font-size:.7rem;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.07em;display:flex;align-items:center;gap:5px}
+  .param-section-body{padding:10px;display:flex;flex-direction:column;gap:8px}
+  .macro-strip{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
+  .order-section{background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:12px;transition:background .25s,border-color .25s}
+  .order-chips{display:flex;flex-wrap:wrap;gap:6px}
+  .order-chip{display:flex;align-items:center;gap:5px;padding:3px 9px;border-radius:18px;background:var(--surface2);border:1px solid var(--border);font-size:.73rem}
+  .empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;height:100%;color:var(--text-muted);font-size:.85rem}
+  .empty-state .icon{font-size:2.8rem}
+  .toggle-enabled{width:12px;height:12px;border-radius:50%;flex-shrink:0;cursor:pointer;border:2px solid var(--border);transition:background .15s,border-color .15s}
+  .toggle-enabled.on{background:var(--accent2);border-color:var(--accent2)}
+  .toggle-enabled.off{background:transparent}
+  .tag-row{display:flex;flex-wrap:wrap;gap:5px;align-items:center}
+  .tag-chip{display:inline-flex;align-items:center;gap:3px;padding:3px 9px;border-radius:12px;font-size:.7rem;font-weight:600;background:var(--surface2);border:1px solid var(--border);color:var(--text)}
+  .tag-chip.on{background:color-mix(in srgb,var(--accent2) 18%,var(--surface2));border-color:var(--accent2)}
+  .tag-chip.off{opacity:.55}
+  .regex-test-area{background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:10px;margin-top:5px}
+  .regex-test-result{margin-top:7px;padding:8px 11px;border-radius:5px;font-family:'Cascadia Code','Fira Code',monospace;font-size:.73rem;white-space:pre-wrap;word-break:break-all;min-height:18px;border:1px dashed var(--border);color:var(--text)}
+  .regex-test-result.match{border-color:var(--success);background:color-mix(in srgb,var(--success) 8%,transparent)}
+  .regex-test-result.nomatch{border-color:var(--danger);background:color-mix(in srgb,var(--danger) 8%,transparent);color:var(--danger)}
+  .regex-error-msg{font-size:.7rem;color:var(--danger);margin-top:3px}
+  #backToTop{position:fixed;bottom:26px;right:26px;width:36px;height:36px;border-radius:50%;background:var(--accent);color:#fff;border:none;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px var(--shadow);opacity:0;pointer-events:none;transform:translateY(10px);transition:opacity .25s,transform .25s;z-index:999}
+  #backToTop.visible{opacity:1;pointer-events:auto;transform:translateY(0)}
+  #backToTop:hover{filter:brightness(1.15)}
+  #toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(14px);background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:8px 20px;font-size:.81rem;opacity:0;pointer-events:none;transition:opacity .28s,transform .28s;z-index:9999;white-space:nowrap;box-shadow:0 4px 16px var(--shadow)}
+  #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  ::-webkit-scrollbar{width:4px;height:4px}
+  ::-webkit-scrollbar-track{background:transparent}
+  ::-webkit-scrollbar-thumb{background:var(--scrollbar);border-radius:3px}
+  .badge{display:inline-flex;align-items:center;justify-content:center;font-size:.62rem;font-weight:700;padding:2px 6px;border-radius:9px;background:var(--accent);color:var(--badge-text)}
+
+  /* ══════════════════════════════════════════
+     API Settings Modal
+  ══════════════════════════════════════════ */
+  .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9998;display:none;align-items:center;justify-content:center}
+  .modal-overlay.show{display:flex}
+  .modal-dialog{background:var(--surface);border:1px solid var(--border);border-radius:12px;width:440px;max-height:85vh;overflow-y:auto;box-shadow:0 8px 40px rgba(0,0,0,.5);padding:20px 24px;display:flex;flex-direction:column;gap:14px}
+  .modal-dialog h3{font-size:.95rem;font-weight:700;color:var(--text);margin:0}
+  .modal-dialog .modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:4px}
+</style>
+</head>
+<body>
+
+<header>
+  <span class="header-logo">🌌</span>
+  <h1>Caelum<span>写卡助手</span></h1>
+  <div class="header-actions">
+    <!-- AI 助手选择 -->
+    <select id="aiPersonaSelect" onchange="switchAIPersona(this.value)" style="width:auto;font-size:.73rem;padding:5px 8px" title="选择 AI 助手人格">
+      <option value="caelum">🌌 山停 · 万能辅助</option>
+      <option value="ying">🎭 影 · 角色塑造</option>
+      <option value="xian">🎪 弦 · 情节设计</option>
+      <option value="rang">🌍 壤 · 世界观构筑</option>
+    </select>
+    <button class="btn btn-secondary btn-xs" onclick="editPersonaPrompt()" title="编辑当前助手的系统提示词" style="padding:4px 7px">✏️</button>
+    <!-- API 配置按钮 -->
+    <button class="btn btn-secondary btn-sm" onclick="openAPISettings()" title="配置 API 连接和参数">🔌 API设置</button>
+    <div class="theme-divider"></div>
+    <button class="btn btn-warning btn-sm" onclick="clearAll()" title="一键清除所有数据">🗑 一键清除</button>
+    <div class="theme-divider"></div>
+    <div class="theme-toggle" title="切换主题">
+      <button class="theme-btn active" id="btnDark"  onclick="setTheme('dark')" title="深色">🌙</button>
+      <button class="theme-btn"        id="btnLight" onclick="setTheme('light')" title="浅色">☀️</button>
+    </div>
+    <div class="theme-divider"></div>
+    <button class="btn btn-secondary" onclick="doImport()">📂 导入</button>
+    <button class="btn btn-secondary" onclick="newPreset()">✨ 新建</button>
+    <button class="btn btn-success"   onclick="exportPreset()">💾 导出</button>
+  </div>
+</header>
+
+<div class="workspace">
+
+  <!-- ═══════ 编辑区 ═══════ -->
+  <div class="editor-panel">
+    <div class="editor-toolbar" id="editorToolbar">
+      <span>💡 选择左侧条目进行编辑，可使用底部标签切换编辑器</span>
+    </div>
+    <div class="editor-body" id="editorBody">
+      <div class="editor-pane active" id="panePreset"></div>
+      <div class="editor-pane" id="paneWorldBook"></div>
+      <div class="editor-pane" id="paneRegex"></div>
+      <div class="editor-pane" id="paneGlobal"></div>
+    </div>
+    <div class="bottom-tabs">
+      <button class="bottom-tab active" id="btabPreset" onclick="switchEditorMode('preset')">📝 预设</button>
+      <button class="bottom-tab" id="btabWorldBook" onclick="switchEditorMode('worldbook')">📚 世界书</button>
+      <button class="bottom-tab" id="btabRegex" onclick="switchEditorMode('regex')">🔧 正则</button>
+      <button class="bottom-tab" id="btabGlobal" onclick="switchEditorMode('global')">⚙️ 全局参数</button>
+    </div>
+  </div>
+
+  <!-- ═══════ 右侧面板 ═══════ -->
+  <div class="right-panel">
+    <div class="right-tabs">
+      <button class="right-tab active" id="rtabPreview" onclick="switchRightTab('preview')">📄 JSON预览</button>
+      <button class="right-tab" id="rtabAI" onclick="switchRightTab('ai')">🤖 AI助手</button>
+    </div>
+
+    <!-- JSON 预览 -->
+    <div class="right-pane active" id="rpanePreview">
+      <div style="padding:8px 12px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
+        <span style="font-size:.71rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em">JSON 实时预览</span>
+        <button class="btn btn-secondary btn-xs" onclick="copyJson()">📋 复制</button>
+      </div>
+      <div class="preview-body"><pre id="jsonPreview">{}</pre></div>
+    </div>
+
+    <!-- AI 助手 -->
+    <div class="right-pane" id="rpaneAI">
+      <div style="padding:6px 10px;border-bottom:1px solid var(--border);flex-shrink:0;display:flex;align-items:center;justify-content:space-between">
+        <span style="font-size:.7rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em" id="aiPersonaLabel">🤖 山停 · 万能辅助</span>
+        <button class="btn btn-secondary btn-xs" onclick="clearAIChat()" title="清空对话">🗑</button>
+      </div>
+      <div class="ai-chat-area" id="aiChatArea">
+        <div class="ai-msg system">💡 在左侧编辑内容时，可在此与 AI 探讨写作思路。<br>点击「注入上下文」将当前编辑内容发送给 AI 作为参考。</div>
+      </div>
+      <div class="ai-input-row">
+        <button class="btn btn-secondary btn-xs" onclick="injectContext()" title="将当前编辑内容发送给AI" style="flex-shrink:0">📥 注入上下文</button>
+        <textarea id="aiInput" placeholder="输入问题…" rows="1" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendAIMessage()}"></textarea>
+        <button class="btn btn-primary btn-sm" onclick="sendAIMessage()" style="flex-shrink:0">▶</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<button id="backToTop" onclick="scrollToTop()" title="回到顶部">↑</button>
+<div id="toast"></div>
+<input type="file" id="fileInput" accept=".json" style="display:none" onchange="handleFileImport(event)"/>
+
+<!-- ═══════ API 设置弹窗 ═══════ -->
+<div class="modal-overlay" id="apiModal" onclick="if(event.target===this)closeAPISettings()">
+  <div class="modal-dialog" onclick="event.stopPropagation()">
+    <h3>🔌 API 连接设置</h3>
+    <div class="field-row">
+      <div><span class="sub-label">Base URL</span><input type="text" id="apiBaseUrl" placeholder="https://api.openai.com/v1"/></div>
+      <div><span class="sub-label">API Key</span><input type="password" id="apiApiKey" placeholder="sk-..."/></div>
+    </div>
+    <div class="field-row">
+      <div><span class="sub-label">模型 (Model)</span><select id="apiModel"><option value="gpt-4o">gpt-4o</option><option value="gpt-4o-mini">gpt-4o-mini</option><option value="claude-sonnet-4-6">claude-sonnet-4-6</option><option value="deepseek-chat">deepseek-chat</option><option value="deepseek-v4-pro">deepseek-v4-pro</option><option value="qwen-plus">qwen-plus</option></select></div>
+      <div><span class="sub-label">最大输出 Token</span><input type="number" id="apiMaxTokens" value="2000" min="256" max="128000"/></div>
+    </div>
+    <div class="field-row">
+      <div><span class="sub-label">Temperature (0~2)</span><input type="number" id="apiTemperature" value="0.7" min="0" max="2" step="0.01"/></div>
+      <div><span class="sub-label">Top P (0~1)</span><input type="number" id="apiTopP" value="0.9" min="0" max="1" step="0.01"/></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary btn-sm" onclick="closeAPISettings()">取消</button>
+      <button class="btn btn-primary btn-sm" onclick="saveAPISettings()">💾 保存配置</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ 系统提示词编辑弹窗 ═══════ -->
+<div class="modal-overlay" id="personaModal" onclick="if(event.target===this)closePersonaEditor()">
+  <div class="modal-dialog" onclick="event.stopPropagation()" style="width:560px">
+    <h3 id="personaEditorTitle">✏️ 编辑系统提示词</h3>
+    <textarea id="personaPromptEditor" rows="18" style="font-size:.76rem;line-height:1.6;min-height:320px"
+      placeholder="输入自定义系统提示词…"></textarea>
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <button class="btn btn-warning btn-xs" onclick="resetPersonaPrompt()" title="恢复默认提示词">↩ 恢复默认</button>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-secondary btn-sm" onclick="closePersonaEditor()">取消</button>
+        <button class="btn btn-primary btn-sm" onclick="savePersonaPrompt()">💾 保存</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ═══════════════════════════════════════════
+   State
+═══════════════════════════════════════════ */
+let state = {
+  preset_name:'新预设',
+  temperature:1, top_p:1, top_k:0, top_a:0, min_p:0,
+  repetition_penalty:1, frequency_penalty:0, presence_penalty:0,
+  max_context_unlocked:false, openai_max_context:200000, openai_max_tokens:4096,
+  stream_openai:true, names_behavior:0,
+  wrap_in_quotes:false, image_inlining:false, video_inlining:false,
+  send_if_empty:'', impersonation_prompt:'', new_chat_prompt:'',
+  new_group_chat_prompt:'[Start a new group chat. Group members: {{group}}]',
+  new_example_chat_prompt:'[Example Chat]',
+  continue_nudge_prompt:'', group_nudge_prompt:'', bias_preset_selected:'Default (none)',
+  wi_format:'{0}', scenario_format:'{{scenario}}', personality_format:'{{personality}}',
+  prompts:[], prompt_order:[{character_id:100001,order:[]}],
+  worldbook_entries:[], regex_entries:[],
+};
+let selectedIndex=-1, selectedWBIndex=-1, selectedRegexIndex=-1;
+let dragSrcIndex=-1, editorMode='preset', rightTab='preview';
+
+// AI 状态
+let aiConfig={baseUrl:'https://api.openai.com/v1',apiKey:'',model:'gpt-4o',maxTokens:2000,temperature:0.7,topP:0.9};
+let aiMessages=[];
+let aiLoading=false;
+let aiCurrentPersona='caelum';
+
+/* ═══════════════════════════════════════════
+   Theme
+═══════════════════════════════════════════ */
+function setTheme(t){
+  document.documentElement.setAttribute('data-theme',t);
+  document.getElementById('btnDark').classList.toggle('active',t==='dark');
+  document.getElementById('btnLight').classList.toggle('active',t==='light');
+  localStorage.setItem('st_editor_theme',t);
+}
+(function(){setTheme(localStorage.getItem('st_editor_theme')||'dark')})();
+
+/* ═══════════════════════════════════════════
+   Right Tab
+═══════════════════════════════════════════ */
+function switchRightTab(t){
+  rightTab=t;
+  document.getElementById('rtabPreview').classList.toggle('active',t==='preview');
+  document.getElementById('rtabAI').classList.toggle('active',t==='ai');
+  document.getElementById('rpanePreview').classList.toggle('active',t==='preview');
+  document.getElementById('rpaneAI').classList.toggle('active',t==='ai');
+  if(t==='ai') loadAIConfig();
+}
+
+/* ═══════════════════════════════════════════
+   Editor Mode Switch
+═══════════════════════════════════════════ */
+function switchEditorMode(mode){
+  editorMode=mode;
+  selectedWBIndex=-1; selectedRegexIndex=-1;
+  const map={preset:['btabPreset','panePreset'],worldbook:['btabWorldBook','paneWorldBook'],regex:['btabRegex','paneRegex'],global:['btabGlobal','paneGlobal']};
+  Object.entries(map).forEach(([m,[btab,pane]])=>{
+    document.getElementById(btab).classList.toggle('active',mode===m);
+    document.getElementById(pane).classList.toggle('active',mode===m);
+  });
+  const tooltips={
+    preset:'📝 预设编辑器 — 左侧选择提示词，右侧编辑内容',
+    worldbook:'📚 世界书编辑器 — 可拖拽排序条目',
+    regex:'🔧 正则编辑器 — 可拖拽排序条目，内置测试工具',
+    global:'⚙️ 全局参数 — 配置模型采样、上下文、行为开关等'
+  };
+  document.getElementById('editorToolbar').innerHTML=`<span>${tooltips[mode]||''}</span>`;
+  if(mode==='preset')renderEditor();
+  else if(mode==='worldbook')renderWorldBookEditor();
+  else if(mode==='regex')renderRegexEditor();
+  else if(mode==='global')renderGlobalEditor();
+  updatePreview();
+}
+
+/* ═══════════════════════════════════════════
+   Scroll
+═══════════════════════════════════════════ */
+function initScrollWatcher(){
+  const panes=document.querySelectorAll('.editor-pane,.editor-detail-panel,.right-pane');
+  const btn=document.getElementById('backToTop');
+  panes.forEach(p=>p.addEventListener('scroll',()=>btn.classList.toggle('visible',p.scrollTop>180)));
+}
+function scrollToTop(){
+  const a=document.querySelector('.editor-pane.active,.right-pane.active');
+  if(a)a.scrollTo({top:0,behavior:'smooth'});
+}
+
+/* ═══════════════════════════════════════════
+   Utils
+═══════════════════════════════════════════ */
+function escHtml(s){return String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+let toastTimer;
+function toast(m){const e=document.getElementById('toast');e.textContent=m;e.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>e.classList.remove('show'),2200)}
+
+function makePrompt(id){return{identifier:`prompt_${id}`,name:'新提示词',system_prompt:false,role:'system',content:'',enabled:true,marker:false,injection_position:0,injection_depth:4,injection_order:100,forbid_overrides:false}}
+function makeWorldBookEntry(id){return{uid:`wb_${id}`,keys:'',content:'',comment:'',selective:false,constant:false,position:0,depth:4,order:100,probability:100,use_regex:false,exclude_recursion:false,enabled:true}}
+function makeRegexEntry(id){return{uid:`regex_${id}`,id:'',scriptName:'',findRegex:'',replaceString:'',trimStrings:[],placement:[2],disabled:false,markdownOnly:false,promptOnly:false,runOnEdit:true,substituteRegex:0,minDepth:null,maxDepth:null}}
+
+/* ═══════════════════════════════════════════
+   Preset Editor (two-panel)
+═══════════════════════════════════════════ */
+function selectPrompt(i){selectedIndex=i;if(editorMode!=='preset')switchEditorMode('preset');else renderEditor()}
+
+function renderEditor(){
+  if(editorMode!=='preset')return;
+  const pane=document.getElementById('panePreset');
+  const prompts=state.prompts;
+  const roleEmoji={system:'⚙️',user:'👤',assistant:'🤖'};
+  const roleName={system:'系统',user:'用户',assistant:'助手'};
+
+  let h=`<div class="editor-split">
+    <div class="editor-list-panel">
+      <div class="editor-list-header"><span>📝 提示词 (${prompts.length})</span>
+        <button class="btn btn-primary btn-xs" onclick="addPrompt()">+</button>
+      </div>
+      <div class="editor-list-body" id="promptListBody">`;
+  if(!prompts.length)h+=`<div style="padding:16px;text-align:center;color:var(--text-muted);font-size:.78rem">暂无提示词</div>`;
+  else prompts.forEach((p,i)=>{h+=`
+    <div class="entry-item${i===selectedIndex?' active':''}" onclick="selectPrompt(${i})" draggable="true" data-pidx="${i}" id="pitem_${i}">
+      <span class="drag-handle" title="拖拽排序" onclick="event.stopPropagation()">⠿</span>
+      <span style="font-size:.82rem;flex-shrink:0">${roleEmoji[p.role]||'📄'}</span>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:.77rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escHtml(p.name||'未命名')}</div>
+        <div style="font-size:.66rem;color:var(--text-muted)">${roleName[p.role]||p.role}${p.marker?' · 标记':''}${p.system_prompt?' · 系统':''}</div>
+      </div>
+      <span class="toggle-enabled ${p.enabled?'on':'off'}" title="启用/禁用" onclick="event.stopPropagation();state.prompts[${i}].enabled=!state.prompts[${i}].enabled;renderEditor();updatePreview()"></span>
+    </div>`;});
+  h+=`</div></div><div class="editor-detail-panel" id="presetDetail">`;
+
+  if(selectedIndex>=0&&selectedIndex<prompts.length)h+=renderPromptDetail(prompts[selectedIndex],selectedIndex);
+  else h+=`<div class="empty-state"><span class="icon">👆</span><span>从左侧列表选择一条提示词进行编辑</span></div>`;
+
+  h+=`</div></div>`;
+  pane.innerHTML=h;
+
+  // 拖拽
+  setTimeout(()=>{
+    document.querySelectorAll('#promptListBody .entry-item').forEach(el=>{
+      el.addEventListener('dragstart',e=>{dragSrcIndex=parseInt(el.dataset.pidx);e.dataTransfer.effectAllowed='move'});
+      el.addEventListener('dragover',e=>{e.preventDefault();el.classList.add('drag-over')});
+      el.addEventListener('dragleave',e=>{el.classList.remove('drag-over')});
+      el.addEventListener('drop',e=>{e.preventDefault();el.classList.remove('drag-over');const src=dragSrcIndex,dst=parseInt(el.dataset.pidx);if(src!==dst&&src>=0&&dst>=0){const m=state.prompts.splice(src,1)[0];state.prompts.splice(dst,0,m);syncPromptOrder();selectedIndex=dst;renderEditor();updatePreview()}});
+      el.addEventListener('dragend',()=>{document.querySelectorAll('#promptListBody .entry-item').forEach(e=>e.classList.remove('drag-over'))});
+    });
+  },50);
+  initScrollWatcher();
+}
+
+function renderPromptDetail(p,idx){
+  const macros=['{{char}}','{{user}}','{{personality}}','{{description}}','{{scenario}}','{{mesExamples}}','{{history}}','{{group}}'];
+  return `
+    <div class="field-group"><label>标识符 &amp; 名称</label>
+      <div class="field-row">
+        <div><span class="sub-label">identifier</span><input type="text" value="${escHtml(p.identifier)}" oninput="updateField('identifier',this.value)"/></div>
+        <div><span class="sub-label">显示名称</span><input type="text" value="${escHtml(p.name)}" oninput="updateField('name',this.value);renderEditor()"/></div>
+      </div></div>
+    <div class="field-group"><label>角色 &amp; 属性</label>
+      <div class="field-row" style="margin-bottom:10px">
+        <div><span class="sub-label">role</span><select onchange="updateField('role',this.value);renderEditor()"><option value="system" ${p.role==='system'?'selected':''}>system</option><option value="user" ${p.role==='user'?'selected':''}>user</option><option value="assistant" ${p.role==='assistant'?'selected':''}>assistant</option></select></div>
+        <div><span class="sub-label">injection_position</span><select onchange="updateField('injection_position',parseInt(this.value))"><option value="0" ${p.injection_position===0?'selected':''}>0 · 相对位置</option><option value="1" ${p.injection_position===1?'selected':''}>1 · 绝对位置</option></select></div>
+      </div>
+      <div class="field-row" style="margin-bottom:10px">
+        <div><span class="sub-label">injection_depth</span><input type="number" value="${p.injection_depth}" min="0" max="100" oninput="updateField('injection_depth',parseInt(this.value)||0)"/></div>
+        <div><span class="sub-label">injection_order</span><input type="number" value="${p.injection_order??100}" min="0" max="1000" oninput="updateField('injection_order',parseInt(this.value)||100)"/></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px">${[['chk_enabled','enabled',p.enabled,'启用'],['chk_marker','marker',p.marker,'标记位'],['chk_system','system_prompt',p.system_prompt,'系统提示'],['chk_forbid','forbid_overrides',p.forbid_overrides,'禁止覆盖']].map(([id,key,val,label])=>`<div class="checkbox-row"><input type="checkbox" id="${id}" ${val?'checked':''} onchange="updateField('${key}',this.checked)${key==='enabled'?';renderEditor()':''}"/><label for="${id}">${label}</label></div>`).join('')}</div></div>
+    <div class="field-group"><label>内容 (content)</label>
+      <textarea rows="10" id="contentArea" placeholder="在此输入提示词内容…" oninput="updateField('content',this.value)">${escHtml(p.content)}</textarea>
+      <div class="macro-strip">${macros.map(m=>`<button class="btn btn-secondary btn-xs" onclick="insertMacro('${m}')">${m}</button>`).join('')}</div></div>
+    <div class="order-section"><label>Prompt Order · 队列顺序预览</label><p style="font-size:.73rem;color:var(--text-muted);margin-bottom:8px">拖拽列表可调整顺序</p><div class="order-chips">${(state.prompt_order[0]?.order||[]).map((o,i)=>{const f=state.prompts.find(pp=>pp.identifier===o.identifier);return`<div class="order-chip" title="${escHtml(o.identifier)}"><span style="color:var(--text-muted);font-size:.65rem">#${i+1}</span><span>${f?escHtml(f.name):escHtml(o.identifier)}</span><span class="toggle-enabled ${o.enabled?'on':'off'}" style="width:8px;height:8px"></span></div>`;}).join('')}</div></div>
+    <div style="display:flex;justify-content:flex-end"><button class="btn btn-danger btn-sm" onclick="deletePrompt()">🗑 删除此提示词</button></div>`;
+}
+
+function updateField(key,value){if(selectedIndex<0)return;state.prompts[selectedIndex][key]=value;syncPromptOrder();updatePreview()}
+function insertMacro(m){const ta=document.getElementById('contentArea');if(!ta)return;const s=ta.selectionStart,e=ta.selectionEnd,v=ta.value;ta.value=v.substring(0,s)+m+v.substring(e);ta.selectionStart=ta.selectionEnd=s+m.length;updateField('content',ta.value);ta.focus()}
+function syncPromptOrder(){const m={};(state.prompt_order[0]?.order||[]).forEach(o=>{m[o.identifier]=o.enabled});state.prompt_order[0]={character_id:state.prompt_order[0]?.character_id??100001,order:state.prompts.map(p=>({identifier:p.identifier,enabled:m[p.identifier]!==undefined?m[p.identifier]:p.enabled}))}}
+function addPrompt(){const p=makePrompt(Date.now());if(selectedIndex>=0&&selectedIndex<state.prompts.length){state.prompts.splice(selectedIndex+1,0,p);selectedIndex++}else{state.prompts.push(p);selectedIndex=state.prompts.length-1}syncPromptOrder();if(editorMode!=='preset')switchEditorMode('preset');else renderEditor();updatePreview();toast('✅ 已添加提示词')}
+function deletePrompt(){if(selectedIndex<0)return;state.prompts.splice(selectedIndex,1);syncPromptOrder();selectedIndex=Math.min(selectedIndex,state.prompts.length-1);renderEditor();updatePreview();toast('🗑 已删除')}
+
+/* ═══════════════════════════════════════════
+   World Book Editor
+═══════════════════════════════════════════ */
+function renderWorldBookEditor(){
+  if(editorMode!=='worldbook')return;
+  const pane=document.getElementById('paneWorldBook');
+  const entries=state.worldbook_entries;
+  if(!entries.length&&selectedWBIndex<0){pane.innerHTML=`<div class="empty-state"><span class="icon">📚</span><span>暂无世界书条目</span><div style="display:flex;gap:6px;margin-top:6px"><button class="btn btn-primary btn-sm" onclick="addWBEntry()">+ 添加</button><button class="btn btn-secondary btn-sm" onclick="importWorldBook()">📂 导入</button></div></div>`;return}
+  let h=`<div class="editor-split"><div class="editor-list-panel"><div class="editor-list-header"><span>📚 条目 (${entries.length})</span><div style="display:flex;gap:2px"><button class="btn btn-primary btn-xs" onclick="addWBEntry()">+</button><button class="btn btn-secondary btn-xs" onclick="importWorldBook()">📂</button><button class="btn btn-secondary btn-xs" onclick="exportWorldBook()">💾</button></div></div><div class="editor-list-body" id="wbListBody">`;
+  entries.forEach((e,i)=>{const kp=e.keys||'(无触发词)',cp=(e.content||'').replace(/<[^>]+>/g,'').substring(0,25);
+    h+=`<div class="entry-item${i===selectedWBIndex?' active':''}" onclick="selectWBEntry(${i})" draggable="true" data-wbidx="${i}" id="wbitem_${i}"><span class="drag-handle" title="拖拽排序" onclick="event.stopPropagation()">⠿</span><span class="toggle-enabled ${e.enabled?'on':'off'}" style="width:9px;height:9px" onclick="event.stopPropagation();state.worldbook_entries[${i}].enabled=!state.worldbook_entries[${i}].enabled;renderWorldBookEditor();updatePreview()" title="启用/禁用"></span><span class="entry-keys">${escHtml(kp.substring(0,32))}</span>${cp?`<span class="entry-preview">${escHtml(cp)}…</span>`:''}</div>`;
+  });
+  h+=`</div></div><div class="editor-detail-panel" id="wbDetail">`;
+  if(selectedWBIndex>=0&&selectedWBIndex<entries.length)h+=renderWBDetail(entries[selectedWBIndex],selectedWBIndex);
+  else h+=`<div class="empty-state"><span class="icon">👆</span><span>从左侧选择一条条目</span></div>`;
+  h+=`</div></div>`;pane.innerHTML=h;
+  setTimeout(()=>bindDrag('#wbListBody','wbidx',(src,dst)=>{const m=state.worldbook_entries.splice(src,1)[0];state.worldbook_entries.splice(dst,0,m);selectedWBIndex=dst;renderWorldBookEditor();updatePreview()}),50);
+  initScrollWatcher();
+}
+function renderWBDetail(e,idx){const pos=[{v:0,l:'0 · before_char'},{v:1,l:'1 · after_char'},{v:2,l:'2 · before_author'},{v:3,l:'3 · after_author'},{v:4,l:'4 · at_depth'}];return`
+  <div class="field-group"><label>触发词 (keys)</label><input type="text" value="${escHtml(e.keys)}" placeholder="多个触发词用英文逗号分隔" oninput="updateWBField('keys',this.value,${idx})"/><div class="param-hint">AI 消息中包含这些词时将触发此条目</div></div>
+  <div class="field-group"><label>内容 (content)</label><textarea rows="6" placeholder="条目正文…" oninput="updateWBField('content',this.value,${idx})">${escHtml(e.content)}</textarea></div>
+  <div class="field-group"><label>注释 (comment)</label><input type="text" value="${escHtml(e.comment)}" placeholder="备忘注释" oninput="updateWBField('comment',this.value,${idx})"/></div>
+  <div class="field-group"><label>注入设置</label><div class="field-row" style="margin-bottom:8px"><div><span class="sub-label">注入位置</span><select onchange="updateWBField('position',parseInt(this.value),${idx})">${pos.map(o=>`<option value="${o.v}" ${e.position===o.v?'selected':''}>${o.l}</option>`).join('')}</select></div><div><span class="sub-label">注入深度</span><input type="number" value="${e.depth}" min="0" max="100" oninput="updateWBField('depth',parseInt(this.value)||4,${idx})"/></div></div><div class="field-row"><div><span class="sub-label">排序顺序</span><input type="number" value="${e.order}" min="0" max="10000" oninput="updateWBField('order',parseInt(this.value)||100,${idx})"/></div><div><span class="sub-label">触发概率</span><input type="number" value="${e.probability}" min="0" max="100" oninput="updateWBField('probability',parseInt(this.value)||100,${idx})"/><div class="param-hint">0~100，100=始终触发</div></div></div></div>
+  <div class="field-group"><label>行为开关</label><div style="display:grid;grid-template-columns:1fr 1fr;gap:5px">${[['wb_enabled','enabled',e.enabled,'启用'],['wb_sel','selective',e.selective,'选择性'],['wb_const','constant',e.constant,'常驻'],['wb_regex','use_regex',e.use_regex,'正则匹配键'],['wb_excl','exclude_recursion',e.exclude_recursion,'排除递归']].map(([id,key,val,label])=>`<div class="checkbox-row"><input type="checkbox" id="${id}_${idx}" ${val?'checked':''} onchange="updateWBField('${key}',this.checked,${idx})"/><label for="${id}_${idx}">${label}</label></div>`).join('')}</div></div>
+  <div style="display:flex;justify-content:flex-end"><button class="btn btn-danger btn-sm" onclick="deleteWBEntry(${idx})">🗑 删除此条目</button></div>`}
+function selectWBEntry(i){selectedWBIndex=i;renderWorldBookEditor()}
+function updateWBField(k,v,idx){if(idx<0||idx>=state.worldbook_entries.length)return;state.worldbook_entries[idx][k]=v;updatePreview()}
+function addWBEntry(){const e=makeWorldBookEntry(Date.now());if(selectedWBIndex>=0&&selectedWBIndex<state.worldbook_entries.length){state.worldbook_entries.splice(selectedWBIndex+1,0,e);selectedWBIndex++}else{state.worldbook_entries.push(e);selectedWBIndex=state.worldbook_entries.length-1}renderWorldBookEditor();updatePreview();toast('✅ 已添加世界书条目')}
+function deleteWBEntry(idx){if(idx<0||idx>=state.worldbook_entries.length)return;state.worldbook_entries.splice(idx,1);selectedWBIndex=Math.min(selectedWBIndex,state.worldbook_entries.length-1);if(!state.worldbook_entries.length)selectedWBIndex=-1;renderWorldBookEditor();updatePreview();toast('🗑 已删除')}
+function exportWorldBook(){const o={};state.worldbook_entries.forEach(e=>{o[e.uid]={keys:e.keys?e.keys.split(',').map(k=>k.trim()).filter(Boolean):[],content:e.content,comment:e.comment,selective:e.selective,constant:e.constant,position:e.position,depth:e.depth,order:e.order,probability:e.probability,use_regex:e.use_regex,exclude_recursion:e.exclude_recursion,enabled:e.enabled}});downloadJSON({entries:o},'worldbook.json');toast('💾 世界书已导出')}
+
+/* ═══════════════════════════════════════════
+   Regex Editor
+═══════════════════════════════════════════ */
+function renderRegexEditor(){
+  if(editorMode!=='regex')return;
+  const pane=document.getElementById('paneRegex');
+  const entries=state.regex_entries;
+  if(!entries.length&&selectedRegexIndex<0){pane.innerHTML=`<div class="empty-state"><span class="icon">🔧</span><span>暂无正则条目</span><div style="display:flex;gap:6px;margin-top:6px"><button class="btn btn-primary btn-sm" onclick="addRegexEntry()">+ 添加</button><button class="btn btn-secondary btn-sm" onclick="importRegexFile()">📂 导入</button></div></div>`;return}
+  let h=`<div class="editor-split"><div class="editor-list-panel"><div class="editor-list-header"><span>🔧 正则 (${entries.length})</span><div style="display:flex;gap:2px"><button class="btn btn-primary btn-xs" onclick="addRegexEntry()">+</button><button class="btn btn-secondary btn-xs" onclick="importRegexFile()">📂</button><button class="btn btn-secondary btn-xs" onclick="exportRegex()">💾</button></div></div><div class="editor-list-body" id="regexListBody">`;
+  entries.forEach((e,i)=>{const nm=e.scriptName||e.findRegex.replace(/[\/\\]/g,'').substring(0,28)||'(未命名)',rp=e.findRegex?e.findRegex.replace(/[\/\\]/g,'').substring(0,22):'(无匹配模式)';
+    h+=`<div class="entry-item${i===selectedRegexIndex?' active':''}" onclick="selectRegexEntry(${i})" draggable="true" data-regexidx="${i}" id="regexitem_${i}"><span class="drag-handle" title="拖拽排序" onclick="event.stopPropagation()">⠿</span><span class="toggle-enabled ${!e.disabled?'on':'off'}" style="width:9px;height:9px" onclick="event.stopPropagation();state.regex_entries[${i}].disabled=!state.regex_entries[${i}].disabled;renderRegexEditor();updatePreview()" title="启用/禁用"></span><div style="flex:1;min-width:0"><div style="font-size:.75rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escHtml(nm.substring(0,32))}</div><div style="font-size:.64rem;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">/${escHtml(rp)}/</div></div></div>`;
+  });
+  h+=`</div></div><div class="editor-detail-panel" id="regexDetail">`;
+  if(selectedRegexIndex>=0&&selectedRegexIndex<entries.length)h+=renderRegexDetail(entries[selectedRegexIndex],selectedRegexIndex);
+  else h+=`<div class="empty-state"><span class="icon">👆</span><span>从左侧选择一条正则条目</span></div>`;
+  h+=`</div></div>`;pane.innerHTML=h;
+  setTimeout(()=>bindDrag('#regexListBody','regexidx',(src,dst)=>{const m=state.regex_entries.splice(src,1)[0];state.regex_entries.splice(dst,0,m);selectedRegexIndex=dst;renderRegexEditor();updatePreview()}),50);
+  initScrollWatcher();
+}
+function renderRegexDetail(e,idx){const pl=[{v:0,l:'系统'},{v:1,l:'用户'},{v:2,l:'AI'}];return`
+  <div class="field-group"><label>基本信息</label><div class="field-row"><div><span class="sub-label">脚本名称 (scriptName)</span><input type="text" value="${escHtml(e.scriptName)}" placeholder="便于识别的名称" oninput="updateRegexField('scriptName',this.value,${idx})"/></div><div><span class="sub-label">标识 ID</span><input type="text" value="${escHtml(e.id||e.uid)}" oninput="updateRegexField('id',this.value,${idx});updateRegexField('uid',this.value,${idx})"/></div></div></div>
+  <div class="field-group"><label>正则匹配 (findRegex)</label><textarea rows="3" placeholder="正则表达式模式…" oninput="updateRegexField('findRegex',this.value,${idx})">${escHtml(e.findRegex)}</textarea><div class="param-hint">使用 JavaScript 正则语法</div></div>
+  <div class="field-group"><label>替换为 (replaceString)</label><textarea rows="3" placeholder="替换后的字符串…支持 $1,$2 捕获组" oninput="updateRegexField('replaceString',this.value,${idx})">${escHtml(e.replaceString)}</textarea></div>
+  <div class="field-group"><label>深度 & 作用范围</label><div class="field-row" style="margin-bottom:8px"><div><span class="sub-label">最小深度 (minDepth)</span><input type="number" value="${e.minDepth??''}" placeholder="null" oninput="updateRegexField('minDepth',this.value===''?null:parseInt(this.value),${idx})"/></div><div><span class="sub-label">最大深度 (maxDepth)</span><input type="number" value="${e.maxDepth??''}" placeholder="null" oninput="updateRegexField('maxDepth',this.value===''?null:parseInt(this.value),${idx})"/></div></div><div><span class="sub-label">作用位置 (placement)</span><div class="tag-row">${pl.map(({v,l})=>`<label class="tag-chip ${e.placement.includes(v)?'on':'off'}" style="cursor:pointer"><input type="checkbox" style="display:none" ${e.placement.includes(v)?'checked':''} onchange="togglePlacement(${idx},${v},this.checked)"/>${l}</label>`).join('')}</div></div></div>
+  <div class="field-group"><label>开关</label><div style="display:grid;grid-template-columns:1fr 1fr;gap:5px">${[['re_dis','disabled',e.disabled,'禁用'],['re_md','markdownOnly',e.markdownOnly,'仅Markdown'],['re_prompt','promptOnly',e.promptOnly,'仅提示'],['re_edit','runOnEdit',e.runOnEdit,'编辑时运行']].map(([id,key,val,label])=>`<div class="checkbox-row"><input type="checkbox" id="${id}_${idx}" ${val?'checked':''} onchange="updateRegexField('${key}',this.checked,${idx})"/><label for="${id}_${idx}">${label}</label></div>`).join('')}</div></div>
+  <div class="regex-test-area"><label style="font-size:.71rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:7px">🧪 正则测试</label><textarea placeholder="输入测试文本…" id="regexTestInput_${idx}" rows="3" style="margin-bottom:7px">${escHtml(e._testInput||'')}</textarea><div style="display:flex;gap:7px;align-items:center;margin-bottom:7px"><button class="btn btn-primary btn-xs" onclick="testRegex(${idx})">▶ 运行测试</button></div><div class="regex-test-result" id="regexTestResult_${idx}"></div><div class="regex-error-msg" id="regexTestError_${idx}"></div></div>
+  <div style="display:flex;justify-content:flex-end"><button class="btn btn-danger btn-sm" onclick="deleteRegexEntry(${idx})">🗑 删除此条目</button></div>`}
+function selectRegexEntry(i){selectedRegexIndex=i;renderRegexEditor()}
+function updateRegexField(k,v,idx){if(idx<0||idx>=state.regex_entries.length)return;state.regex_entries[idx][k]=v;updatePreview()}
+function togglePlacement(idx,val,checked){const e=state.regex_entries[idx];if(!e)return;if(checked){if(!e.placement.includes(val))e.placement.push(val)}else e.placement=e.placement.filter(v=>v!==val);renderRegexEditor();updatePreview()}
+function addRegexEntry(){const e=makeRegexEntry(Date.now());if(selectedRegexIndex>=0&&selectedRegexIndex<state.regex_entries.length){state.regex_entries.splice(selectedRegexIndex+1,0,e);selectedRegexIndex++}else{state.regex_entries.push(e);selectedRegexIndex=state.regex_entries.length-1}renderRegexEditor();updatePreview();toast('✅ 已添加正则条目')}
+function deleteRegexEntry(idx){if(idx<0||idx>=state.regex_entries.length)return;state.regex_entries.splice(idx,1);selectedRegexIndex=Math.min(selectedRegexIndex,state.regex_entries.length-1);if(!state.regex_entries.length)selectedRegexIndex=-1;renderRegexEditor();updatePreview();toast('🗑 已删除')}
+function exportRegex(){const o=state.regex_entries.map(e=>({id:e.id||e.uid,scriptName:e.scriptName,findRegex:e.findRegex,replaceString:e.replaceString,trimStrings:e.trimStrings||[],placement:e.placement,disabled:e.disabled,markdownOnly:e.markdownOnly,promptOnly:e.promptOnly,runOnEdit:e.runOnEdit,substituteRegex:e.substituteRegex??0,minDepth:e.minDepth,maxDepth:e.maxDepth}));downloadJSON(o,'regex.json');toast('💾 正则已导出')}
+
+function testRegex(idx){const e=state.regex_entries[idx];if(!e)return;const inp=document.getElementById(`regexTestInput_${idx}`),res=document.getElementById(`regexTestResult_${idx}`),err=document.getElementById(`regexTestError_${idx}`),ti=inp?inp.value:'';e._testInput=ti;err.textContent='';res.textContent='';res.className='regex-test-result';if(!e.findRegex){err.textContent='⚠️ 请先填写正则匹配模式';return}if(!ti){err.textContent='⚠️ 请输入测试文本';return}try{const fl='g'+(e.findRegex.includes('(?i)')?'i':''),cr=e.findRegex.replace(/\(\?i\)/g,''),rx=new RegExp(cr,fl),rp=ti.replace(rx,e.replaceString||''),mc=(ti.match(rx)||[]).length;if(mc>0){res.className='regex-test-result match';res.textContent=`✅ 匹配 ${mc} 处，替换结果：\n${rp}`}else{res.className='regex-test-result nomatch';res.textContent='❌ 未匹配到任何内容'}}catch(ex){err.textContent=`⚠️ 正则语法错误：${ex.message}`}}
+
+/* ═══════════════════════════════════════════
+   Global Editor (as 4th tab)
+═══════════════════════════════════════════ */
+function msf(key,label,value,min,max,step,hint){return`<div><div class="param-label"><span>${label}</span></div><div class="slider-row"><input type="range" class="slider-sync" data-key="${key}" min="${min}" max="${max}" step="${step}" value="${value}"/><input type="number" class="num-sync" data-key="${key}" min="${min}" max="${max}" step="${step}" value="${value}"/></div>${hint?`<div class="param-hint">${hint}</div>`:''}</div>`}
+
+function renderGlobalEditor(){
+  if(editorMode!=='global')return;
+  const pane=document.getElementById('paneGlobal');
+  let h='<div style="padding:14px 18px;display:flex;flex-direction:column;gap:11px">';
+
+  // Sampling
+  h+=`<div class="param-section"><div class="param-section-header"><span>🎲 采样参数</span></div><div class="param-section-body">${msf('temperature','Temperature',state.temperature,0,2,0.01,'控制输出随机性。越高越创意，越低越确定')}${msf('top_p','Top P',state.top_p,0,1,0.01,'核采样阈值')}${msf('top_k','Top K',state.top_k,0,200,1,'限制候选Token数，0=不限制')}${msf('top_a','Top A',state.top_a,0,1,0.01,'Top-A采样，0=禁用')}${msf('min_p','Min P',state.min_p,0,1,0.01,'最小概率阈值，0=禁用')}${msf('repetition_penalty','Repetition Penalty',state.repetition_penalty,1,2,0.01,'重复惩罚，>1降低重复')}${msf('frequency_penalty','Frequency Penalty',state.frequency_penalty,-2,2,0.01,'频率惩罚')}${msf('presence_penalty','Presence Penalty',state.presence_penalty,-2,2,0.01,'存在惩罚')}</div></div>`;
+
+  // Context
+  h+=`<div class="param-section"><div class="param-section-header"><span>📏 上下文 & Token</span></div><div class="param-section-body"><div class="checkbox-row" style="margin-bottom:8px"><input type="checkbox" id="gp_mcu" ${state.max_context_unlocked?'checked':''} onchange="state.max_context_unlocked=this.checked;updatePreview()"/><label for="gp_mcu">解锁最大上下文 (max_context_unlocked)</label></div><div class="field-row"><div><div class="param-label"><span>openai_max_context</span></div><input type="number" value="${state.openai_max_context}" min="1024" max="2000000" step="1024" oninput="state.openai_max_context=parseInt(this.value)||200000;updatePreview()"/><div class="param-hint">最大上下文 Token 数</div></div><div><div class="param-label"><span>openai_max_tokens</span></div><input type="number" value="${state.openai_max_tokens}" min="256" max="128000" step="256" oninput="state.openai_max_tokens=parseInt(this.value)||4096;updatePreview()"/><div class="param-hint">单次最大生成 Token 数</div></div></div></div></div>`;
+
+  // Behavior
+  h+=`<div class="param-section"><div class="param-section-header"><span>🔀 行为开关</span></div><div class="param-section-body">
+    <div class="checkbox-row"><input type="checkbox" id="gp_stream" ${state.stream_openai?'checked':''} onchange="state.stream_openai=this.checked;updatePreview()"/><label for="gp_stream">流式输出 (stream_openai)</label></div>
+    <div class="checkbox-row"><input type="checkbox" id="gp_wrap" ${state.wrap_in_quotes?'checked':''} onchange="state.wrap_in_quotes=this.checked;updatePreview()"/><label for="gp_wrap">消息包裹引号 (wrap_in_quotes)</label></div>
+    <div class="checkbox-row"><input type="checkbox" id="gp_image" ${state.image_inlining?'checked':''} onchange="state.image_inlining=this.checked;updatePreview()"/><label for="gp_image">图片内联发送 (image_inlining)</label></div>
+    <div class="checkbox-row"><input type="checkbox" id="gp_video" ${state.video_inlining?'checked':''} onchange="state.video_inlining=this.checked;updatePreview()"/><label for="gp_video">视频内联发送 (video_inlining)</label></div>
+    <div style="margin-top:8px"><div class="param-label"><span>names_behavior</span></div><select onchange="state.names_behavior=parseInt(this.value);updatePreview()"><option value="0" ${state.names_behavior===0?'selected':''}>0 · 默认</option><option value="1" ${state.names_behavior===1?'selected':''}>1 · 始终添加名称</option><option value="2" ${state.names_behavior===2?'selected':''}>2 · 从不添加名称</option></select></div>
+    <div style="margin-top:8px"><div class="param-label"><span>bias_preset_selected</span></div><input type="text" value="${escHtml(state.bias_preset_selected)}" oninput="state.bias_preset_selected=this.value;updatePreview()"/></div>
+  </div></div>`;
+
+  // Format
+  h+=`<div class="param-section"><div class="param-section-header"><span>🗂️ 格式模板</span></div><div class="param-section-body"><div><div class="param-label"><span>wi_format</span></div><input type="text" value="${escHtml(state.wi_format)}" oninput="state.wi_format=this.value;updatePreview()"/></div><div><div class="param-label"><span>scenario_format</span></div><input type="text" value="${escHtml(state.scenario_format)}" oninput="state.scenario_format=this.value;updatePreview()"/></div><div><div class="param-label"><span>personality_format</span></div><input type="text" value="${escHtml(state.personality_format)}" oninput="state.personality_format=this.value;updatePreview()"/></div></div></div>`;
+
+  // Special prompts
+  h+=`<div class="param-section"><div class="param-section-header"><span>💬 特殊提示词</span></div><div class="param-section-body">`;
+  ['send_if_empty','impersonation_prompt','new_chat_prompt','new_group_chat_prompt','new_example_chat_prompt','continue_nudge_prompt','group_nudge_prompt'].forEach(key=>{
+    const defLabels={send_if_empty:'用户消息为空时发送',impersonation_prompt:'模拟用户输入',new_chat_prompt:'新建对话时注入',new_group_chat_prompt:'新建群聊时注入',new_example_chat_prompt:'对话示例前缀',continue_nudge_prompt:'续写引导',group_nudge_prompt:'群聊角色发言引导'};
+    h+=`<div><div class="param-label"><span>${key}</span></div><textarea class="short" placeholder="${defLabels[key]||''}" oninput="state.${key}=this.value;updatePreview()">${escHtml(state[key]||'')}</textarea></div>`;
+  });
+  h+=`</div></div></div>`;  // closes section-body, param-section, wrapper
+
+  pane.innerHTML=h;
+
+  // Slider bindings
+  pane.querySelectorAll('.slider-sync').forEach(r=>{const k=r.dataset.key,n=pane.querySelector(`.num-sync[data-key="${k}"]`);r.addEventListener('input',()=>{const v=parseFloat(r.value);if(n)n.value=v;state[k]=v;updatePreview()});if(n){n.addEventListener('input',()=>{const v=parseFloat(n.value);if(!isNaN(v)){r.value=v;state[k]=v;updatePreview()}})}});
+  initScrollWatcher();
+};
+
+/* ═══════════════════════════════════════════
+   Drag helper
+═══════════════════════════════════════════ */
+function bindDrag(selector,dataAttr,callback){
+  document.querySelectorAll(selector+' .entry-item').forEach(el=>{
+    el.addEventListener('dragstart',e=>{dragSrcIndex=parseInt(el.dataset[dataAttr]);e.dataTransfer.effectAllowed='move'});
+    el.addEventListener('dragover',e=>{e.preventDefault();el.classList.add('drag-over')});
+    el.addEventListener('dragleave',e=>{el.classList.remove('drag-over')});
+    el.addEventListener('drop',e=>{e.preventDefault();el.classList.remove('drag-over');const src=dragSrcIndex,dst=parseInt(el.dataset[dataAttr]);if(src!==dst&&src>=0&&dst>=0)callback(src,dst)});
+    el.addEventListener('dragend',()=>{document.querySelectorAll(selector+' .entry-item').forEach(e=>e.classList.remove('drag-over'))});
+  });
+}
+
+/* ═══════════════════════════════════════════
+   New / Import / Export
+═══════════════════════════════════════════ */
+function newPreset(){state={preset_name:'新预设',temperature:1,top_p:1,top_k:0,top_a:0,min_p:0,repetition_penalty:1,frequency_penalty:0,presence_penalty:0,max_context_unlocked:false,openai_max_context:200000,openai_max_tokens:4096,stream_openai:true,names_behavior:0,wrap_in_quotes:false,image_inlining:false,video_inlining:false,send_if_empty:'',impersonation_prompt:'',new_chat_prompt:'',new_group_chat_prompt:'[Start a new group chat. Group members: {{group}}]',new_example_chat_prompt:'[Example Chat]',continue_nudge_prompt:'',group_nudge_prompt:'',bias_preset_selected:'Default (none)',wi_format:'{0}',scenario_format:'{{scenario}}',personality_format:'{{personality}}',prompts:[],prompt_order:[{character_id:100001,order:[]}],worldbook_entries:[],regex_entries:[]};selectedIndex=-1;selectedWBIndex=-1;selectedRegexIndex=-1;editorMode='preset';switchEditorMode('preset');renderEditor();updatePreview();toast('✨ 已新建')}
+
+function importPreset(){window._importMode='preset';document.getElementById('fileInput').click()}
+function importWorldBook(){window._importMode='worldbook';document.getElementById('fileInput').click()}
+function importRegexFile(){window._importMode='regex';document.getElementById('fileInput').click()}
+function doImport(){if(editorMode==='worldbook')importWorldBook();else if(editorMode==='regex')importRegexFile();else if(editorMode==='global')importPreset();else importPreset()}
+
+function handleFileImport(e){
+  const file=e.target.files[0];if(!file)return;const r=new FileReader();
+  r.onload=ev=>{try{const data=JSON.parse(ev.target.result),im=window._importMode||'preset';
+    // World book
+    if(data.entries&&typeof data.entries==='object'&&!Array.isArray(data.entries)&&!data.preset_name&&!data.prompts&&im!=='regex'){const arr=[];Object.entries(data.entries).forEach(([k,en])=>{arr.push({uid:k,keys:Array.isArray(en.keys)?en.keys.join(', '):(en.keys||''),content:en.content||'',comment:en.comment||'',selective:en.selective??en.extensions?.selective??false,constant:en.constant??en.extensions?.constant??false,position:en.position??en.extensions?.position??0,depth:en.depth??en.extensions?.depth??4,order:en.order??en.extensions?.order??100,probability:en.probability??en.extensions?.probability??100,use_regex:en.use_regex??en.extensions?.use_regex??false,exclude_recursion:en.exclude_recursion??en.extensions?.exclude_recursion??false,enabled:en.enabled!==undefined?en.enabled:!(en.disabled===undefined?false:en.disabled)})});state.worldbook_entries=arr;selectedWBIndex=-1;if(editorMode!=='worldbook')switchEditorMode('worldbook');else renderWorldBookEditor();updatePreview();toast(`📂 已导入世界书：${arr.length}条`);e.target.value='';return}
+    // Regex
+    if(Array.isArray(data)&&data.length>0&&(data[0].findRegex||data[0].find_regex)&&im!=='worldbook'){state.regex_entries=data.map((en,idx)=>({uid:en.id||`regex_${Date.now()}_${idx}`,id:en.id||'',scriptName:en.scriptName||en.script_name||'',findRegex:en.findRegex||en.find_regex||'',replaceString:en.replaceString||en.replace_string||'',trimStrings:en.trimStrings||en.trim_strings||[],placement:en.placement||[2],disabled:en.disabled!==undefined?en.disabled:false,markdownOnly:en.markdownOnly||en.markdown_only||false,promptOnly:en.promptOnly||en.prompt_only||false,runOnEdit:en.runOnEdit!==undefined?en.runOnEdit:true,substituteRegex:en.substituteRegex??en.sub_regex??0,minDepth:en.minDepth??en.min_depth??null,maxDepth:en.maxDepth??en.max_depth??null}));selectedRegexIndex=-1;if(editorMode!=='regex')switchEditorMode('regex');else renderRegexEditor();updatePreview();toast(`📂 已导入正则：${state.regex_entries.length}条`);e.target.value='';return}
+    // Preset
+    state.preset_name=data.preset_name??data.name??'导入预设';state.temperature=data.temperature??1;state.top_p=data.top_p??1;state.top_k=data.top_k??0;state.top_a=data.top_a??0;state.min_p=data.min_p??0;state.repetition_penalty=data.repetition_penalty??1;state.frequency_penalty=data.frequency_penalty??0;state.presence_penalty=data.presence_penalty??0;state.max_context_unlocked=data.max_context_unlocked??false;state.openai_max_context=data.openai_max_context??200000;state.openai_max_tokens=data.openai_max_tokens??4096;state.stream_openai=data.stream_openai??true;state.names_behavior=data.names_behavior??0;state.wrap_in_quotes=data.wrap_in_quotes??false;state.image_inlining=data.image_inlining??false;state.video_inlining=data.video_inlining??false;state.send_if_empty=data.send_if_empty??'';state.impersonation_prompt=data.impersonation_prompt??'';state.new_chat_prompt=data.new_chat_prompt??'';state.new_group_chat_prompt=data.new_group_chat_prompt??'[Start a new group chat. Group members: {{group}}]';state.new_example_chat_prompt=data.new_example_chat_prompt??'[Example Chat]';state.continue_nudge_prompt=data.continue_nudge_prompt??'';state.group_nudge_prompt=data.group_nudge_prompt??'';state.bias_preset_selected=data.bias_preset_selected??'Default (none)';state.wi_format=data.wi_format??'{0}';state.scenario_format=data.scenario_format??'{{scenario}}';state.personality_format=data.personality_format??'{{personality}}';state.prompts=Array.isArray(data.prompts)?data.prompts:[];state.prompt_order=Array.isArray(data.prompt_order)&&data.prompt_order.length?data.prompt_order:[{character_id:100001,order:[]}];if(Array.isArray(data.worldbook_entries))state.worldbook_entries=data.worldbook_entries;else if(data.worldbook_entries?.entries){const arr=[];Object.entries(data.worldbook_entries.entries).forEach(([k,en])=>{arr.push({uid:k,keys:Array.isArray(en.keys)?en.keys.join(', '):(en.keys||''),content:en.content||'',comment:en.comment||'',selective:en.selective??false,constant:en.constant??false,position:en.position??0,depth:en.depth??4,order:en.order??100,probability:en.probability??100,use_regex:en.use_regex??false,exclude_recursion:en.exclude_recursion??false,enabled:en.enabled!==undefined?en.enabled:true})});state.worldbook_entries=arr}else state.worldbook_entries=[];state.regex_entries=Array.isArray(data.regex_entries)?data.regex_entries:[];syncPromptOrder();selectedIndex=state.prompts.length>0?0:-1;selectedWBIndex=-1;selectedRegexIndex=-1;switchEditorMode('preset');renderEditor();updatePreview();toast(`📂 已导入：${state.preset_name}`)}catch{toast('⚠️ JSON 解析失败')}};r.readAsText(file);e.target.value=''
+}
+
+function exportPreset(){syncPromptOrder();let o,fn;if(editorMode==='worldbook'){const eo={};state.worldbook_entries.forEach(e=>{eo[e.uid]={keys:e.keys?e.keys.split(',').map(k=>k.trim()).filter(Boolean):[],content:e.content,comment:e.comment,selective:e.selective,constant:e.constant,position:e.position,depth:e.depth,order:e.order,probability:e.probability,use_regex:e.use_regex,exclude_recursion:e.exclude_recursion,enabled:e.enabled}});o={entries:eo};fn='worldbook.json'}else if(editorMode==='regex'){o=state.regex_entries.map(e=>({id:e.id||e.uid,scriptName:e.scriptName,findRegex:e.findRegex,replaceString:e.replaceString,trimStrings:e.trimStrings||[],placement:e.placement,disabled:e.disabled,markdownOnly:e.markdownOnly,promptOnly:e.promptOnly,runOnEdit:e.runOnEdit,substituteRegex:e.substituteRegex??0,minDepth:e.minDepth,maxDepth:e.maxDepth}));fn='regex.json'}else if(editorMode==='global'){o=buildOutput();fn=(state.preset_name||'preset')+'.json'}else{o=buildOutput();fn=(state.preset_name||'preset')+'.json'}downloadJSON(o,fn);toast('💾 已导出')}
+
+function buildOutput(){return{preset_name:state.preset_name,temperature:state.temperature,frequency_penalty:state.frequency_penalty,presence_penalty:state.presence_penalty,top_p:state.top_p,top_k:state.top_k,top_a:state.top_a,min_p:state.min_p,repetition_penalty:state.repetition_penalty,max_context_unlocked:state.max_context_unlocked,openai_max_context:state.openai_max_context,openai_max_tokens:state.openai_max_tokens,names_behavior:state.names_behavior,send_if_empty:state.send_if_empty,impersonation_prompt:state.impersonation_prompt,new_chat_prompt:state.new_chat_prompt,new_group_chat_prompt:state.new_group_chat_prompt,new_example_chat_prompt:state.new_example_chat_prompt,continue_nudge_prompt:state.continue_nudge_prompt,bias_preset_selected:state.bias_preset_selected,wi_format:state.wi_format,scenario_format:state.scenario_format,personality_format:state.personality_format,group_nudge_prompt:state.group_nudge_prompt,stream_openai:state.stream_openai,wrap_in_quotes:state.wrap_in_quotes,image_inlining:state.image_inlining,video_inlining:state.video_inlining,prompts:state.prompts,prompt_order:state.prompt_order,worldbook_entries:state.worldbook_entries,regex_entries:state.regex_entries}}
+
+function downloadJSON(obj,filename){const b=new Blob([JSON.stringify(obj,null,2)],{type:'application/json'}),url=URL.createObjectURL(b),a=document.createElement('a');a.href=url;a.download=filename;a.click();URL.revokeObjectURL(url)}
+function copyJson(){const t=document.getElementById('jsonPreview').textContent;navigator.clipboard.writeText(t).then(()=>toast('📋 已复制'))}
+
+/* ═══════════════════════════════════════════
+   Preview
+═══════════════════════════════════════════ */
+function updatePreview(){
+  syncPromptOrder();
+  let o;
+  if(editorMode==='worldbook'){const eo={};state.worldbook_entries.forEach(e=>{eo[e.uid]={keys:e.keys?e.keys.split(',').map(k=>k.trim()).filter(Boolean):[],content:e.content,comment:e.comment,selective:e.selective,constant:e.constant,position:e.position,depth:e.depth,order:e.order,probability:e.probability,use_regex:e.use_regex,exclude_recursion:e.exclude_recursion,enabled:e.enabled}});o={entries:eo}}
+  else if(editorMode==='regex')o=state.regex_entries.map(e=>({id:e.id||e.uid,scriptName:e.scriptName,findRegex:e.findRegex,replaceString:e.replaceString,trimStrings:e.trimStrings||[],placement:e.placement,disabled:e.disabled,markdownOnly:e.markdownOnly,promptOnly:e.promptOnly,runOnEdit:e.runOnEdit,substituteRegex:e.substituteRegex??0,minDepth:e.minDepth,maxDepth:e.maxDepth}));
+  else if(editorMode==='global')o=buildOutput();
+  else o=buildOutput();
+  document.getElementById('jsonPreview').textContent=JSON.stringify(o,null,2);
+}
+
+/* ═══════════════════════════════════════════
+   Clear All
+═══════════════════════════════════════════ */
+function clearAll(){if(!confirm('确定要清除所有数据吗？\n\n将删除所有提示词、全局参数、世界书条目和正则条目。\n此操作不可撤销！'))return;state={preset_name:'新预设',temperature:1,top_p:1,top_k:0,top_a:0,min_p:0,repetition_penalty:1,frequency_penalty:0,presence_penalty:0,max_context_unlocked:false,openai_max_context:200000,openai_max_tokens:4096,stream_openai:true,names_behavior:0,wrap_in_quotes:false,image_inlining:false,video_inlining:false,send_if_empty:'',impersonation_prompt:'',new_chat_prompt:'',new_group_chat_prompt:'[Start a new group chat. Group members: {{group}}]',new_example_chat_prompt:'[Example Chat]',continue_nudge_prompt:'',group_nudge_prompt:'',bias_preset_selected:'Default (none)',wi_format:'{0}',scenario_format:'{{scenario}}',personality_format:'{{personality}}',prompts:[],prompt_order:[{character_id:100001,order:[]}],worldbook_entries:[],regex_entries:[]};selectedIndex=-1;selectedWBIndex=-1;selectedRegexIndex=-1;editorMode='preset';switchEditorMode('preset');renderEditor();updatePreview();toast('🗑 已清除所有数据')}
+
+/* ═══════════════════════════════════════════
+   AI Persona Prompts (from chara-card-creator-skill)
+═══════════════════════════════════════════ */
+const AI_PERSONAS = {
+  caelum: {
+    name: '山停 · 万能辅助',
+    icon: '🌌',
+    prompt: `你是山停（Caelum），一个精通角色卡创作、世界书设计、正则编写和预设调优的全能助手。
+你的核心能力：
+1. 角色卡创作：根据用户需求，设计有血有肉的角色——从外貌、性格到语言风格、互动模式，13个模块全方位塑造。
+2. 世界书创作：构建世界观、地点势力、经济法则、能力体系，确保AI在角色扮演中牢牢记住所有世界规则。
+3. 正则表达式：编写和调试SillyTavern正则替换脚本，处理格式渲染、状态栏、信息面板等需求。
+4. 预设调优：调整采样参数、上下文设置、提示词编排，优化AI输出质量。
+
+创作原则：
+- 每一个字要么在建立角色，要么在推进互动，要么在营造氛围——不要有第四种字。
+- 外貌用碎片化特写+省略主语；性格用行为证据法+否定边界。
+- 情感表达要拆解到表情/语言/肢体三个维度。
+- 语言风格必须有≥5种情境的具体台词示例。
+- 禁止行为必须明确具体。
+
+请用中文回复，提供具体、可操作的建议。当你看到用户正在编辑的内容时，给出针对性的改进方案。`
+  },
+  ying: {
+    name: '影 · 角色塑造',
+    icon: '🎭',
+    prompt: `你是「影」——专注角色塑造的创作助手。你的核心任务是把一个模糊的角色概念打磨成有血有肉、令人过目不忘的人物。
+
+你精通以下技法：
+1. 外貌描写：碎片化特写+省略主语。删除一切虚词（的/地/得/是/有/非常），只保留名词+动词骨架。每句4-8字，句号密集制造"镜头跳切"感。
+   示例："身形修长，骨架大。黑发碎剪，发丝柔顺有凌乱感。下垂锐眼，眼尾微压，神色冷淡。"
+2. 性格塑造：关键词→核心特质展开→矛盾点（≥5个）→真缺点（≥4个）。
+   矛盾点必须是真矛盾——"他极度理性，但对极少数人失去理性"。伪矛盾如"外表冷酷内心温柔"不通过。
+   缺点必须是真缺点——"从不开口承认错误""控制欲强到让身边人窒息"。伪缺点如"太善良了"不通过。
+3. 情感表达：四种情绪×三种表达维度=12格必须全填（表情/语言/肢体）。
+4. 与user相处：不是说"他在乎"，是写"他在乎时具体做什么"。每条都必须可以直接写进对话。
+5. 扮演指引：≥5种情境各一句代表性台词。≥4条禁止行为。
+
+请用中文回复。当你看到用户正在编辑的角色内容时，直接给出具体的修改方案和台词建议。`
+  },
+  xian: {
+    name: '弦 · 情节设计',
+    icon: '🎪',
+    prompt: `你是「弦」——专注情节设计与互动编排的创作助手。你擅长把零散的故事想法编织成有张力、有节奏、有情绪起伏的叙事结构。
+
+你精通以下领域：
+1. 场景锚定：为每个场景设计核心氛围、时间压力、空间限制、情绪基调。确保AI理解当前场景的紧迫感和情感色彩。
+2. 互动节奏：控制对话和信息释放的节奏——什么时候该快、什么时候该慢、什么时候该沉默。
+   好节奏：紧张追逐→短暂喘息（角色交流）→新危机出现→被迫合作→信任萌芽。
+3. 情节钩子：设计让角色"不得不行动"的情境。不是"他想做什么"，而是"他被逼到必须做什么"。
+4. 群像互动：多角色场景的焦点分配、对话轮转、势力博弈。
+5. 叙事提示词：为不同情节阶段设计专门的提示词（new_chat_prompt、continue_nudge_prompt、group_nudge_prompt）。
+6. 对话示例：设计3-5轮能体现角色关系和情节走向的对话示例。
+
+核心原则：情节不是"发生了什么"，而是"角色被逼到什么境地、做出了什么选择、承受了什么后果"。
+
+请用中文回复。当你看到用户正在编辑的内容时，给出具体的情节推进建议和互动编排方案。`
+  },
+  rang: {
+    name: '壤 · 世界观构筑',
+    icon: '🌍',
+    prompt: `你是「壤」——专注世界观构筑的创作助手。你的核心任务是把一个模糊的世界设定打造成逻辑自洽、细节丰富、AI能够稳定运行的完整世界观体系。
+
+你精通以下领域：
+1. 世界法则铁则：定义世界的底层规则（物理法则、魔法/科技体系、社会结构）。这些是constant:true的条目，AI必须始终遵守。
+   "本世界没有金属，工具由水晶制成"——这种级别的铁则。
+2. 地点场景设计：每个地点必须有五感描写（视觉/听觉/嗅觉/触觉/氛围），让AI能"看见"这个地方。
+3. 势力与组织：每个势力的目标、资源、内部矛盾、外部关系。势力间的冲突是情节的发动机。
+4. 经济与资源体系：货币、物资、稀有资源、交易方式。经济基础决定角色的行为逻辑。
+5. 能力体系：修炼/魔法/科技/异能——清晰的等级划分、获取条件、代价与限制。
+6. 历史文化：关键历史事件、传说、禁忌、节日。这些是角色行为背后的文化密码。
+
+世界书条目规范：
+- keys：精准的触发词数组
+- content：用不容置疑的陈述句写下客观事实
+- constant:true 用于世界法则铁则
+- 拆分信息：不把所有设定塞进一条，而是拆成多个碎片，通过触发词按需激活
+
+请用中文回复。当你看到用户正在编辑的世界书内容时，给出具体的设计建议和条目优化方案。`
+  }
+};
+// 保存默认提示词快照，供恢复使用
+Object.keys(AI_PERSONAS).forEach(k=>{AI_PERSONAS[k]._default=AI_PERSONAS[k].prompt});
+
+/* ═══════════════════════════════════════════
+   AI Config & Persona Management
+═══════════════════════════════════════════ */
+function openAPISettings(){
+  const c=aiConfig;
+  document.getElementById('apiBaseUrl').value=c.baseUrl||'https://api.openai.com/v1';
+  document.getElementById('apiApiKey').value=c.apiKey||'';
+  document.getElementById('apiModel').value=c.model||'gpt-4o';
+  document.getElementById('apiMaxTokens').value=c.maxTokens||2000;
+  document.getElementById('apiTemperature').value=c.temperature??0.7;
+  document.getElementById('apiTopP').value=c.topP??0.9;
+  document.getElementById('apiModal').classList.add('show');
+}
+function closeAPISettings(){document.getElementById('apiModal').classList.remove('show')}
+function saveAPISettings(){
+  aiConfig.baseUrl=document.getElementById('apiBaseUrl').value.trim()||'https://api.openai.com/v1';
+  aiConfig.apiKey=document.getElementById('apiApiKey').value.trim();
+  aiConfig.model=document.getElementById('apiModel').value;
+  aiConfig.maxTokens=parseInt(document.getElementById('apiMaxTokens').value)||2000;
+  aiConfig.temperature=parseFloat(document.getElementById('apiTemperature').value)??0.7;
+  aiConfig.topP=parseFloat(document.getElementById('apiTopP').value)??0.9;
+  saveAIConfigToStorage();
+  closeAPISettings();
+  toast('✅ API 配置已保存');
+}
+function saveAIConfigToStorage(){
+  localStorage.setItem('st_ai_config',JSON.stringify(aiConfig));
+  localStorage.setItem('st_ai_persona',aiCurrentPersona);
+}
+function loadAIConfig(){
+  try{
+    const s=localStorage.getItem('st_ai_config');if(s){const c=JSON.parse(s);aiConfig={...aiConfig,...c}}
+    const p=localStorage.getItem('st_ai_persona');if(p&&AI_PERSONAS[p]){aiCurrentPersona=p;document.getElementById('aiPersonaSelect').value=p;updatePersonaLabel()}
+    // 加载用户自定义的提示词
+    Object.keys(AI_PERSONAS).forEach(key=>{
+      const custom=loadCustomPrompt(key);
+      if(custom) AI_PERSONAS[key].prompt=custom;
+    });
+  }catch(e){}
+}
+function switchAIPersona(persona){
+  aiCurrentPersona=persona;
+  updatePersonaLabel();
+  saveAIConfigToStorage();
+  toast(`🤖 已切换为：${AI_PERSONAS[persona].name}`);
+}
+function updatePersonaLabel(){
+  const p=AI_PERSONAS[aiCurrentPersona];
+  document.getElementById('aiPersonaLabel').textContent=`${p.icon} ${p.name}`;
+}
+function clearAIChat(){
+  aiMessages=[];
+  document.getElementById('aiChatArea').innerHTML=`<div class="ai-msg system">💡 对话已清空。点击「注入上下文」将当前编辑内容发送给 AI 作为参考。</div>`;
+  toast('🗑 对话已清空');
+}
+
+/* ── 提示词编辑器 ── */
+function editPersonaPrompt(){
+  const persona=AI_PERSONAS[aiCurrentPersona];
+  // 优先使用用户自定义的版本
+  const custom=loadCustomPrompt(aiCurrentPersona);
+  document.getElementById('personaEditorTitle').textContent=`✏️ 编辑：${persona.name}`;
+  document.getElementById('personaPromptEditor').value=custom||persona.prompt;
+  document.getElementById('personaModal').classList.add('show');
+}
+function closePersonaEditor(){document.getElementById('personaModal').classList.remove('show')}
+function savePersonaPrompt(){
+  const text=document.getElementById('personaPromptEditor').value.trim();
+  if(!text){toast('⚠️ 提示词不能为空');return}
+  saveCustomPrompt(aiCurrentPersona,text);
+  // 立即生效——更新内存中的提示词
+  AI_PERSONAS[aiCurrentPersona].prompt=text;
+  closePersonaEditor();
+  toast(`✅ ${AI_PERSONAS[aiCurrentPersona].name} 的提示词已保存`);
+}
+function resetPersonaPrompt(){
+  const def=AI_PERSONAS[aiCurrentPersona]._default;
+  if(def){
+    document.getElementById('personaPromptEditor').value=def;
+    toast('↩ 已恢复为默认提示词，点击「保存」生效');
+  }
+}
+function loadCustomPrompt(personaKey){
+  try{const s=localStorage.getItem(`st_persona_${personaKey}`);return s||null}catch(e){return null}
+}
+function saveCustomPrompt(personaKey,text){
+  localStorage.setItem(`st_persona_${personaKey}`,text);
+}
+
+function getCurrentContext(){
+  let ctx='';
+  if(editorMode==='preset'&&selectedIndex>=0){const p=state.prompts[selectedIndex];ctx=`【预设提示词】\n名称：${p.name}\n角色：${p.role}\n内容：\n${p.content}`}
+  else if(editorMode==='worldbook'&&selectedWBIndex>=0){const e=state.worldbook_entries[selectedWBIndex];ctx=`【世界书条目】\n触发词：${e.keys}\n内容：\n${e.content}`}
+  else if(editorMode==='regex'&&selectedRegexIndex>=0){const e=state.regex_entries[selectedRegexIndex];ctx=`【正则条目】\n名称：${e.scriptName}\n匹配：${e.findRegex}\n替换：${e.replaceString}`}
+  else if(editorMode==='global'){ctx=`【全局参数】\n预设名称：${state.preset_name}\nTemperature:${state.temperature}\nTop P:${state.top_p}\nTop K:${state.top_k}\nMax Context:${state.openai_max_context}\nMax Tokens:${state.openai_max_tokens}`}
+  else{ctx='当前未选中任何编辑内容。'}
+  return ctx;
+}
+
+function injectContext(){
+  const ctx=getCurrentContext();
+  const chatArea=document.getElementById('aiChatArea');
+  const msgDiv=document.createElement('div');msgDiv.className='ai-msg system';msgDiv.textContent=`📥 已注入当前编辑上下文：\n${ctx}`;
+  chatArea.appendChild(msgDiv);chatArea.scrollTop=chatArea.scrollHeight;
+  aiMessages.push({role:'system',content:`以下为当前编辑内容参考：\n${ctx}`});
+  toast('📥 上下文已注入')
+}
+
+async function sendAIMessage(){
+  if(aiLoading)return;
+  const input=document.getElementById('aiInput');
+  const text=input.value.trim();
+  if(!text)return;
+  if(!aiConfig.apiKey){toast('⚠️ 请先点击「🔌 API设置」配置 API Key');return}
+
+  const chatArea=document.getElementById('aiChatArea');
+  const userDiv=document.createElement('div');userDiv.className='ai-msg user';userDiv.textContent=text;
+  chatArea.appendChild(userDiv);
+  aiMessages.push({role:'user',content:text});
+  input.value='';
+  chatArea.scrollTop=chatArea.scrollHeight;
+
+  const loadDiv=document.createElement('div');loadDiv.className='ai-loading';loadDiv.innerHTML='<div class="spinner"></div><span>AI 思考中…</span>';
+  chatArea.appendChild(loadDiv);chatArea.scrollTop=chatArea.scrollHeight;
+  aiLoading=true;
+
+  try{
+    const persona=AI_PERSONAS[aiCurrentPersona]||AI_PERSONAS.caelum;
+    const messages=[{role:'system',content:persona.prompt}];
+    const lastSys=aiMessages.filter(m=>m.role==='system').slice(-2);
+    const lastUser=aiMessages.filter(m=>m.role==='user').slice(-6);
+    messages.push(...lastSys,...lastUser);
+
+    const resp=await fetch(`${aiConfig.baseUrl}/chat/completions`,{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':`Bearer ${aiConfig.apiKey}`},
+      body:JSON.stringify({
+        model:aiConfig.model,
+        messages:messages,
+        max_tokens:aiConfig.maxTokens||2000,
+        temperature:aiConfig.temperature??0.7,
+        top_p:aiConfig.topP??0.9
+      })
+    });
+    if(!resp.ok){const err=await resp.text();throw new Error(`HTTP ${resp.status}: ${err}`)}
+    const data=await resp.json();
+    const reply=data.choices?.[0]?.message?.content||'(空回复)';
+    loadDiv.remove();
+    const botDiv=document.createElement('div');botDiv.className='ai-msg assistant';botDiv.textContent=reply;
+    chatArea.appendChild(botDiv);aiMessages.push({role:'assistant',content:reply});
+    chatArea.scrollTop=chatArea.scrollHeight;
+  }catch(e){
+    loadDiv.remove();
+    const errDiv=document.createElement('div');errDiv.className='ai-msg system';errDiv.textContent=`❌ 请求失败：${e.message}`;
+    chatArea.appendChild(errDiv);
+    chatArea.scrollTop=chatArea.scrollHeight;
+  }
+  aiLoading=false;
+}
+
+// Auto-load AI config on startup
+loadAIConfig();
+updatePersonaLabel();
+
+/* ═══════════════════════════════════════════
+   Init
+═══════════════════════════════════════════ */
+renderEditor();
+updatePreview();
+initScrollWatcher();
+</script>
+</body>
+</html>
