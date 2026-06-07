@@ -271,18 +271,22 @@
   <div class="modal-dialog" onclick="event.stopPropagation()">
     <h3>🔌 API 连接设置</h3>
     <div class="field-row">
-      <div><span class="sub-label">Base URL</span><input type="text" id="apiBaseUrl" placeholder="https://api.openai.com/v1"/></div>
-      <div><span class="sub-label">API Key</span><input type="password" id="apiApiKey" placeholder="sk-..."/></div>
+      <div style="flex:2"><span class="sub-label">Base URL</span><input type="text" id="apiBaseUrl" placeholder="https://api.openai.com/v1"/></div>
+      <div style="flex:2"><span class="sub-label">API Key</span><input type="password" id="apiApiKey" placeholder="sk-..."/></div>
     </div>
+    <div style="display:flex;gap:6px;align-items:flex-end">
+      <div style="flex:1"><span class="sub-label">模型 (Model)</span><select id="apiModel"><option value="">请先拉取模型列表</option></select></div>
+      <button class="btn btn-secondary btn-sm" onclick="fetchModels()" id="btnFetchModels" style="flex-shrink:0;margin-bottom:0">📡 拉取模型</button>
+    </div>
+    <div id="apiModelStatus" style="font-size:.67rem;color:var(--text-muted);min-height:16px"></div>
     <div class="field-row">
-      <div><span class="sub-label">模型 (Model)</span><select id="apiModel"><option value="gpt-4o">gpt-4o</option><option value="gpt-4o-mini">gpt-4o-mini</option><option value="claude-sonnet-4-6">claude-sonnet-4-6</option><option value="deepseek-chat">deepseek-chat</option><option value="deepseek-v4-pro">deepseek-v4-pro</option><option value="qwen-plus">qwen-plus</option></select></div>
       <div><span class="sub-label">最大输出 Token</span><input type="number" id="apiMaxTokens" value="2000" min="256" max="128000"/></div>
-    </div>
-    <div class="field-row">
       <div><span class="sub-label">Temperature (0~2)</span><input type="number" id="apiTemperature" value="0.7" min="0" max="2" step="0.01"/></div>
       <div><span class="sub-label">Top P (0~1)</span><input type="number" id="apiTopP" value="0.9" min="0" max="1" step="0.01"/></div>
     </div>
     <div class="modal-actions">
+      <button class="btn btn-secondary btn-sm" onclick="testAPIConnection()" id="btnTestConn">🔍 测试连接</button>
+      <span id="apiTestStatus" style="font-size:.72rem;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
       <button class="btn btn-secondary btn-sm" onclick="closeAPISettings()">取消</button>
       <button class="btn btn-primary btn-sm" onclick="saveAPISettings()">💾 保存配置</button>
     </div>
@@ -748,10 +752,15 @@ function openAPISettings(){
   const c=aiConfig;
   document.getElementById('apiBaseUrl').value=c.baseUrl||'https://api.openai.com/v1';
   document.getElementById('apiApiKey').value=c.apiKey||'';
-  document.getElementById('apiModel').value=c.model||'gpt-4o';
+  // 确保已保存的模型在列表中
+  const sel=document.getElementById('apiModel');
+  if(c.model&&c.model!=='gpt-4o'){if(![...sel.options].some(o=>o.value===c.model)){const o=document.createElement('option');o.value=c.model;o.textContent=c.model;sel.appendChild(o)}}
+  sel.value=c.model||'';
   document.getElementById('apiMaxTokens').value=c.maxTokens||2000;
   document.getElementById('apiTemperature').value=c.temperature??0.7;
   document.getElementById('apiTopP').value=c.topP??0.9;
+  document.getElementById('apiModelStatus').textContent='';
+  document.getElementById('apiTestStatus').textContent='';
   document.getElementById('apiModal').classList.add('show');
 }
 function closeAPISettings(){document.getElementById('apiModal').classList.remove('show')}
@@ -762,9 +771,60 @@ function saveAPISettings(){
   aiConfig.maxTokens=parseInt(document.getElementById('apiMaxTokens').value)||2000;
   aiConfig.temperature=parseFloat(document.getElementById('apiTemperature').value)??0.7;
   aiConfig.topP=parseFloat(document.getElementById('apiTopP').value)??0.9;
+  if(!aiConfig.model){toast('⚠️ 请先选择模型');return}
   saveAIConfigToStorage();
   closeAPISettings();
   toast('✅ API 配置已保存');
+}
+
+/* ── 拉取模型列表 ── */
+async function fetchModels(){
+  const baseUrl=document.getElementById('apiBaseUrl').value.trim()||'https://api.openai.com/v1';
+  const apiKey=document.getElementById('apiApiKey').value.trim();
+  if(!apiKey){toast('⚠️ 请先输入 API Key');return}
+  const status=document.getElementById('apiModelStatus');
+  const btn=document.getElementById('btnFetchModels');
+  status.textContent='⏳ 正在拉取模型列表…';status.style.color='var(--text-muted)';
+  btn.disabled=true;btn.textContent='⏳ …';
+  try{
+    const resp=await fetch(`${baseUrl}/models`,{headers:{'Authorization':`Bearer ${apiKey}`}});
+    if(!resp.ok){const e=await resp.text();throw new Error(`HTTP ${resp.status}: ${e}`)}
+    const data=await resp.json();
+    const models=(data.data||data.models||data||[]).map(m=>m.id||m.model||m.name||(typeof m==='string'?m:'')).filter(Boolean).sort();
+    const sel=document.getElementById('apiModel');sel.innerHTML='';
+    if(!models.length){sel.innerHTML='<option value="">未找到模型</option>';status.textContent='⚠️ 未找到可用模型';status.style.color='var(--danger)';return}
+    models.forEach(m=>{const o=document.createElement('option');o.value=m;o.textContent=m;sel.appendChild(o)});
+    // 恢复之前保存的模型
+    if(aiConfig.model&&models.includes(aiConfig.model))sel.value=aiConfig.model;
+    status.textContent=`✅ 找到 ${models.length} 个模型`;status.style.color='var(--success)';
+  }catch(e){status.textContent=`❌ 拉取失败：${e.message}`;status.style.color='var(--danger)'}
+  finally{btn.disabled=false;btn.textContent='📡 拉取模型'}
+}
+
+/* ── 测试 API 连接 ── */
+async function testAPIConnection(){
+  const baseUrl=document.getElementById('apiBaseUrl').value.trim()||'https://api.openai.com/v1';
+  const apiKey=document.getElementById('apiApiKey').value.trim();
+  const model=document.getElementById('apiModel').value;
+  if(!apiKey){toast('⚠️ 请先输入 API Key');return}
+  if(!model){toast('⚠️ 请先拉取并选择模型');return}
+  const stat=document.getElementById('apiTestStatus');
+  const btn=document.getElementById('btnTestConn');
+  stat.textContent='⏳ 正在测试连接…';stat.style.color='var(--text-muted)';
+  btn.disabled=true;
+  try{
+    const resp=await fetch(`${baseUrl}/chat/completions`,{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':`Bearer ${apiKey}`},
+      body:JSON.stringify({model:model,messages:[{role:'user',content:'Hi'}],max_tokens:5})
+    });
+    if(!resp.ok){const e=await resp.text();throw new Error(`HTTP ${resp.status}: ${e}`)}
+    const data=await resp.json();
+    const reply=data.choices?.[0]?.message?.content||'';
+    stat.textContent=`✅ 连接成功！模型回复：「${reply.trim()}」`;stat.style.color='var(--success)';
+    toast('✅ API 连接测试通过')
+  }catch(e){stat.textContent=`❌ 连接失败：${e.message}`;stat.style.color='var(--danger)'}
+  finally{btn.disabled=false}
 }
 function saveAIConfigToStorage(){
   localStorage.setItem('st_ai_config',JSON.stringify(aiConfig));
