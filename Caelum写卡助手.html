@@ -55,10 +55,13 @@
   .btn-xs{padding:3px 7px;font-size:.68rem;border-radius:5px}
 
   /* Workspace */
-  .workspace{display:grid;grid-template-columns:1fr 360px;flex:1;min-height:0;overflow:hidden}
+  .workspace{display:flex;flex:1;min-height:0;overflow:hidden}
+  .workspace-vdivider{width:5px;flex-shrink:0;background:var(--border);cursor:col-resize;position:relative;transition:background .15s;z-index:10}
+  .workspace-vdivider:hover,.workspace-vdivider.dragging{background:var(--accent)}
+  .workspace-vdivider::after{content:'';position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:3px;height:30px;border-radius:2px;background:var(--text-muted);opacity:.4}
 
   /* Editor Panel */
-  .editor-panel{display:flex;flex-direction:column;min-height:0;overflow:hidden;background:var(--bg);transition:background .25s}
+  .editor-panel{flex:1;min-width:280px;display:flex;flex-direction:column;min-height:0;overflow:hidden;background:var(--bg);transition:background .25s}
   .editor-toolbar{background:var(--surface);border-bottom:1px solid var(--border);padding:6px 14px;display:flex;align-items:center;gap:8px;flex-shrink:0;font-size:.73rem;color:var(--text-muted)}
   .editor-body{flex:1;display:flex;flex-direction:column;min-height:0;overflow:hidden}
 
@@ -88,7 +91,7 @@
   .drag-handle:active{cursor:grabbing}
 
   /* Right Panel */
-  .right-panel{background:var(--surface);border-left:1px solid var(--border);display:flex;flex-direction:column;min-height:0;overflow:hidden;transition:background .25s,border-color .25s}
+  .right-panel{width:360px;min-width:180px;flex-shrink:0;background:var(--surface);border-left:1px solid var(--border);display:flex;flex-direction:column;min-height:0;overflow:hidden;transition:background .25s,border-color .25s}
   .right-tabs{display:flex;border-bottom:1px solid var(--border);flex-shrink:0}
   .right-tab{flex:1;padding:8px 6px;font-size:.71rem;font-weight:600;text-align:center;cursor:pointer;color:var(--text-muted);border:none;background:transparent;border-bottom:2px solid transparent;transition:color .15s,border-color .15s;white-space:nowrap}
   .right-tab.active{color:var(--accent2);border-bottom-color:var(--accent2)}
@@ -192,6 +195,84 @@
   .cc-bind-item input[type="checkbox"]{width:13px;height:13px;accent-color:var(--accent2);cursor:pointer;flex-shrink:0}
   .cc-bind-item span{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .cc-empty-hint{font-size:.7rem;color:var(--text-muted);padding:6px 8px;text-align:center}
+
+  /* ══════════════════════════════════════════
+     编辑台 (Edit Desk)
+  ══════════════════════════════════════════ */
+  .editdesk-wrapper{display:flex;flex:1;min-height:0;overflow:hidden}
+  .editdesk-modebar{width:44px;flex-shrink:0;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 0;overflow-y:auto}
+  .editdesk-modebtn{width:34px;height:34px;border-radius:7px;border:none;cursor:pointer;font-size:1rem;background:transparent;color:var(--text-muted);transition:all .15s;display:flex;align-items:center;justify-content:center;position:relative}
+  .editdesk-modebtn:hover{background:var(--surface2);color:var(--text)}
+  .editdesk-modebtn.active{background:var(--accent);color:#fff}
+  .editdesk-modebtn .mode-tooltip{display:none;position:absolute;left:42px;background:var(--surface2);border:1px solid var(--border);border-radius:5px;padding:3px 8px;font-size:.65rem;white-space:nowrap;z-index:100;pointer-events:none}
+  .editdesk-modebtn:hover .mode-tooltip{display:block}
+  .editdesk-body{flex:1;display:flex;flex-direction:column;min-width:0;min-height:0;overflow:hidden}
+
+  /* Vertical divider (reusable) */
+  .ed-vdivider{width:5px;flex-shrink:0;background:var(--border);cursor:col-resize;position:relative;transition:background .15s;z-index:10}
+  .ed-vdivider:hover,.ed-vdivider.dragging{background:var(--accent)}
+  .ed-vdivider::after{content:'';position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:3px;height:28px;border-radius:2px;background:var(--text-muted);opacity:.4}
+
+  /* Upper Panel — source files (tab-style) */
+  .editdesk-upper{overflow:hidden;display:flex;min-height:0;background:var(--bg)}
+  .editdesk-source-panel{flex:1;display:flex;flex-direction:column;min-height:0;min-width:140px;overflow:hidden;background:color-mix(in srgb,var(--surface) 50%,var(--bg))}
+
+  /* Source tab bar */
+  .ed-tab-bar-wrapper{display:flex;align-items:stretch;flex-shrink:0;background:var(--surface);border-bottom:1px solid var(--border);min-height:32px}
+  .ed-tab-scroll-btn{display:flex;align-items:center;justify-content:center;width:20px;flex-shrink:0;cursor:pointer;color:var(--text-muted);font-size:.55rem;background:transparent;border:none;transition:all .12s;user-select:none}
+  .ed-tab-scroll-btn:hover{background:var(--surface2);color:var(--text)}
+  .ed-tab-scroll-btn:active{color:var(--accent)}
+  .ed-tab-bar{display:flex;align-items:stretch;gap:0;flex:1;overflow-x:auto;overflow-y:hidden;scroll-behavior:smooth}
+  .ed-tab-bar::-webkit-scrollbar{height:0;display:none}
+  .ed-tab{display:flex;align-items:center;gap:4px;padding:5px 10px;font-size:.7rem;font-weight:600;white-space:nowrap;cursor:pointer;user-select:none;border-right:1px solid var(--border);color:var(--text-muted);background:color-mix(in srgb,var(--surface2) 30%,var(--surface));transition:all .12s;flex-shrink:0;max-width:160px}
+  .ed-tab:hover{background:var(--surface2);color:var(--text)}
+  .ed-tab.active{background:var(--bg);color:var(--accent);border-bottom:2px solid var(--accent);margin-bottom:-1px}
+  .ed-tab .ed-tab-icon{font-size:.7rem;flex-shrink:0}
+  .ed-tab .ed-tab-name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;font-size:.69rem}
+  .ed-tab .ed-tab-count{font-size:.58rem;color:var(--text-muted);flex-shrink:0}
+  .ed-tab .ed-tab-close{font-size:.55rem;color:var(--text-muted);cursor:pointer;padding:1px 3px;flex-shrink:0;opacity:0;transition:opacity .12s;border-radius:3px}
+  .ed-tab:hover .ed-tab-close{opacity:1}
+  .ed-tab .ed-tab-close:hover{color:var(--danger);background:color-mix(in srgb,var(--danger) 15%,transparent)}
+  .ed-tab-add{display:flex;align-items:center;justify-content:center;padding:5px 10px;flex-shrink:0;cursor:pointer;font-size:.8rem;font-weight:700;color:var(--text-muted);background:transparent;border:none;border-right:1px solid var(--border);transition:all .12s}
+  .ed-tab-add:hover{background:var(--surface2);color:var(--accent)}
+
+  /* Source entries (below tab bar) */
+  .editdesk-source-entries{flex:1;overflow-y:auto;padding:4px}
+
+  /* Source entry (inside active tab) */
+  .ed-sf-entry{display:flex;align-items:center;gap:4px;padding:3px 8px;border-radius:4px;cursor:pointer;font-size:.69rem;transition:background .1s;user-select:none}
+  .ed-sf-entry:hover{background:var(--surface2)}
+  .ed-sf-entry.active{background:color-mix(in srgb,var(--accent) 15%,var(--surface2));color:var(--accent)}
+  .ed-sf-entry .ed-sf-eidx{font-size:.58rem;color:var(--text-muted);width:16px;flex-shrink:0;text-align:right}
+
+  /* Source preview (upper right) */
+  .editdesk-source-preview{width:30%;min-width:160px;flex-shrink:0;overflow-y:auto;padding:8px 12px;display:flex;flex-direction:column;gap:6px;background:color-mix(in srgb,var(--surface) 30%,var(--bg));border-left:1px solid var(--border)}
+
+  /* Draggable Divider (horizontal, between upper/lower) */
+  .editdesk-divider{height:5px;flex-shrink:0;background:var(--border);cursor:row-resize;position:relative;transition:background .15s;z-index:10}
+  .editdesk-divider:hover,.editdesk-divider.dragging{background:var(--accent)}
+  .editdesk-divider::after{content:'';position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:30px;height:3px;border-radius:2px;background:var(--text-muted);opacity:.4}
+
+  /* Lower Panel — working preset */
+  .editdesk-lower{flex:1;display:flex;min-height:0;overflow:hidden;background:var(--bg)}
+  .editdesk-working-list{flex:1;display:flex;flex-direction:column;min-height:0;min-width:120px;overflow:hidden;background:color-mix(in srgb,var(--surface) 60%,var(--bg))}
+  .editdesk-working-list-header{padding:6px 10px;border-bottom:1px solid var(--border);flex-shrink:0;display:flex;align-items:center;justify-content:space-between;font-size:.68rem;font-weight:700;color:var(--accent2);text-transform:uppercase;letter-spacing:.05em}
+  .editdesk-working-list-body{flex:1;overflow-y:auto;padding:3px}
+  .editdesk-working-editor{width:55%;min-width:180px;flex-shrink:0;overflow-y:auto;padding:10px 14px;display:flex;flex-direction:column;gap:9px;background:var(--bg);border-left:1px solid var(--border)}
+  .editdesk-working-toolbar{background:var(--surface);border-top:1px solid var(--border);padding:5px 10px;display:flex;align-items:center;gap:5px;flex-shrink:0;flex-wrap:wrap}
+  .ed-working-item{display:flex;align-items:center;gap:5px;padding:5px 8px;border-radius:5px;cursor:pointer;font-size:.73rem;border:1px solid transparent;transition:all .12s;user-select:none}
+  .ed-working-item:hover{background:var(--surface2)}
+  .ed-working-item.active{background:var(--surface2);border-color:var(--accent)}
+  .ed-working-item.drag-over{border-color:var(--accent2);background:color-mix(in srgb,var(--accent2) 10%,var(--surface2))}
+  .ed-working-item .ed-widx{font-size:.63rem;color:var(--text-muted);width:16px;flex-shrink:0;text-align:right}
+  .ed-working-item .ed-wname{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .ed-working-item .ed-wdel{font-size:.6rem;color:var(--text-muted);cursor:pointer;padding:0 2px;flex-shrink:0;opacity:0;transition:opacity .12s}
+  .ed-working-item:hover .ed-wdel{opacity:1}
+  .ed-working-item .ed-wdel:hover{color:var(--danger)}
+
+  /* Empty states for edit desk */
+  .ed-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;height:100%;color:var(--text-muted);font-size:.75rem;padding:20px;text-align:center}
+  .ed-empty .ed-empty-icon{font-size:2rem;opacity:.5}
 </style>
 </head>
 <body>
@@ -227,7 +308,7 @@
 <div class="workspace">
 
   <!-- ═══════ 编辑区 ═══════ -->
-  <div class="editor-panel">
+  <div class="editor-panel" id="editorPanel">
     <div class="editor-toolbar" id="editorToolbar">
       <span>💡 选择左侧条目进行编辑，可使用底部标签切换编辑器</span>
     </div>
@@ -237,8 +318,10 @@
       <div class="editor-pane" id="paneRegex"></div>
       <div class="editor-pane" id="paneGlobal"></div>
       <div class="editor-pane" id="paneCharCard"></div>
+      <div class="editor-pane" id="paneEditDesk"></div>
     </div>
     <div class="bottom-tabs">
+      <button class="bottom-tab" id="btabEditDesk" onclick="switchEditorMode('editdesk')">🗂 编辑台</button>
       <button class="bottom-tab active" id="btabPreset" onclick="switchEditorMode('preset')">📝 预设</button>
       <button class="bottom-tab" id="btabWorldBook" onclick="switchEditorMode('worldbook')">📚 世界书</button>
       <button class="bottom-tab" id="btabRegex" onclick="switchEditorMode('regex')">🔧 正则</button>
@@ -247,8 +330,10 @@
     </div>
   </div>
 
+  <div class="workspace-vdivider" id="wsVdivider" onmousedown="startWSVDividerDrag(event)"></div>
+
   <!-- ═══════ 右侧面板 ═══════ -->
-  <div class="right-panel">
+  <div class="right-panel" id="rightPanel">
     <div class="right-tabs">
       <button class="right-tab active" id="rtabPreview" onclick="switchRightTab('preview')">📄 JSON预览</button>
       <button class="right-tab" id="rtabAI" onclick="switchRightTab('ai')">🤖 AI助手</button>
@@ -358,6 +443,14 @@ let aiMessages=[];
 let aiLoading=false;
 let aiCurrentPersona='caelum';
 
+// 编辑台状态
+let editDesk={
+  mode:'preset', sourceFiles:[], selectedSourceFileId:null,
+  selectedSourceEntryIndex:-1, workingEntries:[], selectedWorkingIndex:-1,
+  splitPercent:55, upperVSplit:38, lowerVSplit:40, clipboard:null
+};
+let wsRightWidth=360; // workspace right panel width (px)
+
 /* ═══════════════════════════════════════════
    Theme
 ═══════════════════════════════════════════ */
@@ -387,12 +480,13 @@ function switchRightTab(t){
 function switchEditorMode(mode){
   editorMode=mode;
   selectedWBIndex=-1; selectedRegexIndex=-1;
-  const map={preset:['btabPreset','panePreset'],worldbook:['btabWorldBook','paneWorldBook'],regex:['btabRegex','paneRegex'],global:['btabGlobal','paneGlobal'],charcard:['btabCharCard','paneCharCard']};
+  const map={editdesk:['btabEditDesk','paneEditDesk'],preset:['btabPreset','panePreset'],worldbook:['btabWorldBook','paneWorldBook'],regex:['btabRegex','paneRegex'],global:['btabGlobal','paneGlobal'],charcard:['btabCharCard','paneCharCard']};
   Object.entries(map).forEach(([m,[btab,pane]])=>{
     document.getElementById(btab).classList.toggle('active',mode===m);
     document.getElementById(pane).classList.toggle('active',mode===m);
   });
   const tooltips={
+    editdesk:'🗂 编辑台 — 多文件整合编辑，拖拽复制条目到工作区',
     preset:'📝 预设编辑器 — 左侧选择提示词，右侧编辑内容',
     worldbook:'📚 世界书编辑器 — 可拖拽排序条目',
     regex:'🔧 正则编辑器 — 可拖拽排序条目，内置测试工具',
@@ -405,6 +499,7 @@ function switchEditorMode(mode){
   else if(mode==='regex')renderRegexEditor();
   else if(mode==='global')renderGlobalEditor();
   else if(mode==='charcard')renderCharCardEditor();
+  else if(mode==='editdesk')renderEditDesk();
   updatePreview();
 }
 
@@ -469,9 +564,12 @@ function renderEditor(){
 
   h+=`</div></div>`;
   const oldScroll=document.getElementById('promptListBody')?.scrollTop||0;
+  const oldDetailScroll=document.getElementById('presetDetail')?.scrollTop||0;
   pane.innerHTML=h;
   const newList=document.getElementById('promptListBody');
   if(newList&&oldScroll>0)newList.scrollTop=oldScroll;
+  const newDetail=document.getElementById('presetDetail');
+  if(newDetail&&oldDetailScroll>0)newDetail.scrollTop=oldDetailScroll;
 
   // 拖拽
   setTimeout(()=>{
@@ -534,9 +632,12 @@ function renderWorldBookEditor(){
   else h+=`<div class="empty-state"><span class="icon">👆</span><span>从左侧选择一条条目</span></div>`;
   h+=`</div></div>`;
   const oldWbScroll=document.getElementById('wbListBody')?.scrollTop||0;
+  const oldWbDetailScroll=document.getElementById('wbDetail')?.scrollTop||0;
   pane.innerHTML=h;
   const newWbList=document.getElementById('wbListBody');
   if(newWbList&&oldWbScroll>0)newWbList.scrollTop=oldWbScroll;
+  const newWbDetail=document.getElementById('wbDetail');
+  if(newWbDetail&&oldWbDetailScroll>0)newWbDetail.scrollTop=oldWbDetailScroll;
   setTimeout(()=>bindDrag('#wbListBody','wbidx',(src,dst)=>{const m=state.worldbook_entries.splice(src,1)[0];state.worldbook_entries.splice(dst,0,m);selectedWBIndex=dst;renderWorldBookEditor();updatePreview()}),50);
   initScrollWatcher();
 }
@@ -570,9 +671,12 @@ function renderRegexEditor(){
   else h+=`<div class="empty-state"><span class="icon">👆</span><span>从左侧选择一条正则条目</span></div>`;
   h+=`</div></div>`;
   const oldRgScroll=document.getElementById('regexListBody')?.scrollTop||0;
+  const oldRgDetailScroll=document.getElementById('regexDetail')?.scrollTop||0;
   pane.innerHTML=h;
   const newRgList=document.getElementById('regexListBody');
   if(newRgList&&oldRgScroll>0)newRgList.scrollTop=oldRgScroll;
+  const newRgDetail=document.getElementById('regexDetail');
+  if(newRgDetail&&oldRgDetailScroll>0)newRgDetail.scrollTop=oldRgDetailScroll;
   setTimeout(()=>bindDrag('#regexListBody','regexidx',(src,dst)=>{const m=state.regex_entries.splice(src,1)[0];state.regex_entries.splice(dst,0,m);selectedRegexIndex=dst;renderRegexEditor();updatePreview()}),50);
   initScrollWatcher();
 }
@@ -616,9 +720,12 @@ function renderCharCardEditor(){
   else h+=`<div class="empty-state"><span class="icon">👆</span><span>从左侧选择一张角色卡</span></div>`;
   h+=`</div></div>`;
   const oldCcScroll=document.getElementById('ccListBody')?.scrollTop||0;
+  const oldCcDetailScroll=document.getElementById('ccDetail')?.scrollTop||0;
   pane.innerHTML=h;
   const newCcList=document.getElementById('ccListBody');
   if(newCcList&&oldCcScroll>0)newCcList.scrollTop=oldCcScroll;
+  const newCcDetail=document.getElementById('ccDetail');
+  if(newCcDetail&&oldCcDetailScroll>0)newCcDetail.scrollTop=oldCcDetailScroll;
   setTimeout(()=>bindDrag('#ccListBody','ccidx',(src,dst)=>{const m=state.charcards.splice(src,1)[0];state.charcards.splice(dst,0,m);selectedCharCardIndex=dst;renderCharCardEditor()}),50);
   initScrollWatcher();
 }
@@ -894,16 +1001,18 @@ function bindDrag(selector,dataAttr,callback){
 /* ═══════════════════════════════════════════
    New / Import / Export
 ═══════════════════════════════════════════ */
-function newPreset(){state={preset_name:'新预设',temperature:1,top_p:1,top_k:0,top_a:0,min_p:0,repetition_penalty:1,frequency_penalty:0,presence_penalty:0,max_context_unlocked:false,openai_max_context:200000,openai_max_tokens:4096,stream_openai:true,names_behavior:0,wrap_in_quotes:false,image_inlining:false,video_inlining:false,send_if_empty:'',impersonation_prompt:'',new_chat_prompt:'',new_group_chat_prompt:'[Start a new group chat. Group members: {{group}}]',new_example_chat_prompt:'[Example Chat]',continue_nudge_prompt:'',group_nudge_prompt:'',bias_preset_selected:'Default (none)',wi_format:'{0}',scenario_format:'{{scenario}}',personality_format:'{{personality}}',prompts:[],prompt_order:[{character_id:100001,order:[]}],worldbook_entries:[],regex_entries:[],charcards:[]};selectedIndex=-1;selectedWBIndex=-1;selectedRegexIndex=-1;selectedCharCardIndex=-1;editorMode='preset';switchEditorMode('preset');renderEditor();updatePreview();toast('✨ 已新建')}
+function newPreset(){state={preset_name:'新预设',temperature:1,top_p:1,top_k:0,top_a:0,min_p:0,repetition_penalty:1,frequency_penalty:0,presence_penalty:0,max_context_unlocked:false,openai_max_context:200000,openai_max_tokens:4096,stream_openai:true,names_behavior:0,wrap_in_quotes:false,image_inlining:false,video_inlining:false,send_if_empty:'',impersonation_prompt:'',new_chat_prompt:'',new_group_chat_prompt:'[Start a new group chat. Group members: {{group}}]',new_example_chat_prompt:'[Example Chat]',continue_nudge_prompt:'',group_nudge_prompt:'',bias_preset_selected:'Default (none)',wi_format:'{0}',scenario_format:'{{scenario}}',personality_format:'{{personality}}',prompts:[],prompt_order:[{character_id:100001,order:[]}],worldbook_entries:[],regex_entries:[],charcards:[]};selectedIndex=-1;selectedWBIndex=-1;selectedRegexIndex=-1;selectedCharCardIndex=-1;editDesk={mode:'preset',sourceFiles:[],selectedSourceFileId:null,selectedSourceEntryIndex:-1,workingEntries:[],selectedWorkingIndex:-1,splitPercent:55,upperVSplit:38,lowerVSplit:40,clipboard:null};editorMode='preset';switchEditorMode('preset');renderEditor();updatePreview();toast('✨ 已新建')}
 
 function importPreset(){window._importMode='preset';document.getElementById('fileInput').click()}
 function importWorldBook(){window._importMode='worldbook';document.getElementById('fileInput').click()}
 function importRegexFile(){window._importMode='regex';document.getElementById('fileInput').click()}
-function doImport(){if(editorMode==='worldbook')importWorldBook();else if(editorMode==='regex')importRegexFile();else if(editorMode==='global')importPreset();else if(editorMode==='charcard')importCharCard();else importPreset()}
+function doImport(){if(editorMode==='worldbook')importWorldBook();else if(editorMode==='regex')importRegexFile();else if(editorMode==='global')importPreset();else if(editorMode==='charcard')importCharCard();else if(editorMode==='editdesk')openSourceFile();else importPreset()}
 
 function handleFileImport(e){
   const file=e.target.files[0];if(!file)return;const r=new FileReader();
   r.onload=ev=>{try{const data=JSON.parse(ev.target.result),im=window._importMode||'preset';
+    // Edit Desk import
+    if(window._editDeskImport){window._editDeskImport=false;handleEditDeskImport(data);e.target.value='';return}
     // World book
     if(data.entries&&typeof data.entries==='object'&&!Array.isArray(data.entries)&&!data.preset_name&&!data.prompts&&im!=='regex'){const arr=[];Object.entries(data.entries).forEach(([k,en])=>{arr.push({uid:k,keys:Array.isArray(en.keys)?en.keys.join(', '):(en.keys||''),content:en.content||'',comment:en.comment||'',selective:en.selective??en.extensions?.selective??false,constant:en.constant??en.extensions?.constant??false,position:en.position??en.extensions?.position??0,depth:en.depth??en.extensions?.depth??4,order:en.order??en.extensions?.order??100,probability:en.probability??en.extensions?.probability??100,use_regex:en.use_regex??en.extensions?.use_regex??false,exclude_recursion:en.exclude_recursion??en.extensions?.exclude_recursion??false,enabled:en.enabled!==undefined?en.enabled:!(en.disabled===undefined?false:en.disabled)})});state.worldbook_entries=arr;selectedWBIndex=-1;if(window._ccImportToBind&&selectedCharCardIndex>=0&&selectedCharCardIndex<state.charcards.length){arr.forEach(function(e){if(!state.charcards[selectedCharCardIndex].bindWorldBooks.includes(e.uid))state.charcards[selectedCharCardIndex].bindWorldBooks.push(e.uid)});window._ccImportToBind=false;renderCharCardEditor();updatePreview();toast('📂 已导入世界书：'+arr.length+'条（已绑定到当前角色卡）');e.target.value='';return}if(editorMode!=='worldbook')switchEditorMode('worldbook');else renderWorldBookEditor();updatePreview();toast(`📂 已导入世界书：${arr.length}条`);e.target.value='';return}
     // Char Card (角色卡导入)
@@ -931,6 +1040,7 @@ function updatePreview(){
   else if(editorMode==='regex')o=state.regex_entries.map(e=>({id:e.id||e.uid,scriptName:e.scriptName,findRegex:e.findRegex,replaceString:e.replaceString,trimStrings:e.trimStrings||[],placement:e.placement,disabled:e.disabled,markdownOnly:e.markdownOnly,promptOnly:e.promptOnly,runOnEdit:e.runOnEdit,substituteRegex:e.substituteRegex??0,minDepth:e.minDepth,maxDepth:e.maxDepth}));
   else if(editorMode==='global')o=buildOutput();
   else if(editorMode==='charcard'&&selectedCharCardIndex>=0)o=buildCharCardOutput(state.charcards[selectedCharCardIndex],true);
+  else if(editorMode==='editdesk')o=buildEditDeskPreview();
   else o=buildOutput();
   document.getElementById('jsonPreview').textContent=JSON.stringify(o,null,2);
 }
@@ -938,7 +1048,7 @@ function updatePreview(){
 /* ═══════════════════════════════════════════
    Clear All
 ═══════════════════════════════════════════ */
-function clearAll(){if(!confirm('确定要清除所有数据吗？\n\n将删除所有提示词、全局参数、世界书条目、正则条目和角色卡。\n此操作不可撤销！'))return;state={preset_name:'新预设',temperature:1,top_p:1,top_k:0,top_a:0,min_p:0,repetition_penalty:1,frequency_penalty:0,presence_penalty:0,max_context_unlocked:false,openai_max_context:200000,openai_max_tokens:4096,stream_openai:true,names_behavior:0,wrap_in_quotes:false,image_inlining:false,video_inlining:false,send_if_empty:'',impersonation_prompt:'',new_chat_prompt:'',new_group_chat_prompt:'[Start a new group chat. Group members: {{group}}]',new_example_chat_prompt:'[Example Chat]',continue_nudge_prompt:'',group_nudge_prompt:'',bias_preset_selected:'Default (none)',wi_format:'{0}',scenario_format:'{{scenario}}',personality_format:'{{personality}}',prompts:[],prompt_order:[{character_id:100001,order:[]}],worldbook_entries:[],regex_entries:[],charcards:[]};selectedIndex=-1;selectedWBIndex=-1;selectedRegexIndex=-1;selectedCharCardIndex=-1;editorMode='preset';switchEditorMode('preset');renderEditor();updatePreview();toast('🗑 已清除所有数据')}
+function clearAll(){if(!confirm('确定要清除所有数据吗？\n\n将删除所有提示词、全局参数、世界书条目、正则条目和角色卡。\n此操作不可撤销！'))return;state={preset_name:'新预设',temperature:1,top_p:1,top_k:0,top_a:0,min_p:0,repetition_penalty:1,frequency_penalty:0,presence_penalty:0,max_context_unlocked:false,openai_max_context:200000,openai_max_tokens:4096,stream_openai:true,names_behavior:0,wrap_in_quotes:false,image_inlining:false,video_inlining:false,send_if_empty:'',impersonation_prompt:'',new_chat_prompt:'',new_group_chat_prompt:'[Start a new group chat. Group members: {{group}}]',new_example_chat_prompt:'[Example Chat]',continue_nudge_prompt:'',group_nudge_prompt:'',bias_preset_selected:'Default (none)',wi_format:'{0}',scenario_format:'{{scenario}}',personality_format:'{{personality}}',prompts:[],prompt_order:[{character_id:100001,order:[]}],worldbook_entries:[],regex_entries:[],charcards:[]};selectedIndex=-1;selectedWBIndex=-1;selectedRegexIndex=-1;selectedCharCardIndex=-1;editDesk={mode:'preset',sourceFiles:[],selectedSourceFileId:null,selectedSourceEntryIndex:-1,workingEntries:[],selectedWorkingIndex:-1,splitPercent:55,upperVSplit:38,lowerVSplit:40,clipboard:null};editorMode='preset';switchEditorMode('preset');renderEditor();updatePreview();toast('🗑 已清除所有数据')}
 
 /* ═══════════════════════════════════════════
    AI Persona Prompts (from chara-card-creator-skill)
@@ -1176,6 +1286,7 @@ function getCurrentContext(){
   else if(editorMode==='regex'&&selectedRegexIndex>=0){const e=state.regex_entries[selectedRegexIndex];ctx=`【正则条目】\n名称：${e.scriptName}\n匹配：${e.findRegex}\n替换：${e.replaceString}`}
   else if(editorMode==='global'){ctx=`【全局参数】\n预设名称：${state.preset_name}\nTemperature:${state.temperature}\nTop P:${state.top_p}\nTop K:${state.top_k}\nMax Context:${state.openai_max_context}\nMax Tokens:${state.openai_max_tokens}`}
   else if(editorMode==='charcard'&&selectedCharCardIndex>=0){const c=state.charcards[selectedCharCardIndex];ctx=`【角色卡】\n名称：${c.name}\n描述：${c.description}\n性格：${c.personality}\n场景：${c.scenario}\n开场白：${c.first_mes}\n对话示例：${c.mes_example}\n系统提示：${c.system_prompt}\n绑定世界书：${c.bindWorldBooks.length}条\n绑定正则：${c.bindRegex.length}条`}
+  else if(editorMode==='editdesk'){ctx=`【编辑台】\n模式：${editDesk.mode}\n源文件：${editDesk.sourceFiles.length}个\n工作区条目：${editDesk.workingEntries.length}条`}
   else{ctx='当前未选中任何编辑内容。'}
   return ctx;
 }
@@ -1246,8 +1357,511 @@ loadAIConfig();
 updatePersonaLabel();
 
 /* ═══════════════════════════════════════════
+   Edit Desk (编辑台)
+═══════════════════════════════════════════ */
+
+function makeEditDeskEntry(){
+  if(editDesk.mode==='worldbook')return makeWorldBookEntry(Date.now());
+  if(editDesk.mode==='regex')return makeRegexEntry(Date.now());
+  if(editDesk.mode==='charcard')return makeCharCard(Date.now());
+  return makePrompt(Date.now()); // preset
+}
+
+function switchEditDeskMode(mode){
+  editDesk.mode=mode;
+  editDesk.selectedSourceFileId=null;
+  editDesk.selectedSourceEntryIndex=-1;
+  editDesk.selectedWorkingIndex=-1;
+  editDesk.clipboard=null;
+  renderEditDesk();
+  updatePreview();
+}
+
+function renderEditDesk(){
+  if(editorMode!=='editdesk')return;
+  const pane=document.getElementById('paneEditDesk');
+  const modeLabels={preset:'📝 预设',worldbook:'📚 世界书',regex:'🔧 正则',charcard:'🎭 角色卡'};
+  const modeIcons={preset:'📝',worldbook:'📚',regex:'🔧',charcard:'🎭'};
+
+  const edUSplit=editDesk.upperVSplit??38; // source panel width %
+  const edLSplit=editDesk.lowerVSplit??40; // working list width %
+
+  let h=`<div class="editdesk-wrapper">
+    <div class="editdesk-modebar">`;
+  Object.entries(modeLabels).forEach(([k,v])=>{
+    h+=`<button class="editdesk-modebtn${editDesk.mode===k?' active':''}" onclick="switchEditDeskMode('${k}')" title="${v}">${modeIcons[k]}<span class="mode-tooltip">${v}</span></button>`;
+  });
+  h+=`</div><div class="editdesk-body">`;
+
+  // ── Upper panel: source files (tab-style) ──
+  h+=`<div class="editdesk-upper" id="edUpper" style="flex:0 0 ${editDesk.splitPercent}%">
+    <div class="editdesk-source-panel" id="edSourcePanel" style="flex:0 0 ${edUSplit}%">
+      <div class="ed-tab-bar-wrapper">
+        <button class="ed-tab-scroll-btn" onclick="scrollTabBar(-200)" title="向左滚动">◀</button>
+        <div class="ed-tab-bar" id="edTabBar">`;
+  editDesk.sourceFiles.forEach(sf=>{
+    const isSel=sf.id===editDesk.selectedSourceFileId;
+    h+=`<div class="ed-tab${isSel?' active':''}" onclick="selectSourceTab('${sf.id}')" title="${escHtml(sf.name)}">
+      <span class="ed-tab-icon">📄</span>
+      <span class="ed-tab-name">${escHtml(sf.name)}</span>
+      <span class="ed-tab-count">(${sf.entries.length})</span>
+      <span class="ed-tab-close" onclick="event.stopPropagation();closeSourceFile('${sf.id}')" title="关闭">✕</span>
+    </div>`;
+  });
+  h+=`<button class="ed-tab-add" onclick="openSourceFile()" title="打开文件">+</button>
+        </div>
+        <button class="ed-tab-scroll-btn" onclick="scrollTabBar(200)" title="向右滚动">▶</button>
+      </div>
+      <div class="editdesk-source-entries" id="edSourceEntries">`;
+  if(!editDesk.sourceFiles.length){
+    h+=`<div class="ed-empty"><div class="ed-empty-icon">📂</div><span>点击 + 打开 JSON 文件</span></div>`;
+  }else if(!editDesk.selectedSourceFileId){
+    h+=`<div class="ed-empty"><div class="ed-empty-icon">👆</div><span>点击上方标签页<br>查看条目</span></div>`;
+  }else{
+    const sf=editDesk.sourceFiles.find(f=>f.id===editDesk.selectedSourceFileId);
+    if(sf){
+      sf.entries.forEach((e,i)=>{
+        const nm=e.name||e.scriptName||e.keys||(e.uid||'');
+        const act=i===editDesk.selectedSourceEntryIndex?' active':'';
+        h+=`<div class="ed-sf-entry${act}" onclick="selectSourceEntry('${sf.id}',${i})" draggable="true" data-sfid="${sf.id}" data-seidx="${i}">
+          <span class="ed-sf-eidx">#${i+1}</span>
+          <span style="flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escHtml(String(nm).substring(0,40))}</span>
+        </div>`;
+      });
+    }
+  }
+  h+=`</div></div>
+    <div class="ed-vdivider" id="edUpperVDivider" onmousedown="startEDVDividerDrag(event,'upper')"></div>
+    <div class="editdesk-source-preview" id="edSourcePreview" style="flex:1">`;
+  if(editDesk.selectedSourceFileId&&editDesk.selectedSourceEntryIndex>=0){
+    h+=renderEditDeskSourcePreview();
+  }else{
+    h+=`<div class="ed-empty"><div class="ed-empty-icon">👆</div><span>点击标签页中条目<br>查看内容预览</span></div>`;
+  }
+  h+=`</div></div>`;
+
+  // ── Horizontal divider ──
+  h+=`<div class="editdesk-divider" id="edDivider" onmousedown="startDividerDrag(event)"></div>`;
+
+  // ── Lower panel: working preset ──
+  h+=`<div class="editdesk-lower" id="edLower" style="flex:1">
+    <div class="editdesk-working-list" id="edWorkingListPanel" style="flex:0 0 ${edLSplit}%">
+      <div class="editdesk-working-list-header">
+        <span>📝 工作区 (${editDesk.workingEntries.length})</span>
+        <button class="btn btn-primary btn-xs" onclick="addWorkingEntry()" title="新建空条目">+</button>
+      </div>
+      <div class="editdesk-working-list-body" id="edWorkingList">`;
+  if(!editDesk.workingEntries.length){
+    h+=`<div class="ed-empty"><div class="ed-empty-icon">📋</div><span>选中源条目后<br>点击 📥 复制源条目</span></div>`;
+  }else{
+    editDesk.workingEntries.forEach((e,i)=>{
+      const nm=e.name||e.scriptName||e.keys||(e.uid||e.identifier||'');
+      const act=i===editDesk.selectedWorkingIndex?' active':'';
+      h+=`<div class="ed-working-item${act}" onclick="selectWorkingEntry(${i})" draggable="true" data-widx="${i}">
+        <span class="drag-handle" style="cursor:grab;font-size:.6rem;color:var(--text-muted);flex-shrink:0" onclick="event.stopPropagation()" title="拖拽排序">⠿</span>
+        <span class="ed-widx">#${i+1}</span>
+        <span class="ed-wname">${escHtml(String(nm).substring(0,28))}</span>
+        <span class="ed-wdel" onclick="event.stopPropagation();deleteWorkingEntry(${i})" title="删除">✕</span>
+      </div>`;
+    });
+  }
+  h+=`</div></div>
+    <div class="ed-vdivider" id="edLowerVDivider" onmousedown="startEDVDividerDrag(event,'lower')"></div>
+    <div class="editdesk-working-editor" id="edWorkingEditor" style="flex:1">`;
+  if(editDesk.selectedWorkingIndex>=0&&editDesk.selectedWorkingIndex<editDesk.workingEntries.length){
+    h+=renderEditDeskWorkingDetail(editDesk.workingEntries[editDesk.selectedWorkingIndex],editDesk.selectedWorkingIndex);
+  }else{
+    h+=`<div class="ed-empty"><div class="ed-empty-icon">👈</div><span>从左侧列表选择条目编辑</span></div>`;
+  }
+  h+=`</div></div>`;
+
+  // ── Bottom toolbar ──
+  h+=`<div class="editdesk-working-toolbar">
+    <button class="btn btn-warning btn-xs" onclick="deleteWorkingEntry(editDesk.selectedWorkingIndex)" ${editDesk.selectedWorkingIndex<0?'disabled':''}>🗑 删除</button>
+    <button class="btn btn-secondary btn-xs" onclick="moveWorkingEntry(editDesk.selectedWorkingIndex,-1)" ${editDesk.selectedWorkingIndex<=0?'disabled':''}>⬆ 上移</button>
+    <button class="btn btn-secondary btn-xs" onclick="moveWorkingEntry(editDesk.selectedWorkingIndex,1)" ${editDesk.selectedWorkingIndex<0||editDesk.selectedWorkingIndex>=editDesk.workingEntries.length-1?'disabled':''}>⬇ 下移</button>
+    <span style="flex:1"></span>
+    <button class="btn btn-secondary btn-xs" onclick="copyFromSourceToWorking()" ${!(editDesk.selectedSourceFileId&&editDesk.selectedSourceEntryIndex>=0)?'disabled':''}>📥 复制源条目</button>
+    <button class="btn btn-secondary btn-xs" onclick="copyWorkingToClipboard()" ${editDesk.selectedWorkingIndex<0?'disabled':''}>📋 复制</button>
+    <button class="btn btn-secondary btn-xs" onclick="pasteClipboardToWorking()" ${!editDesk.clipboard?'disabled':''}>📄 粘贴</button>
+    <button class="btn btn-success btn-xs" onclick="exportWorkingPreset()">💾 导出工作区</button>
+  </div>`;
+
+  h+=`</div></div>`;
+  pane.innerHTML=h;
+
+  setTimeout(()=>{
+    // Auto-scroll active tab into view
+    const bar2=document.getElementById('edTabBar');
+    const activeTab=bar2?.querySelector('.ed-tab.active');
+    if(activeTab)activeTab.scrollIntoView({behavior:'smooth',block:'nearest',inline:'nearest'});
+    // Bind drag for source entries → copy to working
+    document.querySelectorAll('.ed-sf-entry').forEach(el=>{
+      el.addEventListener('dragstart',e=>{e.dataTransfer.setData('text/plain',JSON.stringify({sfid:el.dataset.sfid,seidx:parseInt(el.dataset.seidx),src:'source'}));e.dataTransfer.effectAllowed='copy'});
+    });
+    // Working items: drag reorder + drop target
+    document.querySelectorAll('#edWorkingList .ed-working-item').forEach(el=>{
+      el.addEventListener('dragstart',e=>{e.dataTransfer.setData('text/plain',JSON.stringify({widx:parseInt(el.dataset.widx),src:'working'}));e.dataTransfer.effectAllowed='move';editDesk._dragSrcWidx=parseInt(el.dataset.widx)});
+      el.addEventListener('dragover',e=>{e.preventDefault();el.classList.add('drag-over')});
+      el.addEventListener('dragleave',e=>{el.classList.remove('drag-over')});
+      el.addEventListener('drop',e=>{e.preventDefault();el.classList.remove('drag-over');try{const d=JSON.parse(e.dataTransfer.getData('text/plain'));
+        if(d.src==='source'&&d.sfid){
+          // Copy from source
+          const sf=editDesk.sourceFiles.find(f=>f.id===d.sfid);
+          if(sf&&d.seidx>=0&&d.seidx<sf.entries.length){
+            const ee=deepCloneEntry(sf.entries[d.seidx]);
+            const di=parseInt(el.dataset.widx);
+            editDesk.workingEntries.splice(di+1,0,ee);
+            editDesk.selectedWorkingIndex=di+1;
+            renderEditDesk();updatePreview();toast('✅ 已复制条目到工作区');
+          }
+        }else if(d.src==='working'&&d.widx!==undefined){
+          // Reorder within working list
+          const srcIdx=d.widx,dstIdx=parseInt(el.dataset.widx);
+          if(srcIdx!==dstIdx&&srcIdx>=0&&dstIdx>=0&&srcIdx<editDesk.workingEntries.length&&dstIdx<editDesk.workingEntries.length){
+            const moved=editDesk.workingEntries.splice(srcIdx,1)[0];
+            editDesk.workingEntries.splice(dstIdx,0,moved);
+            editDesk.selectedWorkingIndex=dstIdx;
+            renderEditDesk();updatePreview();
+          }
+        }
+      }catch(ex){}});
+      el.addEventListener('dragend',e=>{editDesk._dragSrcWidx=-1});
+    });
+  },50);
+  initScrollWatcher();
+}
+
+function deepCloneEntry(e){
+  return JSON.parse(JSON.stringify(e));
+}
+
+function renderEditDeskSourcePreview(){
+  const sf=editDesk.sourceFiles.find(f=>f.id===editDesk.selectedSourceFileId);
+  if(!sf)return'';
+  const e=sf.entries[editDesk.selectedSourceEntryIndex];
+  if(!e)return'';
+  let h=`<div style="font-size:.68rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;font-weight:700;margin-bottom:4px">📄 条目预览 · ${escHtml(sf.name)} #${editDesk.selectedSourceEntryIndex+1}</div>`;
+  if(editDesk.mode==='preset'){
+    h+=`<div class="field-group"><label>名称</label><div style="font-size:.8rem">${escHtml(e.name||'(未命名)')}</div></div>`;
+    h+=`<div class="field-group"><label>角色 / 属性</label><div style="font-size:.76rem;color:var(--text-muted)">role: ${escHtml(e.role||'system')} | 注入位置: ${e.injection_position??0} | 深度: ${e.injection_depth??4}</div></div>`;
+    h+=`<div class="field-group"><label>内容</label><pre style="font-size:.73rem;white-space:pre-wrap;max-height:200px;overflow-y:auto;background:var(--surface2);padding:10px;border-radius:6px;border:1px solid var(--border)">${escHtml((e.content||'').substring(0,2000))}</pre></div>`;
+  }else if(editDesk.mode==='worldbook'){
+    h+=`<div class="field-group"><label>触发词</label><div style="font-size:.8rem">${escHtml(e.keys||'(无触发词)')}</div></div>`;
+    h+=`<div class="field-group"><label>内容</label><pre style="font-size:.73rem;white-space:pre-wrap;max-height:200px;overflow-y:auto;background:var(--surface2);padding:10px;border-radius:6px;border:1px solid var(--border)">${escHtml((e.content||'').substring(0,2000))}</pre></div>`;
+  }else if(editDesk.mode==='regex'){
+    h+=`<div class="field-group"><label>名称 / ID</label><div style="font-size:.8rem">${escHtml(e.scriptName||e.id||'(未命名)')}</div></div>`;
+    h+=`<div class="field-group"><label>匹配模式</label><pre style="font-size:.73rem;white-space:pre-wrap;background:var(--surface2);padding:8px;border-radius:6px;border:1px solid var(--border)">${escHtml((e.findRegex||'').substring(0,500))}</pre></div>`;
+    h+=`<div class="field-group"><label>替换为</label><pre style="font-size:.73rem;white-space:pre-wrap;background:var(--surface2);padding:8px;border-radius:6px;border:1px solid var(--border)">${escHtml((e.replaceString||'').substring(0,500))}</pre></div>`;
+  }else if(editDesk.mode==='charcard'){
+    h+=`<div class="field-group"><label>角色名称</label><div style="font-size:.8rem">${escHtml(e.name||'(未命名)')}</div></div>`;
+    h+=`<div class="field-group"><label>描述</label><pre style="font-size:.73rem;white-space:pre-wrap;max-height:150px;overflow-y:auto;background:var(--surface2);padding:8px;border-radius:6px;border:1px solid var(--border)">${escHtml((e.description||'').substring(0,1000))}</pre></div>`;
+  }
+  return h;
+}
+
+function renderEditDeskWorkingDetail(e,idx){
+  if(editDesk.mode==='preset'){
+    const macros=['{{char}}','{{user}}','{{personality}}','{{description}}','{{scenario}}','{{mesExamples}}','{{history}}','{{group}}'];
+    return `<div class="field-group"><label>标识符 &amp; 名称</label>
+      <div class="field-row"><div><span class="sub-label">identifier</span><input type="text" value="${escHtml(e.identifier)}" oninput="updateWorkingField('identifier',this.value,${idx})"/></div>
+      <div><span class="sub-label">显示名称</span><input type="text" value="${escHtml(e.name)}" oninput="updateWorkingField('name',this.value,${idx});renderEditDesk()"/></div></div></div>
+    <div class="field-group"><label>角色</label>
+      <div class="field-row"><div><span class="sub-label">role</span><select onchange="updateWorkingField('role',this.value,${idx})"><option value="system" ${e.role==='system'?'selected':''}>system</option><option value="user" ${e.role==='user'?'selected':''}>user</option><option value="assistant" ${e.role==='assistant'?'selected':''}>assistant</option></select></div>
+      <div><span class="sub-label">注入深度</span><input type="number" value="${e.injection_depth??4}" min="0" max="100" oninput="updateWorkingField('injection_depth',parseInt(this.value)||0,${idx})"/></div></div></div>
+    <div class="field-group"><label>内容</label><textarea rows="6" oninput="updateWorkingField('content',this.value,${idx})">${escHtml(e.content)}</textarea>
+      <div class="macro-strip">${macros.map(m=>`<button class="btn btn-secondary btn-xs" onclick="insertWorkingMacro('${m}',${idx})">${m}</button>`).join('')}</div></div>`;
+  }else if(editDesk.mode==='worldbook'){
+    return `<div class="field-group"><label>触发词</label><input type="text" value="${escHtml(e.keys)}" placeholder="英文逗号分隔" oninput="updateWorkingField('keys',this.value,${idx})"/></div>
+    <div class="field-group"><label>内容</label><textarea rows="6" oninput="updateWorkingField('content',this.value,${idx})">${escHtml(e.content)}</textarea></div>
+    <div class="field-group"><label>注入设置</label><div class="field-row"><div><span class="sub-label">位置</span><select onchange="updateWorkingField('position',parseInt(this.value),${idx})"><option value="0" ${e.position===0?'selected':''}>0·before_char</option><option value="1" ${e.position===1?'selected':''}>1·after_char</option><option value="2" ${e.position===2?'selected':''}>2·before_author</option><option value="3" ${e.position===3?'selected':''}>3·after_author</option><option value="4" ${e.position===4?'selected':''}>4·at_depth</option></select></div><div><span class="sub-label">深度</span><input type="number" value="${e.depth??4}" min="0" max="100" oninput="updateWorkingField('depth',parseInt(this.value)||4,${idx})"/></div></div></div>
+    <div class="field-group"><label>注释</label><input type="text" value="${escHtml(e.comment)}" oninput="updateWorkingField('comment',this.value,${idx})"/></div>`;
+  }else if(editDesk.mode==='regex'){
+    return `<div class="field-group"><label>名称</label><input type="text" value="${escHtml(e.scriptName)}" oninput="updateWorkingField('scriptName',this.value,${idx})"/></div>
+    <div class="field-group"><label>匹配 (findRegex)</label><textarea rows="3" oninput="updateWorkingField('findRegex',this.value,${idx})">${escHtml(e.findRegex)}</textarea></div>
+    <div class="field-group"><label>替换 (replaceString)</label><textarea rows="3" oninput="updateWorkingField('replaceString',this.value,${idx})">${escHtml(e.replaceString)}</textarea></div>`;
+  }else if(editDesk.mode==='charcard'){
+    return `<div class="field-group"><label>角色名称</label><input type="text" value="${escHtml(e.name)}" oninput="updateWorkingField('name',this.value,${idx});renderEditDesk()"/></div>
+    <div class="field-group"><label>描述</label><textarea rows="3" oninput="updateWorkingField('description',this.value,${idx})">${escHtml(e.description)}</textarea></div>
+    <div class="field-group"><label>性格</label><textarea rows="3" oninput="updateWorkingField('personality',this.value,${idx})">${escHtml(e.personality)}</textarea></div>
+    <div class="field-group"><label>开场白</label><textarea rows="3" oninput="updateWorkingField('first_mes',this.value,${idx})">${escHtml(e.first_mes)}</textarea></div>`;
+  }
+  return'';
+}
+
+/* ── Source file operations ── */
+function openSourceFile(){
+  window._editDeskImport=true;
+  document.getElementById('fileInput').click();
+}
+
+function handleEditDeskImport(data){
+  const sf={id:'sf_'+Date.now(),name:'',type:editDesk.mode,entries:[],expanded:true};
+  if(editDesk.mode==='preset'){
+    if(Array.isArray(data.prompts)){sf.entries=data.prompts;sf.name='预设_'+Date.now()+'.json'}
+    else if(data.preset_name){sf.entries=Array.isArray(data.prompts)?data.prompts:[];sf.name=data.preset_name+'.json'}
+    else{sf.entries=[];sf.name='未知预设.json'}
+  }else if(editDesk.mode==='worldbook'){
+    if(data.entries&&typeof data.entries==='object'&&!Array.isArray(data.entries)){
+      sf.entries=[];Object.entries(data.entries).forEach(([k,en])=>{sf.entries.push({uid:k,keys:Array.isArray(en.keys)?en.keys.join(', '):(en.keys||''),content:en.content||'',comment:en.comment||'',selective:en.selective??false,constant:en.constant??false,position:en.position??0,depth:en.depth??4,order:en.order??100,probability:en.probability??100,use_regex:en.use_regex??false,exclude_recursion:en.exclude_recursion??false,enabled:en.enabled!==undefined?en.enabled:true})});
+      sf.name='世界书_'+Date.now()+'.json';
+    }else{sf.entries=[];sf.name='未知世界书.json'}
+  }else if(editDesk.mode==='regex'){
+    if(Array.isArray(data)&&data.length>0&&(data[0].findRegex||data[0].find_regex)){
+      sf.entries=data.map((en,i)=>({uid:en.id||'regex_'+Date.now()+'_'+i,id:en.id||'',scriptName:en.scriptName||en.script_name||'',findRegex:en.findRegex||en.find_regex||'',replaceString:en.replaceString||en.replace_string||'',trimStrings:en.trimStrings||en.trim_strings||[],placement:en.placement||[2],disabled:en.disabled!==undefined?en.disabled:false,markdownOnly:en.markdownOnly||en.markdown_only||false,promptOnly:en.promptOnly||en.prompt_only||false,runOnEdit:en.runOnEdit!==undefined?en.runOnEdit:true,substituteRegex:en.substituteRegex??en.sub_regex??0,minDepth:en.minDepth??en.min_depth??null,maxDepth:en.maxDepth??en.max_depth??null}));
+      sf.name='正则_'+Date.now()+'.json';
+    }else{sf.entries=[];sf.name='未知正则.json'}
+  }else if(editDesk.mode==='charcard'){
+    if(data.spec==='chara_card_v2'||data.data?.name){
+      const cd=data.data||data;sf.entries=[cd];sf.name=(cd.name||'角色')+'.json';
+    }else{sf.entries=[];sf.name='未知角色卡.json'}
+  }
+  if(sf.entries.length>0){
+    editDesk.sourceFiles.push(sf);
+    editDesk.selectedSourceFileId=sf.id;
+    editDesk.selectedSourceEntryIndex=-1;
+    renderEditDesk();
+    toast('📂 已加载：'+sf.name+' ('+sf.entries.length+'条)');
+  }else{
+    toast('⚠️ 未能识别该文件格式，请确认模式匹配');
+  }
+}
+
+function scrollTabBar(delta){
+  const bar=document.getElementById('edTabBar');
+  if(bar)bar.scrollBy({left:delta,behavior:'smooth'});
+}
+
+function selectSourceTab(id){
+  editDesk.selectedSourceFileId=id;
+  editDesk.selectedSourceEntryIndex=-1;
+  renderEditDesk();
+  // Auto-scroll active tab into view
+  setTimeout(()=>{
+    const bar=document.getElementById('edTabBar');
+    const activeTab=bar?.querySelector('.ed-tab.active');
+    if(activeTab)activeTab.scrollIntoView({behavior:'smooth',block:'nearest',inline:'nearest'});
+  },50);
+}
+
+function closeSourceFile(id){
+  editDesk.sourceFiles=editDesk.sourceFiles.filter(f=>f.id!==id);
+  if(editDesk.selectedSourceFileId===id){
+    editDesk.selectedSourceFileId=editDesk.sourceFiles.length>0?editDesk.sourceFiles[0].id:null;
+    editDesk.selectedSourceEntryIndex=-1;
+  }
+  renderEditDesk();
+}
+
+function toggleSourceFile(id){
+  // Legacy: now acts as selectSourceTab
+  selectSourceTab(id);
+}
+
+function selectSourceEntry(fileId,idx){
+  editDesk.selectedSourceFileId=fileId;
+  editDesk.selectedSourceEntryIndex=idx;
+  renderEditDesk();
+}
+
+/* ── Working entries operations ── */
+function selectWorkingEntry(idx){
+  editDesk.selectedWorkingIndex=idx;
+  renderEditDesk();
+}
+
+function updateWorkingField(key,value,idx){
+  if(idx<0||idx>=editDesk.workingEntries.length)return;
+  editDesk.workingEntries[idx][key]=value;
+  updatePreview();
+}
+
+function insertWorkingMacro(m,idx){
+  const pane=document.getElementById('edWorkingEditor');
+  if(!pane)return;
+  const ta=pane.querySelector('textarea');
+  if(!ta)return;
+  const s=ta.selectionStart,e=ta.selectionEnd,v=ta.value;
+  ta.value=v.substring(0,s)+m+v.substring(e);
+  ta.selectionStart=ta.selectionEnd=s+m.length;
+  updateWorkingField('content',ta.value,idx);
+  ta.focus();
+}
+
+function addWorkingEntry(){
+  const e=makeEditDeskEntry();
+  if(editDesk.selectedWorkingIndex>=0&&editDesk.selectedWorkingIndex<editDesk.workingEntries.length){
+    editDesk.workingEntries.splice(editDesk.selectedWorkingIndex+1,0,e);
+    editDesk.selectedWorkingIndex++;
+  }else{
+    editDesk.workingEntries.push(e);
+    editDesk.selectedWorkingIndex=editDesk.workingEntries.length-1;
+  }
+  renderEditDesk();updatePreview();toast('✅ 已新建条目');
+}
+
+function deleteWorkingEntry(idx){
+  if(idx<0||idx>=editDesk.workingEntries.length)return;
+  editDesk.workingEntries.splice(idx,1);
+  editDesk.selectedWorkingIndex=Math.min(editDesk.selectedWorkingIndex,editDesk.workingEntries.length-1);
+  if(!editDesk.workingEntries.length)editDesk.selectedWorkingIndex=-1;
+  renderEditDesk();updatePreview();toast('🗑 已删除');
+}
+
+function moveWorkingEntry(idx,dir){
+  if(idx<0||idx>=editDesk.workingEntries.length)return;
+  const newIdx=idx+dir;
+  if(newIdx<0||newIdx>=editDesk.workingEntries.length)return;
+  const tmp=editDesk.workingEntries[idx];
+  editDesk.workingEntries[idx]=editDesk.workingEntries[newIdx];
+  editDesk.workingEntries[newIdx]=tmp;
+  editDesk.selectedWorkingIndex=newIdx;
+  renderEditDesk();updatePreview();
+}
+
+function copyFromSourceToWorking(){
+  const sf=editDesk.sourceFiles.find(f=>f.id===editDesk.selectedSourceFileId);
+  if(!sf)return;
+  const e=sf.entries[editDesk.selectedSourceEntryIndex];
+  if(!e)return;
+  const clone=deepCloneEntry(e);
+  editDesk.workingEntries.push(clone);
+  editDesk.selectedWorkingIndex=editDesk.workingEntries.length-1;
+  renderEditDesk();updatePreview();
+  toast('📥 已复制条目到工作区');
+}
+
+function copyWorkingToClipboard(){
+  if(editDesk.selectedWorkingIndex<0||editDesk.selectedWorkingIndex>=editDesk.workingEntries.length)return;
+  editDesk.clipboard=deepCloneEntry(editDesk.workingEntries[editDesk.selectedWorkingIndex]);
+  renderEditDesk();
+  toast('📋 已复制到剪贴板');
+}
+
+function pasteClipboardToWorking(){
+  if(!editDesk.clipboard)return;
+  const clone=deepCloneEntry(editDesk.clipboard);
+  const insIdx=editDesk.selectedWorkingIndex>=0?editDesk.selectedWorkingIndex+1:editDesk.workingEntries.length;
+  editDesk.workingEntries.splice(insIdx,0,clone);
+  editDesk.selectedWorkingIndex=insIdx;
+  renderEditDesk();updatePreview();
+  toast('📄 已粘贴');
+}
+
+function buildEditDeskPreview(){
+  if(editDesk.mode==='preset')return{preset_name:'编辑台预览',prompts:editDesk.workingEntries,prompt_order:[{character_id:100001,order:editDesk.workingEntries.map(e=>({identifier:e.identifier,enabled:e.enabled!==false}))}]};
+  if(editDesk.mode==='worldbook'){const eo={};editDesk.workingEntries.forEach(e=>{eo[e.uid]={keys:e.keys?e.keys.split(',').map(k=>k.trim()).filter(Boolean):[],content:e.content,comment:e.comment,selective:e.selective,constant:e.constant,position:e.position,depth:e.depth,order:e.order,probability:e.probability,use_regex:e.use_regex,exclude_recursion:e.exclude_recursion,enabled:e.enabled}});return{entries:eo};}
+  if(editDesk.mode==='regex')return editDesk.workingEntries.map(e=>({id:e.id||e.uid,scriptName:e.scriptName,findRegex:e.findRegex,replaceString:e.replaceString,trimStrings:e.trimStrings||[],placement:e.placement,disabled:e.disabled,markdownOnly:e.markdownOnly,promptOnly:e.promptOnly,runOnEdit:e.runOnEdit,substituteRegex:e.substituteRegex??0,minDepth:e.minDepth,maxDepth:e.maxDepth}));
+  if(editDesk.mode==='charcard'&&editDesk.workingEntries.length>0)return{spec:'chara_card_v2',spec_version:'2.0',data:editDesk.workingEntries[0]};
+  return{workingEntries:editDesk.workingEntries};
+}
+
+function exportWorkingPreset(){
+  let o,fn;
+  if(editDesk.mode==='preset'){
+    o={preset_name:'编辑台导出',prompts:editDesk.workingEntries,prompt_order:[{character_id:100001,order:editDesk.workingEntries.map(e=>({identifier:e.identifier,enabled:e.enabled!==false}))}]};
+    fn='preset_export.json';
+  }else if(editDesk.mode==='worldbook'){
+    const eo={};editDesk.workingEntries.forEach(e=>{eo[e.uid]={keys:e.keys?e.keys.split(',').map(k=>k.trim()).filter(Boolean):[],content:e.content,comment:e.comment,selective:e.selective,constant:e.constant,position:e.position,depth:e.depth,order:e.order,probability:e.probability,use_regex:e.use_regex,exclude_recursion:e.exclude_recursion,enabled:e.enabled}});
+    o={entries:eo};fn='worldbook_export.json';
+  }else if(editDesk.mode==='regex'){
+    o=editDesk.workingEntries.map(e=>({id:e.id||e.uid,scriptName:e.scriptName,findRegex:e.findRegex,replaceString:e.replaceString,trimStrings:e.trimStrings||[],placement:e.placement,disabled:e.disabled,markdownOnly:e.markdownOnly,promptOnly:e.promptOnly,runOnEdit:e.runOnEdit,substituteRegex:e.substituteRegex??0,minDepth:e.minDepth,maxDepth:e.maxDepth}));
+    fn='regex_export.json';
+  }else if(editDesk.mode==='charcard'){
+    if(editDesk.workingEntries.length>0){o={spec:'chara_card_v2',spec_version:'2.0',data:editDesk.workingEntries[0]};fn=(editDesk.workingEntries[0].name||'character')+'.json'}
+    else{toast('⚠️ 工作区无角色卡数据');return}
+  }
+  downloadJSON(o,fn);
+  toast('💾 工作区已导出');
+}
+
+/* ── Divider drag ── */
+
+// Horizontal: edit desk upper/lower split
+function startDividerDrag(e){
+  e.preventDefault();
+  const divider=document.getElementById('edDivider');
+  const upper=document.getElementById('edUpper');
+  const body=document.querySelector('.editdesk-body');
+  if(!divider||!upper||!body)return;
+  divider.classList.add('dragging');
+  const bodyRect=body.getBoundingClientRect();
+  const bodyHeight=bodyRect.height;
+  const startY=e.clientY;
+  const startPct=editDesk.splitPercent;
+  function onMove(ev){
+    const dy=ev.clientY-startY;
+    const dpct=(dy/bodyHeight)*100;
+    let npct=startPct+dpct;
+    npct=Math.max(20,Math.min(80,npct));
+    editDesk.splitPercent=npct;
+    upper.style.flex='0 0 '+npct+'%';
+  }
+  function onUp(){divider.classList.remove('dragging');document.removeEventListener('mousemove',onMove);document.removeEventListener('mouseup',onUp)}
+  document.addEventListener('mousemove',onMove);
+  document.addEventListener('mouseup',onUp);
+}
+
+// Vertical: edit desk source panel / preview split (upper) or working list / editor split (lower)
+function startEDVDividerDrag(e,which){
+  e.preventDefault();
+  const panelId=which==='upper'?'edSourcePanel':'edWorkingListPanel';
+  const dividerId=which==='upper'?'edUpperVDivider':'edLowerVDivider';
+  const parentId=which==='upper'?'edUpper':'edLower';
+  const stateKey=which==='upper'?'upperVSplit':'lowerVSplit';
+  const panel=document.getElementById(panelId);
+  const divider=document.getElementById(dividerId);
+  const parent=document.getElementById(parentId);
+  if(!panel||!divider||!parent)return;
+  divider.classList.add('dragging');
+  const parentRect=parent.getBoundingClientRect();
+  const parentWidth=parentRect.width;
+  const startX=e.clientX;
+  const startPct=editDesk[stateKey]??(which==='upper'?38:40);
+  function onMove(ev){
+    const dx=ev.clientX-startX;
+    const dpct=(dx/parentWidth)*100;
+    let npct=startPct+dpct;
+    npct=Math.max(15,Math.min(70,npct));
+    editDesk[stateKey]=npct;
+    panel.style.flex='0 0 '+npct+'%';
+  }
+  function onUp(){divider.classList.remove('dragging');document.removeEventListener('mousemove',onMove);document.removeEventListener('mouseup',onUp)}
+  document.addEventListener('mousemove',onMove);
+  document.addEventListener('mouseup',onUp);
+}
+
+// Vertical: workspace editor/right-panel split
+function startWSVDividerDrag(e){
+  e.preventDefault();
+  const right=document.getElementById('rightPanel');
+  const editor=document.getElementById('editorPanel');
+  const divider=document.getElementById('wsVdivider');
+  const ws=document.querySelector('.workspace');
+  if(!right||!editor||!divider||!ws)return;
+  divider.classList.add('dragging');
+  const wsRect=ws.getBoundingClientRect();
+  const wsWidth=wsRect.width;
+  const startX=e.clientX;
+  const startW=wsRightWidth;
+  function onMove(ev){
+    const dx=startX-ev.clientX;
+    let nw=startW+dx;
+    nw=Math.max(180,Math.min(wsWidth*0.7,nw));
+    wsRightWidth=nw;
+    right.style.width=nw+'px';
+  }
+  function onUp(){divider.classList.remove('dragging');document.removeEventListener('mousemove',onMove);document.removeEventListener('mouseup',onUp);saveWSWidth()}
+  document.addEventListener('mousemove',onMove);
+  document.addEventListener('mouseup',onUp);
+}
+function saveWSWidth(){try{localStorage.setItem('st_ws_right_width',wsRightWidth)}catch(e){}}
+function loadWSWidth(){try{const v=localStorage.getItem('st_ws_right_width');if(v){wsRightWidth=parseInt(v);const r=document.getElementById('rightPanel');if(r)r.style.width=wsRightWidth+'px'}}catch(e){}}
+
+/* ═══════════════════════════════════════════
    Init
 ═══════════════════════════════════════════ */
+loadWSWidth();
 renderEditor();
 updatePreview();
 initScrollWatcher();
