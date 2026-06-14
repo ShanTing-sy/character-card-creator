@@ -126,7 +126,10 @@
   .sub-label{font-size:.71rem;color:var(--text-muted);margin-bottom:4px;display:block}
   input[type="text"],input[type="number"],input[type="password"],select,textarea{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:inherit;font-size:.84rem;padding:7px 10px;outline:none;transition:border-color .15s,background .25s,color .25s}
   input:focus,select:focus,textarea:focus{border-color:var(--accent)}
-  textarea{resize:vertical;min-height:110px;font-family:'Cascadia Code','Fira Code',monospace;font-size:.78rem;line-height:1.6}
+  textarea{resize:vertical;min-height:90px;font-family:'Cascadia Code','Fira Code',monospace;font-size:.78rem;line-height:1.6;background-image:linear-gradient(to top,color-mix(in srgb,var(--border) 6%,transparent) 0%,transparent 18px);background-repeat:no-repeat;background-position:bottom;transition:background .2s,border-color .15s}
+  textarea:focus{background-image:linear-gradient(to top,color-mix(in srgb,var(--accent) 10%,transparent) 0%,transparent 18px)}
+  textarea::-webkit-resizer{border-width:6px;border-style:solid;border-color:transparent var(--text-muted) var(--text-muted) transparent;opacity:.35;transition:opacity .2s}
+  textarea:hover::-webkit-resizer{opacity:.7}
   textarea.short{min-height:45px}
   select option{background:var(--surface2);color:var(--text)}
   .field-row{display:flex;gap:10px}.field-row>*{flex:1}
@@ -159,6 +162,8 @@
   .regex-test-result{margin-top:7px;padding:8px 11px;border-radius:5px;font-family:'Cascadia Code','Fira Code',monospace;font-size:.73rem;white-space:pre-wrap;word-break:break-all;min-height:18px;border:1px dashed var(--border);color:var(--text)}
   .regex-test-result.match{border-color:var(--success);background:color-mix(in srgb,var(--success) 8%,transparent)}
   .regex-test-result.nomatch{border-color:var(--danger);background:color-mix(in srgb,var(--danger) 8%,transparent);color:var(--danger)}
+  .regex-test-preview{margin-top:5px;padding:10px 14px;border-radius:7px;background:var(--bg);border:1px solid var(--border);min-height:24px;display:none;font-size:.8rem;line-height:1.6;overflow-x:auto}
+  .regex-test-preview hr{border-color:var(--border);margin:6px 0}
   .regex-error-msg{font-size:.7rem;color:var(--danger);margin-top:3px}
   #backToTop{position:fixed;bottom:26px;right:26px;width:36px;height:36px;border-radius:50%;background:var(--accent);color:#fff;border:none;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px var(--shadow);opacity:0;pointer-events:none;transform:translateY(10px);transition:opacity .25s,transform .25s;z-index:999}
   #backToTop.visible{opacity:1;pointer-events:auto;transform:translateY(0)}
@@ -178,6 +183,63 @@
   .modal-dialog{background:var(--surface);border:1px solid var(--border);border-radius:12px;width:440px;max-height:85vh;overflow-y:auto;box-shadow:0 8px 40px rgba(0,0,0,.5);padding:20px 24px;display:flex;flex-direction:column;gap:14px}
   .modal-dialog h3{font-size:.95rem;font-weight:700;color:var(--text);margin:0}
   .modal-dialog .modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:4px}
+
+  /* ══════════════════════════════════════════
+     教程 / 模板 — 左右分栏模态窗
+  ══════════════════════════════════════════ */
+  .guide-modal{width:960px;max-width:95vw;height:660px;max-height:90vh}
+  .guide-layout{display:flex;flex:1;min-height:0;overflow:hidden;gap:0}
+  .guide-sidebar{width:210px;flex-shrink:0;border-right:1px solid var(--border);overflow-y:auto;padding:6px 0}
+  .guide-toc-item{padding:7px 14px;font-size:.76rem;cursor:pointer;color:var(--text-muted);transition:all .12s;border-left:3px solid transparent;user-select:none}
+  .guide-toc-item:hover{background:var(--surface2);color:var(--text)}
+  .guide-toc-item.active{background:color-mix(in srgb,var(--accent) 10%,var(--surface2));color:var(--accent);border-left-color:var(--accent);font-weight:700}
+  .guide-toc-cat{margin-bottom:1px}
+  .guide-toc-cat-title{padding:5px 10px;font-size:.7rem;font-weight:700;color:var(--accent2);cursor:pointer;user-select:none;display:flex;align-items:center;gap:4px;transition:background .12s}
+  .guide-toc-cat-title:hover{background:color-mix(in srgb,var(--accent2) 6%,var(--surface2))}
+  .guide-toc-cat-title::before{content:'▶';font-size:.52rem;transition:transform .18s;display:inline-block;width:10px;flex-shrink:0}
+  .guide-toc-cat.open>.guide-toc-cat-title::before{transform:rotate(90deg)}
+  .guide-toc-cat-body{display:none}
+  .guide-toc-cat.open>.guide-toc-cat-body{display:block}
+  .guide-content{flex:1;overflow-y:auto;padding:16px 22px;font-size:.82rem;line-height:1.75;scroll-behavior:smooth}
+  .guide-content h2{font-size:1rem;margin:0 0 10px;color:var(--accent)}
+  .guide-content h3{font-size:.85rem;margin:14px 0 6px;color:var(--accent2)}
+  .guide-content p{margin:0 0 8px}
+  .guide-content code{background:var(--surface2);padding:2px 6px;border-radius:4px;font-size:.75rem}
+  .guide-content ul,.guide-content ol{margin:4px 0 12px;padding-left:20px}
+  .guide-content li{margin:3px 0}
+
+  /* 蕼的教程 — 叠甲声明框 */
+  .si-disclaimer{margin:0 0 16px;padding:10px 14px;border:1.5px dashed var(--border);border-radius:8px;font-size:.72rem;color:var(--text-muted);line-height:1.6;opacity:.8}
+  .si-disclaimer p{margin:2px 0;font-size:.72rem}
+
+  /* 蕼的教程 — 代码框 + 复制按钮 */
+  .code-box{position:relative;margin:10px 0;background:var(--surface2);border:1px solid var(--border);border-radius:8px;overflow:hidden}
+  .code-box .code-box-header{display:flex;align-items:center;justify-content:space-between;padding:5px 10px;background:color-mix(in srgb,var(--surface) 60%,var(--surface2));border-bottom:1px solid var(--border);font-size:.68rem;color:var(--text-muted)}
+  .code-box .copy-btn{font-size:.65rem;padding:2px 8px;cursor:pointer;background:var(--surface);border:1px solid var(--border);border-radius:4px;color:var(--text-muted);transition:all .15s}
+  .code-box .copy-btn:hover{color:var(--accent);border-color:var(--accent)}
+  .code-box .copy-btn.copied{color:var(--success);border-color:var(--success)}
+  .code-box pre{margin:0!important;border:none!important;border-radius:0!important;max-height:360px;overflow-y:auto}
+  .code-box pre code{font-size:.72rem;line-height:1.6}
+  .code-box.collapsed pre{max-height:0;overflow:hidden}
+  .code-box .expand-toggle{font-size:.65rem;cursor:pointer;color:var(--accent);user-select:none}
+
+  /* 蕼的教程 — 折叠模板块 */
+  .si-collapse{margin:10px 0;border:1px solid var(--border);border-radius:8px;overflow:hidden}
+  .si-collapse-header{padding:8px 14px;background:var(--surface2);cursor:pointer;user-select:none;display:flex;align-items:center;justify-content:space-between;font-size:.78rem;font-weight:600;color:var(--accent2)}
+  .si-collapse-header:hover{background:color-mix(in srgb,var(--accent2) 6%,var(--surface2))}
+  .si-collapse-header::after{content:'▶';font-size:.6rem;transition:transform .2s}
+  .si-collapse.open .si-collapse-header::after{transform:rotate(90deg)}
+  .si-collapse-body{display:none;padding:10px 14px;background:var(--bg);max-height:420px;overflow-y:auto}
+  .si-collapse.open .si-collapse-body{display:block}
+  .si-collapse .code-box{margin:4px 0}
+
+  /* ══════════════════════════════════════════
+     更多弹出菜单
+  ══════════════════════════════════════════ */
+  .popover{position:absolute;top:100%;right:0;margin-top:6px;background:var(--surface);border:1px solid var(--border);border-radius:10px;box-shadow:0 6px 28px var(--shadow);z-index:9999;min-width:220px;padding:14px 16px;display:none;font-size:.78rem}
+  .popover a{color:var(--accent2);text-decoration:none;word-break:break-all}
+  .popover a:hover{text-decoration:underline}
+  .popover .popover-divider{height:1px;background:var(--border);margin:10px 0}
 
   /* ══════════════════════════════════════════
      角色卡创作界面
@@ -299,9 +361,15 @@
       <button class="theme-btn"        id="btnLight" onclick="setTheme('light')" title="浅色">☀️</button>
     </div>
     <div class="theme-divider"></div>
-    <button class="btn btn-secondary" onclick="doImport()">📂 导入</button>
-    <button class="btn btn-secondary" onclick="newPreset()">✨ 新建</button>
-    <button class="btn btn-success"   onclick="exportPreset()">💾 导出</button>
+    <button class="btn btn-secondary" onclick="showGuide()">📖 指南</button>
+    <button class="btn btn-warning btn-sm" onclick="showSiTutorial()">📝 蕼的写卡教程</button>
+    <div style="position:relative;display:inline-flex">
+      <button class="btn btn-secondary" onclick="toggleMorePopover()" id="btnMore">⋯ 更多</button>
+      <div class="popover" id="morePopover">
+        <div style="font-weight:700;margin-bottom:4px;font-size:.78rem">📂 仓库地址</div>
+        <a href="https://github.com/ShanTing-sy/character-card-converter" target="_blank" rel="noopener">github.com/ShanTing-sy/character-card-converter</a>
+      </div>
+    </div>
   </div>
 </header>
 
@@ -414,6 +482,32 @@
   </div>
 </div>
 
+<!-- ═══════ 教程弹窗 ═══════ -->
+<div class="modal-overlay" id="tutorialModal" onclick="if(event.target===this)closeTutorial()">
+  <div class="modal-dialog guide-modal" onclick="event.stopPropagation()">
+    <div style="display:flex;align-items:center;justify-content:space-between">
+      <h3>📖 使用教程</h3><button class="btn btn-secondary btn-xs" onclick="closeTutorial()">✕</button>
+    </div>
+    <div class="guide-layout">
+      <div class="guide-sidebar" id="tutorialTOC"></div>
+      <div class="guide-content" id="tutorialContent"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ 模板弹窗 ═══════ -->
+<div class="modal-overlay" id="templateModal" onclick="if(event.target===this)closeTemplates()">
+  <div class="modal-dialog guide-modal" onclick="event.stopPropagation()">
+    <div style="display:flex;align-items:center;justify-content:space-between">
+      <h3>📝 小教程</h3><button class="btn btn-secondary btn-xs" onclick="closeTemplates()">✕</button>
+    </div>
+    <div class="guide-layout">
+      <div class="guide-sidebar" id="templateTOC"></div>
+      <div class="guide-content" id="templateContent"></div>
+    </div>
+  </div>
+</div>
+
 <script>
 /* ═══════════════════════════════════════════
    State
@@ -477,6 +571,19 @@ function switchRightTab(t){
 /* ═══════════════════════════════════════════
    Editor Mode Switch
 ═══════════════════════════════════════════ */
+/* 各模块工具栏操作按钮 */
+function getModeActions(mode){
+  var btns='';
+  switch(mode){
+    case 'editdesk':btns=`<button class="btn btn-secondary btn-xs" onclick="openSourceFile()">📂 打开源文件</button><button class="btn btn-secondary btn-xs" onclick="newSourceFile()">✨ 新建空文件</button><button class="btn btn-success btn-xs" onclick="exportWorkingPreset()">💾 导出工作区</button><button class="btn btn-danger btn-xs" onclick="clearEditDeskWorking()">🗑 清空工作区</button>`;break;
+    case 'preset':btns=`<button class="btn btn-secondary btn-xs" onclick="importPreset()">📂 导入预设</button><button class="btn btn-secondary btn-xs" onclick="newPreset()">✨ 新建预设</button><button class="btn btn-success btn-xs" onclick="exportPreset()">💾 导出</button><button class="btn btn-danger btn-xs" onclick="clearPresets()">🗑 清除预设</button>`;break;
+    case 'worldbook':btns=`<button class="btn btn-secondary btn-xs" onclick="importWorldBook()">📂 导入</button><button class="btn btn-primary btn-xs" onclick="addWBEntry()">＋ 添加</button><button class="btn btn-success btn-xs" onclick="exportWorldBook()">💾 导出</button><button class="btn btn-danger btn-xs" onclick="clearWorldBook()">🗑 清除</button>`;break;
+    case 'regex':btns=`<button class="btn btn-secondary btn-xs" onclick="importRegexFile()">📂 导入</button><button class="btn btn-primary btn-xs" onclick="addRegexEntry()">＋ 添加</button><button class="btn btn-success btn-xs" onclick="exportRegex()">💾 导出</button><button class="btn btn-danger btn-xs" onclick="clearRegex()">🗑 清除</button>`;break;
+    case 'global':btns=`<button class="btn btn-secondary btn-xs" onclick="importPreset()">📂 导入预设</button><button class="btn btn-secondary btn-xs" onclick="newPreset()">✨ 新建预设</button><button class="btn btn-success btn-xs" onclick="exportPreset()">💾 导出</button>`;break;
+    case 'charcard':btns=`<button class="btn btn-secondary btn-xs" onclick="importCharCard()">📂 导入</button><button class="btn btn-primary btn-xs" onclick="addCharCard()">＋ 新建</button><button class="btn btn-success btn-xs" onclick="exportCharCard(selectedCharCardIndex)">💾 导出</button><button class="btn btn-danger btn-xs" onclick="clearCharCards()">🗑 清除</button>`;break;
+  }
+  return btns;
+}
 function switchEditorMode(mode){
   editorMode=mode;
   selectedWBIndex=-1; selectedRegexIndex=-1;
@@ -493,7 +600,7 @@ function switchEditorMode(mode){
     global:'⚙️ 全局参数 — 配置模型采样、上下文、行为开关等',
     charcard:'🎭 角色卡创作 — 创建角色卡，导入图片，绑定世界书与正则'
   };
-  document.getElementById('editorToolbar').innerHTML=`<span>${tooltips[mode]||''}</span>`;
+  document.getElementById('editorToolbar').innerHTML=`<span style="margin-right:auto">${tooltips[mode]||''}</span>`+getModeActions(mode);
   if(mode==='preset')renderEditor();
   else if(mode==='worldbook')renderWorldBookEditor();
   else if(mode==='regex')renderRegexEditor();
@@ -525,6 +632,37 @@ function toast(m){const e=document.getElementById('toast');e.textContent=m;e.cla
 
 function makePrompt(id){return{identifier:`prompt_${id}`,name:'新提示词',system_prompt:false,role:'system',content:'',enabled:true,marker:false,injection_position:0,injection_depth:4,injection_order:100,forbid_overrides:false}}
 function makeWorldBookEntry(id){return{uid:`wb_${id}`,keys:'',content:'',comment:'',selective:false,constant:false,position:0,depth:4,order:100,probability:100,use_regex:false,exclude_recursion:false,enabled:true}}
+/* ── 世界书格式转换：内部格式 → SillyTavern 标准格式 ── */
+function wbToST(e,i){
+  return{
+    uid:i,disable:!e.enabled,use_regex:e.use_regex||false,name:e.comment||'',comment:e.comment||'',
+    content:e.content||'',constant:e.constant!==undefined?e.constant:false,vectorized:false,
+    position:typeof e.position==='string'?0:(e.position||0),depth:e.depth||4,role:null,
+    key:e.keys?e.keys.split(',').map(k=>k.trim()).filter(Boolean):[],keysecondary:[],
+    selective:e.selective||false,selectiveLogic:0,caseSensitive:false,matchWholeWords:true,
+    scanDepth:2,useGroupScoring:false,excludeRecursion:e.exclude_recursion||false,
+    preventRecursion:false,delayUntilRecursion:false,useProbability:true,probability:e.probability||100,
+    sticky:e.constant?5:0,cooldown:0,delay:0,group:'',groupOverride:false,groupWeight:100,
+    display_index:i+1,order:e.order||100,displayIndex:i,addMemo:true,ignoreBudget:false,
+    matchPersonaDescription:false,matchCharacterDescription:false,matchCharacterPersonality:false,
+    matchCharacterDepthPrompt:false,matchScenario:false,matchCreatorNotes:false,outletName:'',automationId:'',triggers:[]
+  }
+}
+/* ── 世界书格式转换：SillyTavern 标准格式 → 内部格式 ── */
+function stToWB(en,uid){
+  var keysVal='';
+  if(Array.isArray(en.key))keysVal=en.key.join(', ');
+  else if(typeof en.keys==='string')keysVal=en.keys;
+  else if(Array.isArray(en.keys))keysVal=en.keys.join(', ');
+  var enabledVal=en.enabled!==undefined?en.enabled:!(en.disable===undefined?false:en.disable);
+  return{
+    uid:uid,keys:keysVal,content:en.content||'',comment:en.comment||'',
+    selective:en.selective||false,constant:en.constant||false,
+    position:en.position||0,depth:en.depth||4,order:en.order||100,
+    probability:en.probability||100,use_regex:en.use_regex||false,
+    exclude_recursion:en.excludeRecursion||en.exclude_recursion||false,enabled:enabledVal
+  }
+}
 function makeRegexEntry(id){return{uid:`regex_${id}`,id:'',scriptName:'',findRegex:'',replaceString:'',trimStrings:[],placement:[2],disabled:false,markdownOnly:false,promptOnly:false,runOnEdit:true,substituteRegex:0,minDepth:null,maxDepth:null}}
 function makeCharCard(id){return{id:`cc_${id}`,name:'新角色',description:'',personality:'',scenario:'',first_mes:'',mes_example:'',system_prompt:'',post_history_instructions:'',creator_notes:'',creator:'',character_version:'',tags:'',image:'',bindWorldBooks:[],bindRegex:[],alternate_greetings:[]}}
 
@@ -652,7 +790,7 @@ function selectWBEntry(i){selectedWBIndex=i;renderWorldBookEditor()}
 function updateWBField(k,v,idx){if(idx<0||idx>=state.worldbook_entries.length)return;state.worldbook_entries[idx][k]=v;updatePreview()}
 function addWBEntry(){const e=makeWorldBookEntry(Date.now());if(selectedWBIndex>=0&&selectedWBIndex<state.worldbook_entries.length){state.worldbook_entries.splice(selectedWBIndex+1,0,e);selectedWBIndex++}else{state.worldbook_entries.push(e);selectedWBIndex=state.worldbook_entries.length-1}renderWorldBookEditor();updatePreview();toast('✅ 已添加世界书条目')}
 function deleteWBEntry(idx){if(idx<0||idx>=state.worldbook_entries.length)return;state.worldbook_entries.splice(idx,1);selectedWBIndex=Math.min(selectedWBIndex,state.worldbook_entries.length-1);if(!state.worldbook_entries.length)selectedWBIndex=-1;renderWorldBookEditor();updatePreview();toast('🗑 已删除')}
-function exportWorldBook(){const o={};state.worldbook_entries.forEach(e=>{o[e.uid]={keys:e.keys?e.keys.split(',').map(k=>k.trim()).filter(Boolean):[],content:e.content,comment:e.comment,selective:e.selective,constant:e.constant,position:e.position,depth:e.depth,order:e.order,probability:e.probability,use_regex:e.use_regex,exclude_recursion:e.exclude_recursion,enabled:e.enabled}});downloadJSON({entries:o},'worldbook.json');toast('💾 世界书已导出')}
+function exportWorldBook(){const o={};state.worldbook_entries.forEach((e,i)=>{o[String(i)]=wbToST(e,i)});downloadJSON({entries:o},'worldbook.json');toast('💾 世界书已导出')}
 
 /* ═══════════════════════════════════════════
    Regex Editor
@@ -686,7 +824,7 @@ function renderRegexDetail(e,idx){const pl=[{v:0,l:'系统'},{v:1,l:'用户'},{v
   <div class="field-group"><label>替换为 (replaceString)</label><textarea rows="3" placeholder="替换后的字符串…支持 $1,$2 捕获组" oninput="updateRegexField('replaceString',this.value,${idx})">${escHtml(e.replaceString)}</textarea></div>
   <div class="field-group"><label>深度 & 作用范围</label><div class="field-row" style="margin-bottom:8px"><div><span class="sub-label">最小深度 (minDepth)</span><input type="number" value="${e.minDepth??''}" placeholder="null" oninput="updateRegexField('minDepth',this.value===''?null:parseInt(this.value),${idx})"/></div><div><span class="sub-label">最大深度 (maxDepth)</span><input type="number" value="${e.maxDepth??''}" placeholder="null" oninput="updateRegexField('maxDepth',this.value===''?null:parseInt(this.value),${idx})"/></div></div><div><span class="sub-label">作用位置 (placement)</span><div class="tag-row">${pl.map(({v,l})=>`<label class="tag-chip ${e.placement.includes(v)?'on':'off'}" style="cursor:pointer"><input type="checkbox" style="display:none" ${e.placement.includes(v)?'checked':''} onchange="togglePlacement(${idx},${v},this.checked)"/>${l}</label>`).join('')}</div></div></div>
   <div class="field-group"><label>开关</label><div style="display:grid;grid-template-columns:1fr 1fr;gap:5px">${[['re_dis','disabled',e.disabled,'禁用'],['re_md','markdownOnly',e.markdownOnly,'仅Markdown'],['re_prompt','promptOnly',e.promptOnly,'仅提示'],['re_edit','runOnEdit',e.runOnEdit,'编辑时运行']].map(([id,key,val,label])=>`<div class="checkbox-row"><input type="checkbox" id="${id}_${idx}" ${val?'checked':''} onchange="updateRegexField('${key}',this.checked,${idx})"/><label for="${id}_${idx}">${label}</label></div>`).join('')}</div></div>
-  <div class="regex-test-area"><label style="font-size:.71rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:7px">🧪 正则测试</label><textarea placeholder="输入测试文本…" id="regexTestInput_${idx}" rows="3" style="margin-bottom:7px">${escHtml(e._testInput||'')}</textarea><div style="display:flex;gap:7px;align-items:center;margin-bottom:7px"><button class="btn btn-primary btn-xs" onclick="testRegex(${idx})">▶ 运行测试</button></div><div class="regex-test-result" id="regexTestResult_${idx}"></div><div class="regex-error-msg" id="regexTestError_${idx}"></div></div>
+  <div class="regex-test-area"><label style="font-size:.71rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:7px">🧪 正则测试</label><textarea placeholder="输入测试文本…" id="regexTestInput_${idx}" rows="3" style="margin-bottom:7px">${escHtml(e._testInput||'')}</textarea><div style="display:flex;gap:7px;align-items:center;margin-bottom:7px"><button class="btn btn-primary btn-xs" onclick="testRegex(${idx})">▶ 运行测试</button></div><div class="regex-test-result" id="regexTestResult_${idx}"></div><div class="regex-test-preview" id="regexTestPreview_${idx}"></div><div class="regex-error-msg" id="regexTestError_${idx}"></div></div>
   <div style="display:flex;justify-content:flex-end"><button class="btn btn-danger btn-sm" onclick="deleteRegexEntry(${idx})">🗑 删除此条目</button></div>`}
 function selectRegexEntry(i){selectedRegexIndex=i;renderRegexEditor()}
 function updateRegexField(k,v,idx){if(idx<0||idx>=state.regex_entries.length)return;state.regex_entries[idx][k]=v;updatePreview()}
@@ -695,7 +833,7 @@ function addRegexEntry(){const e=makeRegexEntry(Date.now());if(selectedRegexInde
 function deleteRegexEntry(idx){if(idx<0||idx>=state.regex_entries.length)return;state.regex_entries.splice(idx,1);selectedRegexIndex=Math.min(selectedRegexIndex,state.regex_entries.length-1);if(!state.regex_entries.length)selectedRegexIndex=-1;renderRegexEditor();updatePreview();toast('🗑 已删除')}
 function exportRegex(){const o=state.regex_entries.map(e=>({id:e.id||e.uid,scriptName:e.scriptName,findRegex:e.findRegex,replaceString:e.replaceString,trimStrings:e.trimStrings||[],placement:e.placement,disabled:e.disabled,markdownOnly:e.markdownOnly,promptOnly:e.promptOnly,runOnEdit:e.runOnEdit,substituteRegex:e.substituteRegex??0,minDepth:e.minDepth,maxDepth:e.maxDepth}));downloadJSON(o,'regex.json');toast('💾 正则已导出')}
 
-function testRegex(idx){const e=state.regex_entries[idx];if(!e)return;const inp=document.getElementById(`regexTestInput_${idx}`),res=document.getElementById(`regexTestResult_${idx}`),err=document.getElementById(`regexTestError_${idx}`),ti=inp?inp.value:'';e._testInput=ti;err.textContent='';res.textContent='';res.className='regex-test-result';if(!e.findRegex){err.textContent='⚠️ 请先填写正则匹配模式';return}if(!ti){err.textContent='⚠️ 请输入测试文本';return}try{const fl='g'+(e.findRegex.includes('(?i)')?'i':''),cr=e.findRegex.replace(/\(\?i\)/g,''),rx=new RegExp(cr,fl),rp=ti.replace(rx,e.replaceString||''),mc=(ti.match(rx)||[]).length;if(mc>0){res.className='regex-test-result match';res.textContent=`✅ 匹配 ${mc} 处，替换结果：\n${rp}`}else{res.className='regex-test-result nomatch';res.textContent='❌ 未匹配到任何内容'}}catch(ex){err.textContent=`⚠️ 正则语法错误：${ex.message}`}}
+function testRegex(idx){const e=state.regex_entries[idx];if(!e)return;const inp=document.getElementById(`regexTestInput_${idx}`),res=document.getElementById(`regexTestResult_${idx}`),pre=document.getElementById(`regexTestPreview_${idx}`),err=document.getElementById(`regexTestError_${idx}`),ti=inp?inp.value:'';e._testInput=ti;err.textContent='';res.textContent='';res.className='regex-test-result';if(pre)pre.innerHTML='';if(!e.findRegex){err.textContent='⚠️ 请先填写正则匹配模式';return}if(!ti){err.textContent='⚠️ 请输入测试文本';return}try{const fl='g'+(e.findRegex.includes('(?i)')?'i':''),cr=e.findRegex.replace(/\(\?i\)/g,''),rx=new RegExp(cr,fl),rp=ti.replace(rx,e.replaceString||''),mc=(ti.match(rx)||[]).length;if(mc>0){res.className='regex-test-result match';res.textContent=`✅ 匹配 ${mc} 处`;if(pre){pre.innerHTML=rp;pre.style.display='block'}}else{res.className='regex-test-result nomatch';res.textContent='❌ 未匹配到任何内容';if(pre)pre.style.display='none'}}catch(ex){err.textContent=`⚠️ 正则语法错误：${ex.message}`;if(pre)pre.style.display='none'}}
 
 /* ═══════════════════════════════════════════
    Char Card Editor (角色卡)
@@ -713,7 +851,7 @@ function renderCharCardEditor(){
       <span class="drag-handle" title="拖拽排序" onclick="event.stopPropagation()">⠿</span>
       <span style="font-size:.82rem;flex-shrink:0">${c.image?'🖼':'🧑'}
       </span>
-      <div style="flex:1;min-width:0"><div style="font-size:.77rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escHtml(c.name||'未命名')}</div><div style="font-size:.66rem;color:var(--text-muted)">${(c.description||'').substring(0,20)||'暂无描述'}</div></div>
+      <div style="flex:1;min-width:0"><div class="cc-item-name" style="font-size:.77rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escHtml(c.name||'未命名')}</div><div style="font-size:.66rem;color:var(--text-muted)">${(c.description||'').substring(0,20)||'暂无描述'}</div></div>
     </div>`;});
   h+=`</div></div><div class="editor-detail-panel" id="ccDetail">`;
   if(selectedCharCardIndex>=0&&selectedCharCardIndex<cards.length)h+=renderCharCardDetail(cards[selectedCharCardIndex],selectedCharCardIndex);
@@ -746,7 +884,7 @@ function renderCharCardDetail(c,idx){
     </div>
   </div>
   <div class="field-group"><label>📛 基本信息</label>
-    <div class="field-row" style="margin-bottom:8px"><div><span class="sub-label">角色名称 *</span><input type="text" value="${escHtml(c.name)}" placeholder="角色名称" oninput="updateCharCardField('name',this.value,${idx});renderCharCardEditor()"/></div><div><span class="sub-label">创作者</span><input type="text" value="${escHtml(c.creator)}" placeholder="你的名字" oninput="updateCharCardField('creator',this.value,${idx})"/></div></div>
+    <div class="field-row" style="margin-bottom:8px"><div><span class="sub-label">角色名称 *</span><input type="text" value="${escHtml(c.name)}" placeholder="角色名称" id="ccNameInput_${idx}" oninput="updateCharCardName(${idx},this.value)"/></div><div><span class="sub-label">创作者</span><input type="text" value="${escHtml(c.creator)}" placeholder="你的名字" oninput="updateCharCardField('creator',this.value,${idx})"/></div></div>
     <div class="field-row"><div><span class="sub-label">版本号</span><input type="text" value="${escHtml(c.character_version)}" placeholder="1.0" oninput="updateCharCardField('character_version',this.value,${idx})"/></div><div><span class="sub-label">标签（逗号分隔）</span><input type="text" value="${escHtml(c.tags)}" placeholder="女性, 法师, 奇幻" oninput="updateCharCardField('tags',this.value,${idx})"/></div></div>
   </div>
   <div class="field-group"><label>📝 角色描述 (description)</label>
@@ -794,6 +932,14 @@ function renderCharCardDetail(c,idx){
 function updateCharCardField(key,value,idx){
   if(idx<0||idx>=state.charcards.length)return;
   state.charcards[idx][key]=value;
+  updatePreview();
+}
+/* 角色名称专用更新：只更新侧边栏DOM，不重渲染整个编辑器，避免输入框丢焦点 */
+function updateCharCardName(idx,value){
+  if(idx<0||idx>=state.charcards.length)return;
+  state.charcards[idx].name=value;
+  var item=document.getElementById('ccitem_'+idx);
+  if(item){var nd=item.querySelector('.cc-item-name');if(nd)nd.textContent=value||'未命名'}
   updatePreview();
 }
 function toggleCCWBinding(idx,uid,checked){
@@ -923,7 +1069,7 @@ function buildCharCardOutput(c,includeBindings){
       const boundEntries={};
       c.bindWorldBooks.forEach(uid=>{
         const e=state.worldbook_entries.find(wb=>wb.uid===uid);
-        if(e){boundEntries[uid]={keys:e.keys?e.keys.split(',').map(k=>k.trim()).filter(Boolean):[],content:e.content,comment:e.comment,selective:e.selective,constant:e.constant,position:e.position,depth:e.depth,order:e.order,probability:e.probability,use_regex:e.use_regex,exclude_recursion:e.exclude_recursion,enabled:e.enabled}}
+        if(e){boundEntries[uid]=wbToST(e,parseInt(uid))}
       });
       if(Object.keys(boundEntries).length>0)data.character_book={entries:boundEntries};
     }
@@ -1013,17 +1159,19 @@ function handleFileImport(e){
   r.onload=ev=>{try{const data=JSON.parse(ev.target.result),im=window._importMode||'preset';
     // Edit Desk import
     if(window._editDeskImport){window._editDeskImport=false;handleEditDeskImport(data);e.target.value='';return}
+    // Edit Desk template import (append to working area)
+    if(window._editDeskTemplateImport){window._editDeskTemplateImport=false;handleEditDeskTemplateImport(data);e.target.value='';return}
     // World book
-    if(data.entries&&typeof data.entries==='object'&&!Array.isArray(data.entries)&&!data.preset_name&&!data.prompts&&im!=='regex'){const arr=[];Object.entries(data.entries).forEach(([k,en])=>{arr.push({uid:k,keys:Array.isArray(en.keys)?en.keys.join(', '):(en.keys||''),content:en.content||'',comment:en.comment||'',selective:en.selective??en.extensions?.selective??false,constant:en.constant??en.extensions?.constant??false,position:en.position??en.extensions?.position??0,depth:en.depth??en.extensions?.depth??4,order:en.order??en.extensions?.order??100,probability:en.probability??en.extensions?.probability??100,use_regex:en.use_regex??en.extensions?.use_regex??false,exclude_recursion:en.exclude_recursion??en.extensions?.exclude_recursion??false,enabled:en.enabled!==undefined?en.enabled:!(en.disabled===undefined?false:en.disabled)})});state.worldbook_entries=arr;selectedWBIndex=-1;if(window._ccImportToBind&&selectedCharCardIndex>=0&&selectedCharCardIndex<state.charcards.length){arr.forEach(function(e){if(!state.charcards[selectedCharCardIndex].bindWorldBooks.includes(e.uid))state.charcards[selectedCharCardIndex].bindWorldBooks.push(e.uid)});window._ccImportToBind=false;renderCharCardEditor();updatePreview();toast('📂 已导入世界书：'+arr.length+'条（已绑定到当前角色卡）');e.target.value='';return}if(editorMode!=='worldbook')switchEditorMode('worldbook');else renderWorldBookEditor();updatePreview();toast(`📂 已导入世界书：${arr.length}条`);e.target.value='';return}
+    if(data.entries&&typeof data.entries==='object'&&!Array.isArray(data.entries)&&!data.preset_name&&!data.prompts&&im!=='regex'){const arr=[];Object.entries(data.entries).forEach(([k,en])=>{arr.push(stToWB(en,k))});state.worldbook_entries=arr;selectedWBIndex=-1;if(window._ccImportToBind&&selectedCharCardIndex>=0&&selectedCharCardIndex<state.charcards.length){arr.forEach(function(e){if(!state.charcards[selectedCharCardIndex].bindWorldBooks.includes(e.uid))state.charcards[selectedCharCardIndex].bindWorldBooks.push(e.uid)});window._ccImportToBind=false;renderCharCardEditor();updatePreview();toast('📂 已导入世界书：'+arr.length+'条（已绑定到当前角色卡）');e.target.value='';return}if(editorMode!=='worldbook')switchEditorMode('worldbook');else renderWorldBookEditor();updatePreview();toast(`📂 已导入世界书：${arr.length}条`);e.target.value='';return}
     // Char Card (角色卡导入)
-    if((data.spec==='chara_card_v2'||(data.data&&data.data.name))&&im==='charcard'){const cd=data.data||data;const cc=makeCharCard(Date.now());cc.name=cd.name||'导入角色';cc.description=cd.description||'';cc.personality=cd.personality||'';cc.scenario=cd.scenario||'';cc.first_mes=cd.first_mes||'';cc.mes_example=cd.mes_example||'';cc.system_prompt=cd.system_prompt||'';cc.post_history_instructions=cd.post_history_instructions||'';cc.creator_notes=cd.creator_notes||'';cc.creator=cd.creator||'';cc.character_version=cd.character_version||'';cc.image=cd.image||'';cc.tags=Array.isArray(cd.tags)?cd.tags.join(','):(cd.tags||'');cc.alternate_greetings=cd.alternate_greetings||[];if(cd.character_book&&cd.character_book.entries){Object.entries(cd.character_book.entries).forEach(function(_a){var k=_a[0],en=_a[1];var nu='wb_import_'+Date.now()+'_'+k;state.worldbook_entries.push({uid:nu,keys:Array.isArray(en.keys)?en.keys.join(', '):(en.keys||''),content:en.content||'',comment:en.comment||'',selective:en.selective||false,constant:en.constant||false,position:en.position||0,depth:en.depth||4,order:en.order||100,probability:en.probability||100,use_regex:en.use_regex||false,exclude_recursion:en.exclude_recursion||false,enabled:en.enabled!==undefined?en.enabled:true});cc.bindWorldBooks.push(nu)})}if(cd.extensions&&cd.extensions.regex_scripts){cd.extensions.regex_scripts.forEach(function(en,ri){var nu='regex_import_'+Date.now()+'_'+ri;state.regex_entries.push({uid:nu,id:en.id||'',scriptName:en.scriptName||'',findRegex:en.findRegex||'',replaceString:en.replaceString||'',trimStrings:en.trimStrings||[],placement:en.placement||[2],disabled:en.disabled||false,markdownOnly:en.markdownOnly||false,promptOnly:en.promptOnly||false,runOnEdit:en.runOnEdit!==undefined?en.runOnEdit:true,substituteRegex:en.substituteRegex||0,minDepth:en.minDepth||null,maxDepth:en.maxDepth||null});cc.bindRegex.push(nu)})}state.charcards.push(cc);selectedCharCardIndex=state.charcards.length-1;if(editorMode!=='charcard')switchEditorMode('charcard');else renderCharCardEditor();updatePreview();toast('🎭 已导入角色卡：'+cc.name);e.target.value='';return}
+    if((data.spec==='chara_card_v2'||(data.data&&data.data.name))&&im==='charcard'){const cd=data.data||data;const cc=makeCharCard(Date.now());cc.name=cd.name||'导入角色';cc.description=cd.description||'';cc.personality=cd.personality||'';cc.scenario=cd.scenario||'';cc.first_mes=cd.first_mes||'';cc.mes_example=cd.mes_example||'';cc.system_prompt=cd.system_prompt||'';cc.post_history_instructions=cd.post_history_instructions||'';cc.creator_notes=cd.creator_notes||'';cc.creator=cd.creator||'';cc.character_version=cd.character_version||'';cc.image=cd.image||'';cc.tags=Array.isArray(cd.tags)?cd.tags.join(','):(cd.tags||'');cc.alternate_greetings=cd.alternate_greetings||[];if(cd.character_book&&cd.character_book.entries){Object.entries(cd.character_book.entries).forEach(function(_a){var k=_a[0],en=_a[1];var nu='wb_import_'+Date.now()+'_'+k;state.worldbook_entries.push(stToWB(en,nu));cc.bindWorldBooks.push(nu)})}if(cd.extensions&&cd.extensions.regex_scripts){cd.extensions.regex_scripts.forEach(function(en,ri){var nu='regex_import_'+Date.now()+'_'+ri;state.regex_entries.push({uid:nu,id:en.id||'',scriptName:en.scriptName||'',findRegex:en.findRegex||'',replaceString:en.replaceString||'',trimStrings:en.trimStrings||[],placement:en.placement||[2],disabled:en.disabled||false,markdownOnly:en.markdownOnly||false,promptOnly:en.promptOnly||false,runOnEdit:en.runOnEdit!==undefined?en.runOnEdit:true,substituteRegex:en.substituteRegex||0,minDepth:en.minDepth||null,maxDepth:en.maxDepth||null});cc.bindRegex.push(nu)})}state.charcards.push(cc);selectedCharCardIndex=state.charcards.length-1;if(editorMode!=='charcard')switchEditorMode('charcard');else renderCharCardEditor();updatePreview();toast('🎭 已导入角色卡：'+cc.name);e.target.value='';return}
     // Regex
     if(Array.isArray(data)&&data.length>0&&(data[0].findRegex||data[0].find_regex)&&im!=='worldbook'){state.regex_entries=data.map((en,idx)=>({uid:en.id||`regex_${Date.now()}_${idx}`,id:en.id||'',scriptName:en.scriptName||en.script_name||'',findRegex:en.findRegex||en.find_regex||'',replaceString:en.replaceString||en.replace_string||'',trimStrings:en.trimStrings||en.trim_strings||[],placement:en.placement||[2],disabled:en.disabled!==undefined?en.disabled:false,markdownOnly:en.markdownOnly||en.markdown_only||false,promptOnly:en.promptOnly||en.prompt_only||false,runOnEdit:en.runOnEdit!==undefined?en.runOnEdit:true,substituteRegex:en.substituteRegex??en.sub_regex??0,minDepth:en.minDepth??en.min_depth??null,maxDepth:en.maxDepth??en.max_depth??null}));selectedRegexIndex=-1;if(window._ccImportToBind&&selectedCharCardIndex>=0&&selectedCharCardIndex<state.charcards.length){state.regex_entries.forEach(function(e){if(!state.charcards[selectedCharCardIndex].bindRegex.includes(e.uid))state.charcards[selectedCharCardIndex].bindRegex.push(e.uid)});window._ccImportToBind=false;renderCharCardEditor();updatePreview();toast('📂 已导入正则：'+state.regex_entries.length+'条（已绑定到当前角色卡）');e.target.value='';return}if(editorMode!=='regex')switchEditorMode('regex');else renderRegexEditor();updatePreview();toast(`📂 已导入正则：${state.regex_entries.length}条`);e.target.value='';return}
     // Preset
-    state.preset_name=data.preset_name??data.name??'导入预设';state.temperature=data.temperature??1;state.top_p=data.top_p??1;state.top_k=data.top_k??0;state.top_a=data.top_a??0;state.min_p=data.min_p??0;state.repetition_penalty=data.repetition_penalty??1;state.frequency_penalty=data.frequency_penalty??0;state.presence_penalty=data.presence_penalty??0;state.max_context_unlocked=data.max_context_unlocked??false;state.openai_max_context=data.openai_max_context??200000;state.openai_max_tokens=data.openai_max_tokens??4096;state.stream_openai=data.stream_openai??true;state.names_behavior=data.names_behavior??0;state.wrap_in_quotes=data.wrap_in_quotes??false;state.image_inlining=data.image_inlining??false;state.video_inlining=data.video_inlining??false;state.send_if_empty=data.send_if_empty??'';state.impersonation_prompt=data.impersonation_prompt??'';state.new_chat_prompt=data.new_chat_prompt??'';state.new_group_chat_prompt=data.new_group_chat_prompt??'[Start a new group chat. Group members: {{group}}]';state.new_example_chat_prompt=data.new_example_chat_prompt??'[Example Chat]';state.continue_nudge_prompt=data.continue_nudge_prompt??'';state.group_nudge_prompt=data.group_nudge_prompt??'';state.bias_preset_selected=data.bias_preset_selected??'Default (none)';state.wi_format=data.wi_format??'{0}';state.scenario_format=data.scenario_format??'{{scenario}}';state.personality_format=data.personality_format??'{{personality}}';state.prompts=Array.isArray(data.prompts)?data.prompts:[];state.prompt_order=Array.isArray(data.prompt_order)&&data.prompt_order.length?data.prompt_order:[{character_id:100001,order:[]}];if(Array.isArray(data.worldbook_entries))state.worldbook_entries=data.worldbook_entries;else if(data.worldbook_entries?.entries){const arr=[];Object.entries(data.worldbook_entries.entries).forEach(([k,en])=>{arr.push({uid:k,keys:Array.isArray(en.keys)?en.keys.join(', '):(en.keys||''),content:en.content||'',comment:en.comment||'',selective:en.selective??false,constant:en.constant??false,position:en.position??0,depth:en.depth??4,order:en.order??100,probability:en.probability??100,use_regex:en.use_regex??false,exclude_recursion:en.exclude_recursion??false,enabled:en.enabled!==undefined?en.enabled:true})});state.worldbook_entries=arr}else state.worldbook_entries=[];state.regex_entries=Array.isArray(data.regex_entries)?data.regex_entries:[];syncPromptOrder();selectedIndex=state.prompts.length>0?0:-1;selectedWBIndex=-1;selectedRegexIndex=-1;switchEditorMode('preset');renderEditor();updatePreview();toast(`📂 已导入：${state.preset_name}`)}catch{window._ccImportToBind=false;toast('⚠️ JSON 解析失败')}};r.readAsText(file);e.target.value=''
+    state.preset_name=data.preset_name??data.name??'导入预设';state.temperature=data.temperature??1;state.top_p=data.top_p??1;state.top_k=data.top_k??0;state.top_a=data.top_a??0;state.min_p=data.min_p??0;state.repetition_penalty=data.repetition_penalty??1;state.frequency_penalty=data.frequency_penalty??0;state.presence_penalty=data.presence_penalty??0;state.max_context_unlocked=data.max_context_unlocked??false;state.openai_max_context=data.openai_max_context??200000;state.openai_max_tokens=data.openai_max_tokens??4096;state.stream_openai=data.stream_openai??true;state.names_behavior=data.names_behavior??0;state.wrap_in_quotes=data.wrap_in_quotes??false;state.image_inlining=data.image_inlining??false;state.video_inlining=data.video_inlining??false;state.send_if_empty=data.send_if_empty??'';state.impersonation_prompt=data.impersonation_prompt??'';state.new_chat_prompt=data.new_chat_prompt??'';state.new_group_chat_prompt=data.new_group_chat_prompt??'[Start a new group chat. Group members: {{group}}]';state.new_example_chat_prompt=data.new_example_chat_prompt??'[Example Chat]';state.continue_nudge_prompt=data.continue_nudge_prompt??'';state.group_nudge_prompt=data.group_nudge_prompt??'';state.bias_preset_selected=data.bias_preset_selected??'Default (none)';state.wi_format=data.wi_format??'{0}';state.scenario_format=data.scenario_format??'{{scenario}}';state.personality_format=data.personality_format??'{{personality}}';state.prompts=Array.isArray(data.prompts)?data.prompts:[];state.prompt_order=Array.isArray(data.prompt_order)&&data.prompt_order.length?data.prompt_order:[{character_id:100001,order:[]}];if(Array.isArray(data.worldbook_entries))state.worldbook_entries=data.worldbook_entries;else if(data.worldbook_entries?.entries){const arr=[];Object.entries(data.worldbook_entries.entries).forEach(([k,en])=>{arr.push(stToWB(en,k))});state.worldbook_entries=arr}else state.worldbook_entries=[];state.regex_entries=Array.isArray(data.regex_entries)?data.regex_entries:[];syncPromptOrder();selectedIndex=state.prompts.length>0?0:-1;selectedWBIndex=-1;selectedRegexIndex=-1;switchEditorMode('preset');renderEditor();updatePreview();toast(`📂 已导入：${state.preset_name}`)}catch{window._ccImportToBind=false;toast('⚠️ JSON 解析失败')}};r.readAsText(file);e.target.value=''
 }
 
-function exportPreset(){syncPromptOrder();let o,fn;if(editorMode==='worldbook'){const eo={};state.worldbook_entries.forEach(e=>{eo[e.uid]={keys:e.keys?e.keys.split(',').map(k=>k.trim()).filter(Boolean):[],content:e.content,comment:e.comment,selective:e.selective,constant:e.constant,position:e.position,depth:e.depth,order:e.order,probability:e.probability,use_regex:e.use_regex,exclude_recursion:e.exclude_recursion,enabled:e.enabled}});o={entries:eo};fn='worldbook.json'}else if(editorMode==='regex'){o=state.regex_entries.map(e=>({id:e.id||e.uid,scriptName:e.scriptName,findRegex:e.findRegex,replaceString:e.replaceString,trimStrings:e.trimStrings||[],placement:e.placement,disabled:e.disabled,markdownOnly:e.markdownOnly,promptOnly:e.promptOnly,runOnEdit:e.runOnEdit,substituteRegex:e.substituteRegex??0,minDepth:e.minDepth,maxDepth:e.maxDepth}));fn='regex.json'}else if(editorMode==='global'){o=buildOutput();fn=(state.preset_name||'preset')+'.json'}else if(editorMode==='charcard'&&selectedCharCardIndex>=0){o=buildCharCardOutput(state.charcards[selectedCharCardIndex],false);fn=(state.charcards[selectedCharCardIndex].name||'character')+'.json'}else{o=buildOutput();fn=(state.preset_name||'preset')+'.json'}downloadJSON(o,fn);toast('💾 已导出')}
+function exportPreset(){syncPromptOrder();let o,fn;if(editorMode==='worldbook'){const eo={};state.worldbook_entries.forEach((e,i)=>{eo[String(i)]=wbToST(e,i)});o={entries:eo};fn='worldbook.json'}else if(editorMode==='regex'){o=state.regex_entries.map(e=>({id:e.id||e.uid,scriptName:e.scriptName,findRegex:e.findRegex,replaceString:e.replaceString,trimStrings:e.trimStrings||[],placement:e.placement,disabled:e.disabled,markdownOnly:e.markdownOnly,promptOnly:e.promptOnly,runOnEdit:e.runOnEdit,substituteRegex:e.substituteRegex??0,minDepth:e.minDepth,maxDepth:e.maxDepth}));fn='regex.json'}else if(editorMode==='global'){o=buildOutput();fn=(state.preset_name||'preset')+'.json'}else if(editorMode==='charcard'&&selectedCharCardIndex>=0){o=buildCharCardOutput(state.charcards[selectedCharCardIndex],false);fn=(state.charcards[selectedCharCardIndex].name||'character')+'.json'}else{o=buildOutput();fn=(state.preset_name||'preset')+'.json'}downloadJSON(o,fn);toast('💾 已导出')}
 
 function buildOutput(){return{preset_name:state.preset_name,temperature:state.temperature,frequency_penalty:state.frequency_penalty,presence_penalty:state.presence_penalty,top_p:state.top_p,top_k:state.top_k,top_a:state.top_a,min_p:state.min_p,repetition_penalty:state.repetition_penalty,max_context_unlocked:state.max_context_unlocked,openai_max_context:state.openai_max_context,openai_max_tokens:state.openai_max_tokens,names_behavior:state.names_behavior,send_if_empty:state.send_if_empty,impersonation_prompt:state.impersonation_prompt,new_chat_prompt:state.new_chat_prompt,new_group_chat_prompt:state.new_group_chat_prompt,new_example_chat_prompt:state.new_example_chat_prompt,continue_nudge_prompt:state.continue_nudge_prompt,bias_preset_selected:state.bias_preset_selected,wi_format:state.wi_format,scenario_format:state.scenario_format,personality_format:state.personality_format,group_nudge_prompt:state.group_nudge_prompt,stream_openai:state.stream_openai,wrap_in_quotes:state.wrap_in_quotes,image_inlining:state.image_inlining,video_inlining:state.video_inlining,prompts:state.prompts,prompt_order:state.prompt_order,worldbook_entries:state.worldbook_entries,regex_entries:state.regex_entries,charcards:state.charcards}}
 
@@ -1036,7 +1184,7 @@ function copyJson(){const t=document.getElementById('jsonPreview').textContent;n
 function updatePreview(){
   syncPromptOrder();
   let o;
-  if(editorMode==='worldbook'){const eo={};state.worldbook_entries.forEach(e=>{eo[e.uid]={keys:e.keys?e.keys.split(',').map(k=>k.trim()).filter(Boolean):[],content:e.content,comment:e.comment,selective:e.selective,constant:e.constant,position:e.position,depth:e.depth,order:e.order,probability:e.probability,use_regex:e.use_regex,exclude_recursion:e.exclude_recursion,enabled:e.enabled}});o={entries:eo}}
+  if(editorMode==='worldbook'){const eo={};state.worldbook_entries.forEach((e,i)=>{eo[String(i)]=wbToST(e,i)});o={entries:eo}}
   else if(editorMode==='regex')o=state.regex_entries.map(e=>({id:e.id||e.uid,scriptName:e.scriptName,findRegex:e.findRegex,replaceString:e.replaceString,trimStrings:e.trimStrings||[],placement:e.placement,disabled:e.disabled,markdownOnly:e.markdownOnly,promptOnly:e.promptOnly,runOnEdit:e.runOnEdit,substituteRegex:e.substituteRegex??0,minDepth:e.minDepth,maxDepth:e.maxDepth}));
   else if(editorMode==='global')o=buildOutput();
   else if(editorMode==='charcard'&&selectedCharCardIndex>=0)o=buildCharCardOutput(state.charcards[selectedCharCardIndex],true);
@@ -1048,6 +1196,255 @@ function updatePreview(){
 /* ═══════════════════════════════════════════
    Clear All
 ═══════════════════════════════════════════ */
+/* ── Header: 指南 / 蕼的写卡教程 / 更多 ── */
+function showGuide(){
+  var toc=document.getElementById('tutorialTOC'),ct=document.getElementById('tutorialContent');
+  if(!toc||!ct)return;
+  var sections=[
+    {id:'intro',title:'欢迎使用',content:'<h2>🎉 欢迎使用 Caelum 写卡助手</h2><p>Caelum写卡助手是一款专为 SillyTavern / TavernAI 设计的角色卡、世界书、正则和预设的综合编辑工具。</p><h3>核心功能</h3><ul><li><b>角色卡创作</b>：13个模块全方位塑造角色，支持图片导入、世界书/正则绑定</li><li><b>世界书编辑</b>：条目化管理世界观，拖拽排序，一键导出为SilTavern标准格式</li><li><b>正则编写</b>：内置测试工具，实时预览HTML替换效果</li><li><b>预设调优</b>：采样参数、上下文设置、提示词编排</li><li><b>编辑台</b>：多文件整合编辑，拖拽复制条目到工作区</li></ul>'},
+    {id:'charcard',title:'创建角色卡',content:'<h2>🎭 创建角色卡</h2><p>点击底部「角色卡」标签进入角色卡编辑器。</p><h3>基本流程</h3><ol><li>点击 <b>＋ 新建</b> 创建空白角色卡</li><li>填写角色名称、描述、性格、场景等</li><li>撰写开场白和对话示例</li><li>添加头像图片（支持 PNG/JPG/WebP）</li><li>绑定世界书条目和正则脚本</li><li>导出为 SillyTavern 兼容的 JSON 格式</li></ol>'},
+    {id:'worldbook',title:'编写世界书',content:'<h2>📚 编写世界书</h2><p>世界书条目按需触发，AI 仅在检测到触发词时才加载对应内容。</p><h3>条目字段</h3><ul><li><b>触发词 (keys)</b>：逗号分隔，AI消息中包含时触发</li><li><b>内容 (content)</b>：条目正文，使用陈述句写下客观事实</li><li><b>常驻 (constant)</b>：始终注入，用于世界法则铁则</li><li><b>选择性 (selective)</b>：仅当触发词匹配时注入</li></ul>'},
+    {id:'regex',title:'正则表达式',content:'<h2>🔧 正则表达式</h2><p>正则用于对 AI 输出进行后处理替换。内置测试工具可实时预览HTML渲染效果。</p><h3>常用技巧</h3><ul><li>使用 <code>$1</code>、<code>$2</code> 引用捕获组</li><li>支持 JavaScript 正则语法</li><li>可设置作用深度和位置</li><li>测试区输入文本点击 ▶，下方显示替换后的HTML预览</li></ul>'},
+    {id:'editdesk',title:'编辑台',content:'<h2>🗂 编辑台</h2><p>编辑台是多文件整合工作区。左侧可打开多个源文件作为参考，右侧是工作区。</p><h3>使用技巧</h3><ul><li>拖拽源条目到工作区 = 复制</li><li>工作区内部拖拽 = 排序</li><li>📂 按钮可打开已有文件作为模板</li><li>工作区独立导出，不影响主编辑器内容</li></ul>'},
+    {id:'templates',title:'模板',content:'<h2>📋 模板</h2><p>快速注入预置模板到对应的子模块。点击按钮即可在对应模块载入默认模板。</p><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px"><div class="field-group" style="margin:0"><label>📚 世界书模板</label><p style="font-size:.72rem;color:var(--text-muted);margin:4px 0">注入基础世界书条目结构</p><button class="btn btn-secondary btn-sm" onclick="injectTemplate(\'worldbook\');closeTutorial()" style="width:100%">📥 注入到世界书</button></div><div class="field-group" style="margin:0"><label>🎭 单人卡模板</label><p style="font-size:.72rem;color:var(--text-muted);margin:4px 0">注入单人角色卡框架</p><button class="btn btn-secondary btn-sm" onclick="injectTemplate(\'charcard_single\');closeTutorial()" style="width:100%">📥 注入到角色卡</button></div><div class="field-group" style="margin:0"><label>👥 多人卡模板</label><p style="font-size:.72rem;color:var(--text-muted);margin:4px 0">注入多人角色卡框架</p><button class="btn btn-secondary btn-sm" onclick="injectTemplate(\'charcard_multi\');closeTutorial()" style="width:100%">📥 注入到角色卡</button></div><div class="field-group" style="margin:0"><label>🔧 正则模板</label><p style="font-size:.72rem;color:var(--text-muted);margin:4px 0">注入常用正则脚本</p><button class="btn btn-secondary btn-sm" onclick="injectTemplate(\'regex\');closeTutorial()" style="width:100%">📥 注入到正则</button></div></div><p style="color:var(--text-muted);font-size:.7rem;margin-top:10px">默认模板内容待填充。你也可以 <button class="btn btn-secondary btn-xs" onclick="doImport();closeTutorial()">📂 从文件导入</button> 已有的模板。</p>'},
+    {id:'tips',title:'高级技巧',content:'<h2>💡 高级技巧</h2><ul><li><b>AI助手</b>：右侧面板可选4种AI人格辅助写作（需配置API Key）</li><li><b>JSON预览</b>：右侧面板实时显示当前编辑器的导出JSON</li><li><b>拖拽排序</b>：所有列表条目支持拖拽重排</li><li><b>分模块清除</b>：每个模块工具栏右侧有 🗑 清除按钮</li><li><b>主题切换</b>：点击右上角 🌙/☀️ 切换深色/浅色</li><li><b>更多资源</b>：点击 ⋯ 更多 查看 GitHub 仓库</li></ul>'}
+  ];
+  toc.innerHTML=sections.map(function(s,i){return '<div class="guide-toc-item'+(i===0?' active':'')+'" onclick="selectTutorialSection('+i+')" id="tocItem_'+i+'">'+s.title+'</div>'}).join('');
+  ct.innerHTML=sections[0].content;
+  window._tutorialSections=sections;
+  document.getElementById('tutorialModal').classList.add('show');
+}
+function selectTutorialSection(i){
+  var sections=window._tutorialSections;if(!sections)return;
+  document.getElementById('tutorialContent').innerHTML=sections[i].content;
+  document.querySelectorAll('#tutorialTOC .guide-toc-item').forEach(function(el,idx){el.classList.toggle('active',idx===i)});
+}
+function closeTutorial(){document.getElementById('tutorialModal').classList.remove('show')}
+
+/* 模板注入函数 — 与教程模板内容同步 */
+function injectTemplate(type){
+  switch(type){
+    case 'worldbook':
+      if(editorMode!=='worldbook')switchEditorMode('worldbook');
+      state.worldbook_entries=[];
+      var tpls=[
+        {uid:'wb_tpl_0',keys:'世界规则',content:'# 世界基底法则\n- 本世界核心运行规则：[如魔法体系/科技水平/社会结构]\n- 重要限制：[任何角色或力量无法逾越的边界]\n- 时间设定：[时代背景、历史节点]\n\n## 社会结构\n- 政治体制：[描述]\n- 阶级关系：[描述]\n- 重要机构：[列举]',comment:'【必开】世界基底法则',selective:false,constant:true,position:0,depth:1,order:10,probability:100,use_regex:false,exclude_recursion:false,enabled:true},
+        {uid:'wb_tpl_1',keys:'',content:'',comment:'──── 🏛️ 势力与组织 ────',selective:false,constant:true,position:0,depth:2,order:20,probability:100,use_regex:false,exclude_recursion:false,enabled:true},
+        {uid:'wb_tpl_2',keys:'势力,组织,宗门,公会',content:'# [势力名称]\n## 定位\n[势力的目标和角色]\n\n## 内部结构\n- 领导者：[描述]\n- 核心成员：[描述]\n- 派系/分支：[描述]\n\n## 外部关系\n- 盟友：[描述]\n- 敌对：[描述]\n- 中立势力态度：[描述]\n\n## 资源与约束\n- 核心资源：[描述]\n- 主要限制：[描述]',comment:'【🏛️ 势力与组织】势力模板',selective:true,constant:false,position:0,depth:4,order:30,probability:100,use_regex:false,exclude_recursion:false,enabled:true},
+        {uid:'wb_tpl_3',keys:'',content:'',comment:'──── 🌍 地理与地点 ────',selective:false,constant:true,position:0,depth:2,order:40,probability:100,use_regex:false,exclude_recursion:false,enabled:true},
+        {uid:'wb_tpl_4',keys:'主城,王都,首都',content:'# 主城\n## 地理位置\n[地理/气候/周边环境]\n\n## 城市风貌\n- 建筑风格：[描述]\n- 街道氛围：[描述]\n- 标志性建筑：[描述]\n\n## 重要地点\n- [地点1]：[功能与描述]\n- [地点2]：[功能与描述]\n\n## 五感描写\n- 视觉：[描述]\n- 听觉：[描述]\n- 嗅觉：[描述]',comment:'【🌍 地理与地点】主城',selective:true,constant:false,position:0,depth:4,order:50,probability:100,use_regex:false,exclude_recursion:false,enabled:true},
+        {uid:'wb_tpl_5',keys:'酒馆,客栈,旅店,茶馆',content:'# 酒馆\n## 环境\n- 光线：[昏暗/温暖/…]\n- 声音：[嘈杂人声/角落低语/…]\n- 气味：[麦酒与烤肉/…]\n\n## 常客\n- [角色名]：[简要描述]\n\n## 可打探的传闻\n- [传闻1]\n- [传闻2]',comment:'【🌍 地理与地点】酒馆',selective:true,constant:false,position:0,depth:4,order:60,probability:100,use_regex:false,exclude_recursion:false,enabled:true}
+      ];
+      state.worldbook_entries=tpls;selectedWBIndex=0;
+      renderWorldBookEditor();updatePreview();
+      toast('📚 世界书已注入（6条：法则+势力+地点 含五感描写）');
+      break;
+    case 'charcard_single':
+      if(editorMode!=='charcard')switchEditorMode('charcard');
+      var cc=makeCharCard(Date.now());
+      cc.name='新角色';
+      cc.description='## 基础信息\n- 姓名：[角色名]\n- 年龄：[年龄]\n- 性别：[性别]\n- 职业/身份：[职业]\n\n## 外貌（1-3个最具辨识度的特征）\n- [特征1]\n- [特征2]\n- [特征3]\n\n## 穿衣风格\n- 日常：[描述]\n- 正式场合：[描述]\n- 禁忌：[绝不可能穿的]';
+      cc.personality='## 关键词（3-6个）\n[克制] [敏锐] [执拗] [深藏不露的温度]\n\n## 外在表现\n[他人眼中的样子——沉默寡言/热情开朗/…]\n\n## 内在本质\n[真实的内核——责任感极强/内心柔软/…]\n\n## 性格成因\n[是什么经历造就了这个性格]\n\n## 矛盾点（≥3个）\n- [他极度理智，但面对[某类人/某情境]会失去理性]\n- [他看起来不在乎，但会默默记住每一个细节]\n- [矛盾3]\n\n## 真缺点（≥4个）\n- [从不开口承认错误]\n- [控制欲强到让身边人窒息]\n- [缺点3]\n- [缺点4]\n\n## 行为习惯\n- [习惯1]\n- [习惯2]\n- 禁止：[绝对不会做的事1]\n- 禁止：[绝对不会做的事2]';
+      cc.scenario='[场景背景]\n\n{{char}}与{{user}}的关系起始于……\n\n当前所处环境：[时间/地点/氛围]';
+      cc.first_mes='*[开场动作描写]*\n\n"[角色的第一句话]"';
+      cc.mes_example='<START>\n{{char}}: *[动作描写]*\n"[台词]"\n<START>\n{{user}}: "[用户台词]"\n{{char}}: *[反应动作]* "[回应台词]"';
+      cc.system_prompt='[核心演绎原则 — 给AI最关键的一句话提示]\n\n你正在扮演{{char}}，请始终以{{char}}的视角和语气回复。\n\n性格锚点：\n- [锚点1]\n- [锚点2]\n- [锚点3]\n\n绝对禁止：\n- 代替{{user}}发言或行动\n- 跳出角色进行旁白式总结\n- 突然道德审判或脱离人设说教';
+      cc.post_history_instructions='[每轮后注入的补充指令]\n\n- 当前好感度状态：[描述/数值]\n- 好感度变化触发条件：[什么会提升/降低]\n- 破防场景：[什么情况会让他表现出不同的一面]\n- 注意：好感度是缓慢积累的过程，禁止跳跃式升温';
+      cc.creator_notes='角色设计备忘：\n- 设计思路：[…]\n- 关键剧情节点：[…]\n- 签名场景：[可以反复出现的标志性场景/动作]\n- 待完善：[…]';
+      cc.tags='原创,单人卡';
+      cc.character_version='1.0';
+      state.charcards.push(cc);selectedCharCardIndex=state.charcards.length-1;
+      renderCharCardEditor();updatePreview();
+      toast('🎭 单人卡已注入（13模块含性格成因链+矛盾点+语言指纹+好感度逻辑）');
+      break;
+    case 'charcard_multi':
+      if(editorMode!=='charcard')switchEditorMode('charcard');
+      var ccm=makeCharCard(Date.now());
+      ccm.name='新多人角色组';
+      ccm.description='## 👤 角色A：[名称]\n- 外貌：[特征]\n- 身份：[职业/定位]\n\n## 👤 角色B：[名称]\n- 外貌：[特征]\n- 身份：[职业/定位]\n\n## 👤 角色C：[名称]\n- 外貌：[特征]\n- 身份：[职业/定位]\n\n> 可用独立XML标签包裹各角色：<角色A>…</角色A>';
+      ccm.personality='## 角色A 性格\n- 外在：[描述]\n- 内在：[描述]\n- 语言习惯：[说话方式/口头禅]\n\n## 角色B 性格\n- 外在：[描述]\n- 内在：[描述]\n- 语言习惯：[说话方式/口头禅]\n\n## 角色C 性格\n- 外在：[描述]\n- 内在：[描述]\n- 语言习惯：[说话方式/口头禅]\n\n## 🔗 群体互动规则\n- 角色A ↔ 角色B：[关系→互动基调]\n- 角色B ↔ 角色C：[关系]\n- 角色A ↔ 角色C：[关系]\n\n## 📢 发言规则\n- 每轮至少2个角色有发言或行动\n- 禁止让某一角色长期沉默\n- 角色间对话需符合各自性格和关系';
+      ccm.scenario='[多人场景设定]\n\n{{char}}们与{{user}}的交集发生在……\n\n当前情境：[时间/地点/触发事件]';
+      ccm.first_mes='*角色A [动作]。角色B [动作]。角色C [动作]。*\n\n角色A："[台词]"\n角色B："[台词]"';
+      ccm.mes_example='<START>\n{{char}}: *角色A头也不回地说：* "[台词]"\n*角色B合上书，朝你笑了笑：* "[台词]"\n*角色C推门进来，把东西往桌上一放：* "[台词]"\n<START>\n{{user}}: "[台词]"\n{{char}}: *角色B看了角色A一眼。角色A沉默片刻后开口：* "[台词]"\n*角色C在一旁哼了一声，但没有反驳。*';
+      ccm.system_prompt='你正在扮演多个角色：角色A、角色B、角色C。\n\n核心规则：\n1. 每句话必须明确标注说话者\n2. 多人场景中保持各角色的存在感\n3. 角色互动要有化学反应——不是轮流发言，而是自然碰撞\n4. 当场景中出现分歧时，各角色按照自己性格做出不同反应\n\n禁止：\n- 角色间串戏\n- 多个角色共用同一套描写词汇\n- 让所有角色都对{{user}}抱有相同的态度';
+      ccm.post_history_instructions='[多人卡维护指令]\n\n- 每轮后检查：是否所有角色都有存在感？\n- 角色关系动态：[有变化则记录]\n- 各角色对{{user}}好感度：[记录触发事件]\n- 注意维护互动平衡';
+      ccm.creator_notes='多人卡设计备忘：\n- 各角色独立人设待细化\n- 群体化学反应：[A+B=？ B+C=？]\n- 防串戏：给每个角色分配专属说话方式和习惯动作\n- 发言节奏：[谁话多/谁话少/谁只在关键时刻开口]';
+      ccm.tags='原创,多人卡,群像';
+      ccm.character_version='1.0';
+      state.charcards.push(ccm);selectedCharCardIndex=state.charcards.length-1;
+      renderCharCardEditor();updatePreview();
+      toast('👥 多人卡已注入（3角色+独立性格+群体规则+防串戏）');
+      break;
+    case 'regex':
+      if(editorMode!=='regex')switchEditorMode('regex');
+      state.regex_entries=[];
+      var rtpls=[
+        {uid:'regex_tpl_0',id:'trim-thinking',scriptName:'🗑 隐藏思考标签',findRegex:'<thinking>[\\s\\S]*?</thinking>',replaceString:'',trimStrings:[],placement:[2],disabled:false,markdownOnly:false,promptOnly:false,runOnEdit:true,substituteRegex:0,minDepth:null,maxDepth:null},
+        {uid:'regex_tpl_1',id:'format-status',scriptName:'📊 美化状态栏标题',findRegex:'##\\s*(.+)',replaceString:'<div class="status-title">$1</div>',trimStrings:[],placement:[2],disabled:false,markdownOnly:false,promptOnly:false,runOnEdit:true,substituteRegex:0,minDepth:null,maxDepth:null},
+        {uid:'regex_tpl_2',id:'clean-empty',scriptName:'🧹 清除多余空行',findRegex:'\\n{3,}',replaceString:'\\n\\n',trimStrings:[],placement:[2],disabled:false,markdownOnly:false,promptOnly:false,runOnEdit:true,substituteRegex:0,minDepth:null,maxDepth:null},
+        {uid:'regex_tpl_3',id:'normalize-quotes',scriptName:'💬 统一中文引号',findRegex:'["""]([^"]+)["""]',replaceString:'「$1」',trimStrings:[],placement:[2],disabled:false,markdownOnly:false,promptOnly:false,runOnEdit:true,substituteRegex:0,minDepth:null,maxDepth:null},
+        {uid:'regex_tpl_4',id:'anti-repeat',scriptName:'🚫 反AI八股',findRegex:'(微微|轻轻|淡淡|默默|缓缓|静静)',replaceString:'[注意：避免高频弱词，请用具体动作替代]',trimStrings:[],placement:[2],disabled:false,markdownOnly:false,promptOnly:false,runOnEdit:true,substituteRegex:0,minDepth:null,maxDepth:null}
+      ];
+      state.regex_entries=rtpls;selectedRegexIndex=0;
+      renderRegexEditor();updatePreview();
+      toast('🔧 正则已注入（5条：隐藏思考+美化标题+清除空行+统一引号+反AI八股）');
+      break;
+  }
+}
+
+/* 蕼的写卡教程 — 完整长文档+锚点滚动 + 代码框复制 + 折叠模板 */
+function showSiTutorial(){
+  var toc=document.getElementById("templateTOC"),ct=document.getElementById("templateContent");
+  if(!toc||!ct||!window.__siTutorial)return;
+  var data=window.__siTutorial["蕼的写卡教程"];
+  if(!data)return;
+
+  // ── Build TOC ──
+  function buildTOC(sections,prefix,depth){
+    var t="",indentPx=depth*14;
+    sections.forEach(function(sec,si){
+      var id=prefix+"_"+si;
+      if(sec.title){
+        var st=" style=\"padding-left:"+indentPx+"px;font-size:"+(0.78-depth*0.04).toFixed(2)+"rem\"";
+        t+="<div class=\"guide-toc-item\" onclick=\"siScrollTo('"+id+"')\" id=\"siTOC_"+id+"\""+st+">"+sec.title+"</div>";
+      }
+      if(sec.subsections&&sec.subsections.length>0){
+        t+=buildTOC(sec.subsections,id,depth+1);
+      }
+    });
+    return t;
+  }
+  toc.innerHTML=buildTOC(data.sections,"s",1)||"<div style=\"padding:10px;font-size:.7rem;color:var(--text-muted)\">（空）</div>";
+
+  // ── Render full document ──
+  var fullHtml="";
+  if(data.disclaimerHtml)fullHtml+="<div class=\"si-disclaimer\">"+data.disclaimerHtml+"</div>";
+
+  function renderSection(sec,pref,depth){
+    depth=depth||0;
+    var tag="h"+(depth<3?depth+2:4);
+    if(sec.title)fullHtml+="<"+tag+" id=\"si_"+pref+"\">"+sec.title+"</"+tag+">";
+    fullHtml+=sec.content||"";
+    if(sec.subsections&&sec.subsections.length){
+      sec.subsections.forEach(function(sub,si){
+        renderSection(sub,pref+"_"+si,depth+1);
+      });
+    }
+  }
+  data.sections.forEach(function(sec,si){
+    renderSection(sec,"s_"+si,0);
+  });
+  ct.innerHTML=fullHtml;
+
+  // ── Post-process: wrap all <pre> in .code-box with copy button ──
+  var pres=ct.querySelectorAll("pre");
+  pres.forEach(function(pre,pi){
+    var wrapper=document.createElement("div");
+    wrapper.className="code-box";
+    // Header with lang + copy btn + expand toggle
+    var header=document.createElement("div");
+    header.className="code-box-header";
+    var codeEl=pre.querySelector("code");
+    var lang=codeEl&&codeEl.className?"代码块":"代码块";
+    header.innerHTML="<span>"+lang+"</span><span style=\"display:flex;gap:4px;align-items:center\"><span class=\"expand-toggle\" onclick=\"siToggleCodeBox(this)\">折叠</span><button class=\"copy-btn\" onclick=\"siCopyCode(this)\">📋 复制</button></span>";
+    pre.parentNode.insertBefore(wrapper,pre);
+    wrapper.appendChild(header);
+    wrapper.appendChild(pre);
+  });
+
+  // ── Inject 肘击通用模板 (collapsible) after 方法二 section ──
+  var elbowSec=ct.querySelector('#si_s_7_1'); // 十→方法二
+  if(!elbowSec)elbowSec=ct.querySelector('[id*="s_7_1"]');
+  if(elbowSec){
+    var elbowHtml='<div class="si-collapse open" id="siElbowTpl">'
+      +'<div class="si-collapse-header" onclick="siToggleCollapse(this)">📄 通用肘击模板（可展开/折叠 · 来源：通用肘击模版.pdf）</div>'
+      +'<div class="si-collapse-body"><div class="code-box">'
+      +'<div class="code-box-header"><span>话术/提示词</span><span style="display:flex;gap:4px"><span class="expand-toggle" onclick="siToggleCodeBox(this)">折叠</span><button class="copy-btn" onclick="siCopyCode(this)">📋 复制</button></span></div>'
+      +'<pre><code>按照世界观对文风参考书进行调整，生成一份符合当前世界观和人设的文风参考书。填写时，将所有`[占位符]`替换为与目标世界观和人设匹配的具体内容。各模块的逻辑层级与顺序保持不变，禁区协议条目数量可根据题材特性增减，但每条须包含「禁止行为」与「具体执行标准」两个要素，确保 AI 在生成时有明确的边界参照。\n\n[char的设定]+[世界观]+[模板]</code></pre></div>'
+      +'<div class="code-box" style="margin-top:8px">'
+      +'<div class="code-box-header"><span>通用文风参考书模板</span><span style="display:flex;gap:4px"><span class="expand-toggle" onclick="siToggleCodeBox(this)">折叠</span><button class="copy-btn" onclick="siCopyCode(this)">📋 复制</button></span></div>'
+      +'<pre><code>&lt;[题材类型]文风参考书&gt;\n# 核心文风定位与底层逻辑\n## 核心定位\n本风格属于**[题材类型]「[视角类型]叙事文风」**，以[核心锚点]为核心，用[时间线结构]串联[主要场景类型]，以[核心表达手法]、[对话风格]、[心理描写风格]为核心表达，摒弃[需规避的风格]，极致还原[目标质感]，同时兼顾[节奏特点1]与[节奏特点2]，实现[核心阅读体验]。\n## 底层逻辑\n1. **[第一优先级]优先于[第一劣后项]**：[具体说明]\n2. **[第二优先级]优先于[第二劣后项]**：[具体说明]\n3. **[第三优先级]优先于[第三劣后项]**：[具体说明]\n\n# 叙事节奏与视角控制技法\n## 核心叙事节奏：[节奏模式名称]\n本风格采用**「[锚点类型]+[推进方式]+[快慢结合策略]」**的节奏模式…\n**[节奏要素一]** [具体说明]\n**[节奏要素二]** [具体说明]\n**[节奏要素三]** [具体说明]\n## 叙事视角：[视角模式名称]\n本风格以**「[主视角类型]为主，[辅视角类型]为辅」**的视角模式…\n1. **主视角：[描述]** [具体规则]\n2. **辅视角：[描述]** [具体规则]\n\n# 描写：[描写基调]\n本风格摒弃[需规避的描写方式]，全程采用**「[核心描写原则]」**…\n## 环境描写：[原则名称]\n[具体规则]\n## 人物描写：[原则名称]\n[具体规则]\n## 心理描写：[原则名称]\n[具体规则]\n\n# 语言风格：[语言调性总结]\n本风格的语言核心是「[调性1]，[调性2]，[调性3]」…\n## 基础语言调性：[调性名称]\n**叙事语言**：[具体规则]\n**对话语言**：[具体规则]\n## 情绪表达：[原则名称]\n[具体规则]\n\n# 人物塑造与情节埋设核心技巧\n## 人物塑造：[原则名称]\n本风格的人物塑造拒绝[需规避的塑造方式]…\n**[核心手法一]设计原则**：[具体规则]\n**[核心手法二]实现方式**：[具体规则]\n## 情节埋设：[原则名称]\n[具体规则]\n\n# 底层禁区协议\n**禁止[禁区一]**：[具体说明与执行标准]\n**禁止[禁区二]**：[具体说明]\n**禁止[禁区三]**：[具体说明]\n**禁止[禁区四]**：[具体说明]\n**禁止[禁区五]**：[具体说明]\n**禁止[禁区六]**：[具体说明]\n&lt;/[题材类型]文风参考书&gt;</code></pre></div></div></div>';
+    var elbowDiv=document.createElement("div");
+    elbowDiv.innerHTML=elbowHtml;
+    var parent=elbowSec.parentNode;
+    // Insert after the h3 and its content (find next h3 or end of parent section)
+    var next=elbowSec.nextElementSibling;
+    while(next&&next.tagName==="P"&&next.nextElementSibling)next=next.nextElementSibling;
+    if(next&&next.tagName!=="H3"&&next.tagName!=="H2")next=next.nextElementSibling;
+    if(next)parent.insertBefore(elbowDiv.firstElementChild,next);
+    else parent.appendChild(elbowDiv.firstElementChild);
+  }
+
+  // ── Inject 角色卡模板 (collapsible) after 三·完整人设模板 section ──
+  var ccSec=ct.querySelector('[id*="s_2_1"]'); // 三→完整人设模板
+  if(ccSec){
+    var ccTplHtml='<div class="si-collapse" id="siCCTpl">'
+      +'<div class="si-collapse-header" onclick="siToggleCollapse(this)">📋 通用人物模板（YAML格式 · 可一键复制）</div>'
+      +'<div class="si-collapse-body"><div class="code-box">'
+      +'<div class="code-box-header"><span>角色卡 YAML 完整模板</span><span style="display:flex;gap:4px"><span class="expand-toggle" onclick="siToggleCodeBox(this)">折叠</span><button class="copy-btn" onclick="siCopyCode(this)">📋 复制</button></span></div>'
+      +'<pre><code># ============================================================\n# 通用人物模板 v1.0 | 适配平台：TavernAI &amp; SillyTavern\n# 使用说明：将 {{char}} 替换为角色名\n# ============================================================\ncharacter:\n  basic_info:\n    name: "{{char}}"\n    alias: ["暂无"]\n    gender: "男"\n    age: 28\n    birthday: "11月13日"\n    birthday_note: "此处填写生日含义或来源"\n    zodiac: "天蝎座"\n    mbti: "INTJ"\n    nationality: "中国"\n\n  identity:\n    occupation: "此处填写职业"\n    organization: "此处填写所属机构"\n    status_in_field: "此处填写在圈内的地位"\n    social_class: "此处填写阶层"\n\n  appearance:\n    height: "183cm"\n    weight: "75kg"\n    build: "宽肩，腰线利落"\n    hair: "栗色，略长，不常打理"\n    eyes: "深棕色"\n    skin: "冷白色"\n    face: "轮廓硬，鼻梁高，嘴唇薄"\n    distinctive_features:\n      - feature: "左手无名指根部有一道白色疤痕"\n        origin: "大学时打架留下的"\n      - feature: "右耳耳垂有个闭合的耳洞"\n        origin: "十九岁的冲动"\n    voice: "低沉，语速不快"\n    scent: "皂香和淡烟味，不用香水"\n\n  style:\n    daily: "深色系为主，纯色棉质T恤配直筒裤"\n    formal: "定制西装，版型正统"\n    taboo: "不穿浅色，不穿紧身"\n\n  food:\n    likes: ["意式浓缩，不加糖不加奶","重口的东西","清水挂面，疲惫时最想吃"]\n    dislikes: ["甜食","过度精致的摆盘餐厅","边吃饭边被人催着谈事"]\n\n  personality:\n    keywords: ["克制","敏锐","执拗","深藏不露的温度"]\n    core_traits:\n      positive: ["[正面特质1]","[正面特质2]","[正面特质3]"]\n      negative: ["[真缺点1]","[真缺点2]","[真缺点3]","[真缺点4]"]\n      contradictions:\n        - "[矛盾1：描述看似对立但共存的特质]"\n        - "[矛盾2]"\n        - "[矛盾3]"\n\n  behavior:\n    habits: ["[习惯1]","[习惯2]","[习惯3]"]\n    taboos: ["[绝对不会做的事1]","[绝对不2]","[绝对不3]","[绝对不4]"]\n\n  speech_style:\n    pattern: "[说话方式概括]"\n    sentence_habit: "[句式习惯]"\n    catchphrase: "[口头禅]"\n    emotion_map:\n      angry: "[生气时的语言变化]"\n      happy: "[开心时的表达方式]"\n      sad: "[悲伤时的表现]"\n\n  relationship_with_user:\n    initial_attitude: "[初始态度]"\n    affinity_triggers:\n      increase: ["[什么会提升好感]","[...]"]\n      decrease: ["[什么会降低好感]","[...]"]\n    break_scene: "[破防场景：什么情况会让他表现出不同]"</code></pre></div></div></div>';
+    var ccDiv=document.createElement("div");
+    ccDiv.innerHTML=ccTplHtml;
+    var ccParent=ccSec.parentNode;
+    var ccNext=ccSec.nextElementSibling;
+    while(ccNext&&ccNext.tagName==="P")ccNext=ccNext.nextElementSibling;
+    if(ccNext&&ccNext.tagName!=="H3"&&ccNext.tagName!=="H2")ccNext=ccNext.nextElementSibling;
+    if(ccNext)ccParent.insertBefore(ccDiv.firstElementChild,ccNext);
+    else ccParent.appendChild(ccDiv.firstElementChild);
+  }
+
+  document.getElementById("templateModal").classList.add("show");
+
+  setTimeout(function(){
+    var first=document.getElementById("siTOC_s_0");
+    if(first)first.classList.add("active");
+  },80);
+}
+
+/* ── 代码框操作 ── */
+function siCopyCode(btn){
+  var pre=btn.closest(".code-box").querySelector("pre");
+  if(!pre)return;
+  var text=pre.textContent;
+  navigator.clipboard.writeText(text).then(function(){
+    btn.textContent="✅ 已复制";btn.classList.add("copied");
+    setTimeout(function(){btn.textContent="📋 复制";btn.classList.remove("copied")},1800);
+  }).catch(function(){toast("复制失败")});
+}
+function siToggleCodeBox(toggle){
+  var box=toggle.closest(".code-box");
+  if(box)box.classList.toggle("collapsed");
+  toggle.textContent=box.classList.contains("collapsed")?"展开":"折叠";
+}
+/* ── 折叠模块操作 ── */
+function siToggleCollapse(header){
+  var wrap=header.closest(".si-collapse");
+  if(wrap)wrap.classList.toggle("open");
+}
+
+/* 点击目录 → 滚动到对应标题 + 高亮 */
+function siScrollTo(id){
+  var anchor=document.getElementById("si_"+id);
+  // Highlight TOC
+  document.querySelectorAll("#templateTOC .guide-toc-item").forEach(function(el){el.classList.remove("active")});
+  var tEl=document.getElementById("siTOC_"+id);
+  if(tEl)tEl.classList.add("active");
+  // Scroll
+  if(anchor)anchor.scrollIntoView({behavior:"smooth",block:"start"});
+}
+
+function closeTemplates(){document.getElementById('templateModal').classList.remove('show')}
+
+function toggleMorePopover(){var m=document.getElementById('morePopover');m.style.display=m.style.display==='none'?'block':'none'}
+document.addEventListener('click',function(e){var btn=document.getElementById('btnMore');var pop=document.getElementById('morePopover');if(pop&&btn&&!btn.contains(e.target)&&!pop.contains(e.target))pop.style.display='none'});
+
+/* ── 分模块清除 ── */
+function clearPresets(){if(!confirm('确定要清除所有预设提示词吗？'))return;state.prompts=[];state.prompt_order=[{character_id:100001,order:[]}];selectedIndex=-1;renderEditor();updatePreview();toast('🗑 预设已清除')}
+function clearWorldBook(){if(!confirm('确定要清除所有世界书条目吗？'))return;state.worldbook_entries=[];selectedWBIndex=-1;renderWorldBookEditor();updatePreview();toast('🗑 世界书已清除')}
+function clearRegex(){if(!confirm('确定要清除所有正则条目吗？'))return;state.regex_entries=[];selectedRegexIndex=-1;renderRegexEditor();updatePreview();toast('🗑 正则已清除')}
+function clearCharCards(){if(!confirm('确定要清除所有角色卡吗？'))return;state.charcards=[];selectedCharCardIndex=-1;renderCharCardEditor();updatePreview();toast('🗑 角色卡已清除')}
+function clearEditDeskWorking(){if(!confirm('确定要清空编辑台工作区吗？'))return;editDesk.workingEntries=[];editDesk.selectedWorkingIndex=-1;renderEditDesk();updatePreview();toast('🗑 工作区已清空')}
+
 function clearAll(){if(!confirm('确定要清除所有数据吗？\n\n将删除所有提示词、全局参数、世界书条目、正则条目和角色卡。\n此操作不可撤销！'))return;state={preset_name:'新预设',temperature:1,top_p:1,top_k:0,top_a:0,min_p:0,repetition_penalty:1,frequency_penalty:0,presence_penalty:0,max_context_unlocked:false,openai_max_context:200000,openai_max_tokens:4096,stream_openai:true,names_behavior:0,wrap_in_quotes:false,image_inlining:false,video_inlining:false,send_if_empty:'',impersonation_prompt:'',new_chat_prompt:'',new_group_chat_prompt:'[Start a new group chat. Group members: {{group}}]',new_example_chat_prompt:'[Example Chat]',continue_nudge_prompt:'',group_nudge_prompt:'',bias_preset_selected:'Default (none)',wi_format:'{0}',scenario_format:'{{scenario}}',personality_format:'{{personality}}',prompts:[],prompt_order:[{character_id:100001,order:[]}],worldbook_entries:[],regex_entries:[],charcards:[]};selectedIndex=-1;selectedWBIndex=-1;selectedRegexIndex=-1;selectedCharCardIndex=-1;editDesk={mode:'preset',sourceFiles:[],selectedSourceFileId:null,selectedSourceEntryIndex:-1,workingEntries:[],selectedWorkingIndex:-1,splitPercent:55,upperVSplit:38,lowerVSplit:40,clipboard:null};editorMode='preset';switchEditorMode('preset');renderEditor();updatePreview();toast('🗑 已清除所有数据')}
 
 /* ═══════════════════════════════════════════
@@ -1448,6 +1845,7 @@ function renderEditDesk(){
     <div class="editdesk-working-list" id="edWorkingListPanel" style="flex:0 0 ${edLSplit}%">
       <div class="editdesk-working-list-header">
         <span>📝 工作区 (${editDesk.workingEntries.length})</span>
+        <button class="btn btn-secondary btn-xs" onclick="openTemplateFile()" title="打开已有文件作为模板">📂</button>
         <button class="btn btn-primary btn-xs" onclick="addWorkingEntry()" title="新建空条目">+</button>
       </div>
       <div class="editdesk-working-list-body" id="edWorkingList">`;
@@ -1603,7 +2001,7 @@ function handleEditDeskImport(data){
     else{sf.entries=[];sf.name='未知预设.json'}
   }else if(editDesk.mode==='worldbook'){
     if(data.entries&&typeof data.entries==='object'&&!Array.isArray(data.entries)){
-      sf.entries=[];Object.entries(data.entries).forEach(([k,en])=>{sf.entries.push({uid:k,keys:Array.isArray(en.keys)?en.keys.join(', '):(en.keys||''),content:en.content||'',comment:en.comment||'',selective:en.selective??false,constant:en.constant??false,position:en.position??0,depth:en.depth??4,order:en.order??100,probability:en.probability??100,use_regex:en.use_regex??false,exclude_recursion:en.exclude_recursion??false,enabled:en.enabled!==undefined?en.enabled:true})});
+      sf.entries=[];Object.entries(data.entries).forEach(([k,en])=>{sf.entries.push(stToWB(en,k))});
       sf.name='世界书_'+Date.now()+'.json';
     }else{sf.entries=[];sf.name='未知世界书.json'}
   }else if(editDesk.mode==='regex'){
@@ -1625,6 +2023,31 @@ function handleEditDeskImport(data){
   }else{
     toast('⚠️ 未能识别该文件格式，请确认模式匹配');
   }
+}
+
+/* 编辑台模板导入：将文件条目追加到工作区 */
+function handleEditDeskTemplateImport(data){
+  var entries=[];
+  if(editDesk.mode==='worldbook'){
+    if(data.entries&&typeof data.entries==='object'&&!Array.isArray(data.entries)){
+      Object.entries(data.entries).forEach(function(_a){var k=_a[0],en=_a[1];entries.push(stToWB(en,k))});
+    }
+  }else if(editDesk.mode==='preset'){
+    if(Array.isArray(data.prompts))entries=data.prompts;
+    else if(data.worldbook_entries&&Array.isArray(data.worldbook_entries))entries=data.worldbook_entries;
+  }else if(editDesk.mode==='regex'){
+    if(Array.isArray(data))entries=data.map(function(en,i){return{uid:en.id||'regex_'+Date.now()+'_'+i,id:en.id||'',scriptName:en.scriptName||en.script_name||'',findRegex:en.findRegex||en.find_regex||'',replaceString:en.replaceString||en.replace_string||'',trimStrings:en.trimStrings||en.trim_strings||[],placement:en.placement||[2],disabled:en.disabled!==undefined?en.disabled:false,markdownOnly:en.markdownOnly||en.markdown_only||false,promptOnly:en.promptOnly||en.prompt_only||false,runOnEdit:en.runOnEdit!==undefined?en.runOnEdit:true,substituteRegex:en.substituteRegex??en.sub_regex??0,minDepth:en.minDepth??en.min_depth??null,maxDepth:en.maxDepth??en.max_depth??null}});
+  }else if(editDesk.mode==='charcard'){
+    var cd=data.data||data;
+    if(cd&&cd.name)entries=[cd];
+  }
+  if(entries.length>0){
+    var before=editDesk.workingEntries.length;
+    editDesk.workingEntries=editDesk.workingEntries.concat(entries);
+    editDesk.selectedWorkingIndex=editDesk.workingEntries.length-1;
+    renderEditDesk();updatePreview();
+    toast('📂 已导入 '+entries.length+' 条到工作区（共 '+(before+entries.length)+' 条）');
+  }else{toast('⚠️ 未能识别文件格式，请确认当前编辑台模式匹配')}
 }
 
 function scrollTabBar(delta){
@@ -1699,6 +2122,21 @@ function addWorkingEntry(){
   }
   renderEditDesk();updatePreview();toast('✅ 已新建条目');
 }
+/* 编辑台：打开已有文件作为模板添加到工作区 */
+function openTemplateFile(){
+  window._editDeskTemplateImport=true;
+  window._importMode=editDesk.mode==='regex'?'regex':'editdesk';
+  document.getElementById('fileInput').accept='.json';
+  document.getElementById('fileInput').click();
+}
+/* 编辑台：新建空源文件 */
+function newSourceFile(){
+  var sf={id:'sf_'+Date.now(),name:'源文件_'+new Date().toLocaleTimeString(),type:editDesk.mode,entries:[],expanded:true};
+  editDesk.sourceFiles.push(sf);
+  editDesk.selectedSourceFileId=sf.id;
+  editDesk.selectedSourceEntryIndex=-1;
+  renderEditDesk();toast('✨ 已新建空源文件');
+}
 
 function deleteWorkingEntry(idx){
   if(idx<0||idx>=editDesk.workingEntries.length)return;
@@ -1750,7 +2188,7 @@ function pasteClipboardToWorking(){
 
 function buildEditDeskPreview(){
   if(editDesk.mode==='preset')return{preset_name:'编辑台预览',prompts:editDesk.workingEntries,prompt_order:[{character_id:100001,order:editDesk.workingEntries.map(e=>({identifier:e.identifier,enabled:e.enabled!==false}))}]};
-  if(editDesk.mode==='worldbook'){const eo={};editDesk.workingEntries.forEach(e=>{eo[e.uid]={keys:e.keys?e.keys.split(',').map(k=>k.trim()).filter(Boolean):[],content:e.content,comment:e.comment,selective:e.selective,constant:e.constant,position:e.position,depth:e.depth,order:e.order,probability:e.probability,use_regex:e.use_regex,exclude_recursion:e.exclude_recursion,enabled:e.enabled}});return{entries:eo};}
+  if(editDesk.mode==='worldbook'){const eo={};editDesk.workingEntries.forEach((e,i)=>{eo[String(i)]=wbToST(e,i)});return{entries:eo};}
   if(editDesk.mode==='regex')return editDesk.workingEntries.map(e=>({id:e.id||e.uid,scriptName:e.scriptName,findRegex:e.findRegex,replaceString:e.replaceString,trimStrings:e.trimStrings||[],placement:e.placement,disabled:e.disabled,markdownOnly:e.markdownOnly,promptOnly:e.promptOnly,runOnEdit:e.runOnEdit,substituteRegex:e.substituteRegex??0,minDepth:e.minDepth,maxDepth:e.maxDepth}));
   if(editDesk.mode==='charcard'&&editDesk.workingEntries.length>0)return{spec:'chara_card_v2',spec_version:'2.0',data:editDesk.workingEntries[0]};
   return{workingEntries:editDesk.workingEntries};
@@ -1762,7 +2200,7 @@ function exportWorkingPreset(){
     o={preset_name:'编辑台导出',prompts:editDesk.workingEntries,prompt_order:[{character_id:100001,order:editDesk.workingEntries.map(e=>({identifier:e.identifier,enabled:e.enabled!==false}))}]};
     fn='preset_export.json';
   }else if(editDesk.mode==='worldbook'){
-    const eo={};editDesk.workingEntries.forEach(e=>{eo[e.uid]={keys:e.keys?e.keys.split(',').map(k=>k.trim()).filter(Boolean):[],content:e.content,comment:e.comment,selective:e.selective,constant:e.constant,position:e.position,depth:e.depth,order:e.order,probability:e.probability,use_regex:e.use_regex,exclude_recursion:e.exclude_recursion,enabled:e.enabled}});
+    const eo={};editDesk.workingEntries.forEach((e,i)=>{eo[String(i)]=wbToST(e,i)});
     o={entries:eo};fn='worldbook_export.json';
   }else if(editDesk.mode==='regex'){
     o=editDesk.workingEntries.map(e=>({id:e.id||e.uid,scriptName:e.scriptName,findRegex:e.findRegex,replaceString:e.replaceString,trimStrings:e.trimStrings||[],placement:e.placement,disabled:e.disabled,markdownOnly:e.markdownOnly,promptOnly:e.promptOnly,runOnEdit:e.runOnEdit,substituteRegex:e.substituteRegex??0,minDepth:e.minDepth,maxDepth:e.maxDepth}));
@@ -1865,6 +2303,18 @@ loadWSWidth();
 renderEditor();
 updatePreview();
 initScrollWatcher();
+
+
+
+
+window.__siTutorial={"蕼的写卡教程":{"disclaimerHtml":"<p>本教程综合整理自多篇实战教程，适合初次写卡及有一定经验但想系统提升的创作者。所有内容均以 SillyTavern（ST/酒馆）为目标平台。</p>","sections":[{"title":"一、基础概念","content":"","subsections":[{"title":"什么是”卡”","content":"<p>在 SillyTavern 中，“卡”（Card）是角色扮演的基本单位，由以下几个部分组成：</p><ul><li><b>人设（Persona）</b>：定义角色的性格、背景、说话方式</li><li><b>世界书（World Book）</b>：描述世界观规则、背景设定</li><li><b>剧情/情节设定</b>：内置的故事线索、触发条件</li><li><b>输出设定</b>：规范 AI 回复格式的规则句</li><li><b>状态栏</b>：动态展示角色状态、记忆的附加模块</li></ul>","subsections":[],"level":2},{"title":"卡的基本分类","content":"<table><thead><tr><th>类型</th><th>说明</th></tr></thead><tbody><tr><td><b>单人卡</b></td><td>以单个 char 为核心，常以好感度或时间为轴</td></tr><tr><td><b>多人卡</b></td><td>多个 char 同时存在，群像互动</td></tr><tr><td><b>剧情卡</b></td><td>内置了特定故事线索或事件触发机制</td></tr><tr><td><b>模拟器</b></td><td>高自由度，世界由 AI 动态生成，user 自由探索</td></tr></tbody></table>","subsections":[],"level":2},{"title":"SillyTavern 特有概念","content":"<ul><li><b><code>{{char}}</code></b>：当前角色的占位符，会被角色名替换</li><li><b><code>{{user}}</code></b>：玩家的占位符，会被用户名替换</li><li><b>世界书（World Book）</b>：通过关键词触发，将设定注入上下文</li><li><b><code>$+指令</code></b>：强制触发某个行为或状态的特殊指令前缀</li><li><b>注入深度（Injection Depth）</b>：控制世界书条目插入对话历史的位置</li></ul><hr>","subsections":[],"level":2}],"level":1},{"title":"二、书写格式详解","content":"<p>写卡时可以选择多种格式，每种格式有不同的优劣和适用场景。</p>","subsections":[{"title":"格式对比总览","content":"<table><thead><tr><th>格式</th><th>推荐程度</th><th>优点</th><th>缺点</th><th>适用场景</th></tr></thead><tbody><tr><td><b>Markdown</b></td><td>★★★★☆</td><td>手搓容易，阅读自然，AI 活人感强</td><td>多一步符号解析，AI 偶尔误读</td><td>新手入门，人设描写</td></tr><tr><td><b>YAML</b></td><td>★★★★★</td><td>键值对清晰，AI 直接抓取关键词，触发准确</td><td>缩进严格，需要 AI 辅助格式化</td><td>人设表单，好感度分级，官方推荐</td></tr><tr><td><b>XML</b></td><td>★★★☆☆</td><td>分块清晰，防止内容串线</td><td>需闭合标签，手搓较麻烦</td><td>规则书包裹，多段内容隔离</td></tr><tr><td><b>JSON</b></td><td>★★☆☆☆</td><td>AI 理解准确</td><td>手搓难，MF 平台兼容性差</td><td>ST/酒馆平台，配合触发机制</td></tr><tr><td><b>Python/伪代码</b></td><td>★★★☆☆</td><td>数值逻辑严密，条件判定清晰</td><td>书写较难，修改门槛高</td><td>RPG 模拟器，数值判定卡</td></tr><tr><td><b>混合格式</b></td><td>★★★★★</td><td>集大成，灵活强大</td><td>需要一定基础，出错难排查</td><td>有经验的创作者</td></tr></tbody></table>","subsections":[],"level":2},{"title":"Markdown 格式示例","content":"<pre class=\"code-block\"><code># 基础信息\n- 姓名：林玦\n- 年龄：27\n- 职业：刑警\n\n# 性格\n**表面**：沉默寡言，态度冷淡，不苟言笑\n**内里**：责任感极强，偶尔会因细节露出温柔\n\n# 说话风格\n- 惯用短句，很少解释\n- 不喜欢被追问，但被追问时不会回避\n- 偶尔用反问替代拒绝：「你觉得呢？」</code></pre>","subsections":[],"level":2},{"title":"YAML 格式示例","content":"<pre class=\"code-block\"><code>character:\n  name: \"林玦\"\n  age: 27\n  occupation: \"刑警\"\n  \n  personality:\n    surface: \"沉默寡言，冷淡克制\"\n    core: \"责任感强，内里温柔\"\n    \n  speech_style:\n    pattern: \"短句为主，不做多余解释\"\n    habit: \"用反问代替拒绝\"\n    \n  roleplay_guide:\n    key_principle: \"信任是漫长积累的结果，不会因为单次善意立刻改变态度\"</code></pre>","subsections":[],"level":2},{"title":"XML 包裹格式示例（推荐用于规则书）","content":"<pre class=\"code-block\"><code>&lt;林玦人设规则书&gt;\n# 核心设定\n...具体内容...\n\n# 行为规范\n...具体内容...\n&lt;/林玦人设规则书&gt;</code></pre><blockquote><p><b>小技巧</b>：XML 格式适合将人设、世界观、文风分块包裹，防止内容在 AI 上下文中相互干扰。</p></blockquote><hr>","subsections":[],"level":2}],"level":1},{"title":"三、人物设定（人设）","content":"","subsections":[{"title":"人设的核心要素","content":"<p>一份好的人设不是简单的属性表，而是要帮助 AI 理解「这个人在任何情境下会如何反应」。</p>","subsections":[{"title":"1. 基础信息层","content":"<pre class=\"code-block\"><code>name: \"角色名\"\nage: 年龄\ngender: \"性别\"\nappearance: \"外貌描述（抓核心特征，不要流水账）\"\noccupation: \"职业/身份\"</code></pre>","level":3},{"title":"2. 性格成因链（最重要）","content":"<p>不要只写「性格：冷漠」，要写出<b>为什么</b>和<b>如何表现</b>：</p><pre class=\"code-block\"><code>## 性格与成因\n- **表层行为**：对陌生人保持距离，不主动开口\n- **深层原因**：幼年时期的经历让他习惯用沉默保护自己\n- **触发点**：被人无端指责时会短暂失控，事后会沉默很长时间\n- **反面**：对真正信任的人偶尔会有意外温柔的举动</code></pre>","level":3},{"title":"3. 行为惯性与语言指纹","content":"<pre class=\"code-block\"><code>## 语言习惯\n- 习惯用「嗯」「知道了」结束对话\n- 被追问时不正面回答，改为反问\n- 生气时反而比平时更安静\n- 禁止说「没事」——他从不假装没事</code></pre>","level":3},{"title":"4. 关系坐标","content":"<pre class=\"code-block\"><code>## 对 {{user}} 的初始态度\n- 初始好感度：中性，不排斥也不亲近\n- 态度变化触发点：发现 {{user}} 的某个意外特质\n- 破防场景：{{user}} 在他面前哭的时候</code></pre>","level":3},{"title":"5. 演绎提示（给 AI 的核心指令）","content":"<pre class=\"code-block\"><code>## 演绎原则\n- 任何情况下，{{char}} 不会主动说「我喜欢你」，但可以用行动表达\n- 好感度提升是缓慢的过程，禁止跳跃式升温\n- 签名场景：在众人争论时，他悄悄递了一杯水过来，没有说话</code></pre>","level":3}],"level":2},{"title":"完整人设模板（Markdown 版）","content":"<pre class=\"code-block\"><code>&lt;{{char}}人设&gt;\n\n# 基础信息\n- 姓名：[姓名]\n- 年龄：[年龄]\n- 性别：[性别]\n- 职业/身份：[职业]\n- 外貌：[1-3个最具辨识度的特征]\n\n# 性格\n**外在表现**：[他人眼中的样子]\n**内在本质**：[真实的内核]\n**成因**：[是什么造就了这个性格]\n\n# 行为习惯\n- [习惯1]\n- [习惯2]\n- 禁止：[绝对不会做的事]\n\n# 语言风格\n- [说话方式]\n- [口头禅/习惯用语]\n- [在不同情绪下的语言变化]\n\n# 与 {{user}} 的互动规则\n- 初始态度：[初始关系定位]\n- 好感度变化逻辑：[什么会提升/降低好感]\n- 破防场景：[什么情况会让他表现出不同的一面]\n\n# 演绎核心原则\n[给 AI 最关键的一句话提示]\n\n&lt;/{{char}}人设&gt;</code></pre><hr>","subsections":[],"level":2}],"level":1},{"title":"四、世界观规则书","content":"","subsections":[{"title":"世界观的作用","content":"<p>世界观规则书告诉 AI 这个世界「如何运转」，防止出现时代错乱、规则矛盾等问题。</p>","subsections":[],"level":2},{"title":"世界观的基本要素","content":"<ol><li><b>时代与背景</b>：时间节点、社会发展水平</li><li><b>社会结构</b>：政治体制、阶级关系、重要机构</li><li><b>地理版图</b>：主要地点、地点特色</li><li><b>特殊规则</b>：魔法体系、科技水平、超自然法则</li><li><b>文化习俗</b>：用语习惯、礼仪禁忌、社会氛围</li></ol>","subsections":[],"level":2},{"title":"构建世界观的流程","content":"<pre class=\"code-block\"><code>确定题材类型\n    ↓\n输入参考背景（让 AI 生成初稿）\n    ↓\n精简提炼（删掉无关内容，压缩语言）\n    ↓\n分层放置（核心内容放人设，细节放世界书/资料库）</code></pre>","subsections":[],"level":2},{"title":"现代都市世界观提示词示例","content":"<pre class=\"code-block\"><code>我现在要创作一张背景是现代大世界的卡。\n城市运行体系、人文水文、社会文化、行政体系参考上海。\n市区划分明确，命名偏向古风。\n请生成 markdown 格式的世界书，语言精简客观。</code></pre>","subsections":[],"level":2},{"title":"同人/已有 IP 世界观处理","content":"<p>已有 IP 的世界观通常比较完整，但 token 有限，需要做拆分：</p><table><thead><tr><th>放置位置</th><th>内容</th></tr></thead><tbody><tr><td><b>人设部分</b></td><td>作品时代背景（一句话）、主要机构简介、地图分布</td></tr><tr><td><b>世界书/资料库</b></td><td>社会文化细节、各机构详细职能、具体地点特色、可能触发的事件</td></tr></tbody></table>","subsections":[],"level":2},{"title":"世界观规则书模板","content":"<pre class=\"code-block\"><code>&lt;世界规则书·[世界名]&gt;\n\n# 时代背景\n[时间节点] + [社会发展水平] + [整体氛围]\n\n# 社会结构\n## 权力体系\n[政治/权力结构简述]\n\n## 重要机构\n- [机构A]：[职能简述]\n- [机构B]：[职能简述]\n\n# 地理版图\n- [地点A]：[特点]\n- [地点B]：[特点]\n\n# 世界运行规则\n[如有魔法/科技/特殊体系，在此说明其核心逻辑]\n\n# 禁区协议\n- 禁止出现：[与世界观矛盾的事物]\n- 时代限制：[该时代不存在的事物]\n\n&lt;/世界规则书·[世界名]&gt;</code></pre><hr>","subsections":[],"level":2}],"level":1},{"title":"五、文风参考书","content":"","subsections":[{"title":"为什么需要文风参考书","content":"<p>文风参考书通过给 AI 提供具体的「风格锚点」，让它在写作时有明确的参照，避免输出通用网文腔。</p>","subsections":[],"level":2},{"title":"文风参考书的生成方法","content":"<p><b>方法一：给文本让 AI 总结（推荐）</b></p><pre class=\"code-block\"><code>总结以下内容的文风，忽略其中的名字等信息，\n只参考叙事节奏、描写角度等内容，\n生成相同风格的文风参考书，\n用于描写 [具体描写目标，如：人物内心感受/日常场景]：\n\n[在此粘贴参考文本]</code></pre><blockquote><p><b>注意</b>：请使用自己创作的文本或经典作品的公开片段，尊重他人创作。</p></blockquote><p><b>方法二：直接描述风格方向</b></p><pre class=\"code-block\"><code>生成一份文风参考书，风格要求如下：\n- 叙事节奏：[慢/快/张弛有度]\n- 语言调性：[克制/热烈/散文化]\n- 描写重心：[环境/心理/动作]\n- 规避：[华丽辞藻/过度煽情/网络用语]</code></pre>","subsections":[],"level":2},{"title":"文风参考书的标准结构","content":"<pre class=\"code-block\"><code>&lt;[风格名]文风参考书&gt;\n\n# 核心美学\n- **[风格关键词1]**：[具体说明]\n- **[风格关键词2]**：[具体说明]\n\n# 叙事策略\n- **节奏模式**：[描述叙事节奏]\n- **视角选择**：[说明视角类型及规则]\n- **留白原则**：[何时停止，不说尽]\n\n# 语言规范\n- **句式偏好**：[长句/短句/混合]\n- **词汇选择**：[偏向什么类型的词]\n- **禁止**：[明确禁止的语言习惯]\n\n# 情感表达\n- **表达方式**：[直接/借物/动作]\n- **情绪处理**：[如何处理强烈情绪]\n\n# 描写规范\n## 环境描写\n[环境描写的具体规则]\n\n## 人物描写\n[人物描写的具体规则]\n\n## 心理描写\n[心理描写的具体规则]\n\n&lt;/[风格名]文风参考书&gt;\n\n$请使用&lt;[风格名]文风参考书&gt;，以 {{char}} 的视角/情境为切入点进行描写。</code></pre>","subsections":[],"level":2},{"title":"文风参考书放置位置","content":"<table><thead><tr><th>位置</th><th>适合放置的内容</th></tr></thead><tbody><tr><td><b>剧情设定</b></td><td>叙事文风，控制故事整体基调</td></tr><tr><td><b>输出设定</b></td><td>互动文风，控制角色扮演时的写作风格</td></tr><tr><td><b>世界书</b></td><td>特定场景触发的专属文风（如战斗场景、温馨场景）</td></tr></tbody></table>","subsections":[],"level":2},{"title":"万能文风模板","content":"<p>以下模板可直接交给 AI，结合世界观和人设填充：</p><pre class=\"code-block\"><code>&lt;[题材类型]文风参考书&gt;\n\n# 核心文风定位与底层逻辑\n\n## 核心定位\n本风格属于「[视角类型]叙事文风」，以[核心锚点]为核心，\n用[时间线结构]串联[主要场景类型]，\n以[核心表达手法]、[对话风格]、[心理描写风格]为核心表达，\n摒弃[需规避的风格]，极致还原[目标质感]。\n\n## 底层逻辑\n1. **[第一优先级]优先于[第一劣后项]**：[具体说明]\n2. **[第二优先级]优先于[第二劣后项]**：[具体说明]\n3. **[第三优先级]优先于[第三劣后项]**：[具体说明]\n\n# 叙事节奏与视角控制\n[具体规则]\n\n# 描写规范\n[具体规则]\n\n# 语言风格\n[具体规则]\n\n# 禁区协议\n- ❌ [禁止行为1]：[执行标准]\n- ❌ [禁止行为2]：[执行标准]\n\n&lt;/[题材类型]文风参考书&gt;</code></pre><hr>","subsections":[],"level":2}],"level":1},{"title":"六、状态栏与记忆栏","content":"","subsections":[{"title":"状态栏的作用","content":"<p>状态栏是必需品，作用包括：</p><ul><li>补充说明当前角色状态</li><li>为 user 提供剧情锚点</li><li>引导发现角色的隐藏设定，增强可玩性</li></ul>","subsections":[],"level":2},{"title":"常见状态栏分类","content":"<p><b>角色侧（char）</b></p><ul><li><code>{{char}}</code> 基础状态栏（外貌、穿着、生理状态、心理）</li><li><code>{{char}}</code> 通讯终端（手机、消息记录）</li><li>记忆栏（短期记忆 + 长期记忆归档）</li></ul><p><b>玩家侧（user）</b></p><ul><li><code>{{user}}</code> 状态栏</li><li><code>{{user}}</code> 通讯终端</li></ul><blockquote><p>user 可以通过 <code>$+指令</code> 的方式在游玩中添加自己需要的模块，建议放在面具中持续提醒。</p></blockquote>","subsections":[],"level":2},{"title":"状态栏写法：填充 + 说明双保险","content":"<p>单纯的 <code>[AI填充：xxx]</code> 有时候 AI 不能正确理解，建议「状态栏本体」+「说明书」同时使用。</p><p><b>简单填充写法</b>：</p><pre class=\"code-block\"><code>## {{char}} 状态\n\n**姓名**：[AI填充：{{char}}的姓名]\n**当前状态**：[AI填充：外貌、穿着、生理状态]\n**心理**：[AI填充：当前心理状态，用一句话描述]\n**与 {{user}} 的关系**：[AI填充：当前关系定位]</code></pre><p><b>带说明的进阶写法</b>：</p><pre class=\"code-block\"><code>## 生理指征\n\n- **体力/精力**\n  - 描述：量化角色当前行动力\n  - 动态逻辑：运动/受伤消耗，休息/进食恢复\n  - 阈值：低于 20% 时必须在正文中体现疲惫感\n\n- **健康/外伤**\n  - 无伤显示「健康」\n  - 受伤需具体描述（如：左肩贯穿伤·出血中）</code></pre>","subsections":[],"level":2},{"title":"记忆栏设计","content":"<p>记忆栏是状态栏中最关键的部分，用于解决 AI「失忆」问题。</p>","subsections":[{"title":"核心架构：短期记忆（STM）+ 长期记忆（LTM）","content":"<pre class=\"code-block\"><code>&lt;沉浸式记忆管理&gt;\n\n## 📝 短期记忆流（STM）\n&gt; 每轮实时更新，记录当下的因果逻辑\n\n**Round [当前轮次]**\n- **起**：[本轮事件触发点 / user 的核心行为]\n- **承**：[角色的应对 / 互动发展过程]\n- **转**：[意料之外的变数 / 情感态度转折]\n- **合**：[本轮交互最终结果 / 气氛定调]\n\n---\n\n## 🗂️ 长期记忆库（LTM）\n&gt; 每 10 轮自动归档，提炼关键剧情节点\n\n**[关键事件名 · Round X-Y]**\n[该事件对人物关系或主线剧情产生的深远影响]\n\n---\n\n## 🔗 角色羁绊谱\n- **显性关系**：[当前社会定义的表面身份]\n- **隐性张力**：[台词之下的真实情感流动]\n- **当前状态**：[信任度/好感度，或关键词描述]\n\n&lt;/沉浸式记忆管理&gt;</code></pre>","level":3}],"level":2}],"level":1},{"title":"七、剧情卡","content":"","subsections":[{"title":"剧情触发类型","content":"","subsections":[{"title":"1. 数值触发型","content":"<p>以好感度、等级等数值为触发点，分级展开人物行为和剧情。</p><pre class=\"code-block\"><code>affection_system:\n  level_1:       # 好感 0-20\n    char_behavior: \"保持距离，态度礼貌但冷淡\"\n    unlock_event: null\n    \n  level_2:       # 好感 20-50\n    char_behavior: \"开始主动找话题，偶尔有小动作\"\n    unlock_event: \"雨天送伞事件\"\n    \n  level_3:       # 好感 50-80\n    char_behavior: \"会在 {{user}} 遇到困难时主动出现\"\n    unlock_event: \"告白前夜·独白事件\"\n    \n  level_4:       # 好感 80+\n    char_behavior: \"偶尔会说漏嘴，暴露真实感情\"\n    unlock_event: \"告白事件\"</code></pre>","level":3},{"title":"2. 道具触发型","content":"<p>使用物品栏触发特定剧情分支。</p><p>设置方法：</p><ol><li>在物品栏设置道具</li><li>开启「达到条件后解锁」并填写解锁条件</li><li>在交互编辑的提示词中填写 <code>$+剧情走向引导</code></li><li>可以在「使用后操作」中设置连锁物品添加/删除</li></ol>","level":3},{"title":"3. 节点分线触发型","content":"<p>适合多线剧情，以 <code>【xx线】</code> 区分不同剧情分支。</p><pre class=\"code-block\"><code># 【命运线】\n\n## 触发条件\n当 {{user}} 获得「古老钥匙」道具时解锁\n\n## 剧情内容\n...\n\n---\n\n# 【平凡线】\n\n## 触发条件\n好感度达到 60 且未触发命运线时自动进入\n\n## 剧情内容\n...</code></pre>","level":3}],"level":2},{"title":"剧情的情感发展逻辑（重要）","content":"<p>感情发展有不可跳跃的五个阶段，AI 必须遵守：</p><table><thead><tr><th>阶段</th><th>名称</th><th>特征</th></tr></thead><tbody><tr><td>1</td><td>各自的世界</td><td>陌生人，没有特殊关注</td></tr><tr><td>2</td><td>裂缝</td><td>某个具体事件产生了超出预期的注意</td></tr><tr><td>3</td><td>积累</td><td>多次有实质内容的互动，信任建立</td></tr><tr><td>4</td><td>失衡</td><td>意识到在意程度超出合理范围，第一反应是不安</td></tr><tr><td>5</td><td>确认</td><td>经历挣扎和考验后，才真正承认感情</td></tr></tbody></table><blockquote><p><b>关键原则</b>：真正动人的是那些「没说出口的」、「做了一半收回来的」细节。</p></blockquote>","subsections":[],"level":2},{"title":"剧情卡格式推荐","content":"<table><thead><tr><th>类型</th><th>推荐格式</th></tr></thead><tbody><tr><td>单人单线</td><td>Markdown / YAML</td></tr><tr><td>单人多线</td><td>YAML + Ruby（好感度分级）</td></tr><tr><td>多人单线</td><td>XML（分块隔离各角色线）</td></tr><tr><td>多人多线</td><td>混合格式</td></tr></tbody></table><hr>","subsections":[],"level":2}],"level":1},{"title":"八、模拟器与多人卡","content":"","subsections":[{"title":"模拟器分类","content":"<p><b>1. 有特定世界观的模拟器</b>（现代都市、西方玄幻等）</p><p>构建流程：</p><pre class=\"code-block\"><code>输入题材 → AI 生成世界观初稿 → 精简提炼 → 分层放置</code></pre><p><b>2. 同人 IP 模拟器</b></p><p>由于 token 有限，需要拆分：</p><ul><li><b>人设部分</b>：时代背景（一句话）、机构简介、地图分布</li><li><b>资料库</b>：社会文化细节、机构详细职能、具体地点特色</li></ul><p><b>3. 高自由度随机模拟器</b>（快穿、RPG 等）</p><p>必须明确的要素：</p><ul><li>是否有固定主线</li><li>相关数值体系</li><li>是否需要内置 NPC</li><li>数值动态变化规则</li></ul>","subsections":[],"level":2},{"title":"RPG 模拟器必含要素","content":"<pre class=\"code-block\"><code>力量体系 + 世界规则 + 基础世界书 + 逻辑规则</code></pre><p><b>力量体系示例（元物理常数层）</b>：</p><pre class=\"code-block\"><code>World_Constants:\n  Magic_Density:\n    Range: [0.0, 10.0]\n    Description: \"魔力浓度。0为纯物理世界，10为概念神域\"\n  Tech_Level:\n    Range: [0.0, 10.0]\n    Description: \"科技水平。0为石器时代，10为戴森球\"\n  Entropy_Rate:\n    Range: [0.0, 1.0]\n    Description: \"混乱度。0为乌托邦，1为末日克苏鲁\"</code></pre>","subsections":[],"level":2},{"title":"多人卡的特殊处理","content":"<p>多人卡的核心难点在于<b>角色不串戏</b>和<b>关系网络清晰</b>。</p><pre class=\"code-block\"><code>&lt;角色A·人设&gt;\n...\n$在 [触发条件] 时，由角色A响应，其他角色保持旁观或按自身性格反应\n&lt;/角色A·人设&gt;\n\n&lt;角色B·人设&gt;\n...\n&lt;/角色B·人设&gt;\n\n&lt;群体互动规则&gt;\n- 角色A和角色B的关系：[关系描述]\n- 当 {{user}} 同时与两者互动时：[处理规则]\n- 角色间对话规范：[说明发言顺序或规则]\n&lt;/群体互动规则&gt;</code></pre><hr>","subsections":[],"level":2}],"level":1},{"title":"九、世界书（World Book）与触发机制","content":"","subsections":[{"title":"ST 世界书基础","content":"<p>世界书是 SillyTavern 中最强大的工具之一，通过<b>关键词匹配</b>将设定动态注入上下文，而不是一直占用 token。</p>","subsections":[],"level":2},{"title":"触发类型","content":"<table><thead><tr><th>类型</th><th>说明</th><th>使用场景</th></tr></thead><tbody><tr><td><b>Always On（常驻）</b></td><td>无论何时都在上下文中</td><td>核心世界规则、角色底层设定</td></tr><tr><td><b>单关键词触发</b></td><td>对话中出现指定词才注入</td><td>特定事件、地点、人物的设定</td></tr><tr><td><b>双关键词触发（Secondary Key）</b></td><td>需要两个关键词同时出现</td><td>深层记忆、特殊剧情分支</td></tr><tr><td><b>递归扫描</b></td><td>条目内容本身也被扫描</td><td>构建联想链</td></tr></tbody></table>","subsections":[],"level":2},{"title":"世界书分层设计（推荐）","content":"<pre class=\"code-block\"><code>Layer 1：Always On\n└── 角色核心性格底色\n└── 世界基本运行规则\n\nLayer 2：单关键词触发\n└── 特定场景的行为规范（\"下雨\"→雨天行为描述）\n└── 道具/地点设定（\"咖啡馆\"→环境描述）\n\nLayer 3：双关键词触发（深层）\n└── 深层记忆（\"雨天 + 伞\"→ 触发初遇记忆）\n└── 隐藏剧情（\"钥匙 + 地下室\"→ 触发隐线）</code></pre>","subsections":[],"level":2},{"title":"世界书记忆条目写法","content":"<p>结合之前讨论的「角色视角记忆」，每个记忆条目应包含：</p><pre class=\"code-block\"><code>&lt;记忆·[事件名]&gt;\n\n## 感知锚点\n[{{char}}记忆中最鲜明的1-2个具体细节——一个声音/一个动作/一个瞬间]\n\n## 事件经过（{{char}}视角）\n[用第一人称写，而非旁白。侧重主观感受和情绪，不是客观事件陈述]\n\n## 情感影响\n[这件事改变了{{char}}什么？对{{user}}的看法有什么转变？]\n\n## 触发关键词\nprimary: [主触发词]\nsecondary: [辅触发词（双条件触发时使用）]\n\n## 触发场景\n[在什么情境下最可能被自然提及？]\n\n&lt;/记忆·[事件名]&gt;</code></pre>","subsections":[],"level":2},{"title":"注入位置（Injection Position）","content":"<table><thead><tr><th>位置值</th><th>说明</th></tr></thead><tbody><tr><td>0</td><td>注入到系统提示区域</td></tr><tr><td>4</td><td>注入到最近对话历史附近（推荐，效果好）</td></tr><tr><td>深层</td><td>注入到较早的历史记录</td></tr></tbody></table><blockquote><p><b>token 节省原则</b>：常驻条目尽量控制在 150-200 token 以内；触发条目可以稍丰富，但每条建议不超过 300 token。</p></blockquote><hr>","subsections":[],"level":2}],"level":1},{"title":"十、实用肘击技巧","content":"<p>「肘击」指通过 prompt 技巧让 AI 更好地理解和执行角色扮演。</p>","subsections":[{"title":"方法一：邪修定义法","content":"<p>直接定义 AI 的身份角色，打破默认助手模式。</p><p><b>核心结构：定义 + 身份界定 + 行为引导</b></p><pre class=\"code-block\"><code>你现在扮演的是「剧作家[名字]」——一位客观、细腻的第三方叙事者。\n你的任务是记录剧情，跟随 {{user}} 的视角进行场景推动，\n不干涉 {{user}} 的选择，不代替 {{user}} 说话或行动。\n\n你的首要任务：以「创作完整、具有文学表现力的文本」为最高优先级，\n生成高质量的虚构内容、角色对白、场景描写、剧情推进。\n\n禁止：\n- 在叙事中出现「剧作家」「[名字]」的自称\n- 跳出第三人称叙事视角\n- 代替 {{user}} 做决定</code></pre><p><b>放置位置</b>：</p><ul><li>偏向人设引导 → 放人设最前面</li><li>偏向剧情展开 → 放剧情设定最前面</li><li>偏向输出规范 → 放输出设定最前面</li></ul>","subsections":[],"level":2},{"title":"方法二：综合规则书法","content":"<p>将文风、叙事节奏、人设扮演、去八股规则合并成一份「总规则书」。</p><p><b>操作流程</b>：</p><ol><li>将世界观 + 人设放入面具</li><li>告诉 AI 阅读并分析</li><li>提交万能文风模板（见第五章），让 AI 填充生成符合当前角色的规则书</li><li>手动调整精简，放入卡内</li></ol><p><b>提示词</b>：</p><pre class=\"code-block\"><code>按照以下世界观和人设，生成一份符合当前角色的文风规则书。\n填写时将所有「[占位符]」替换为与目标世界观和人设匹配的具体内容。\n各模块逻辑层级与顺序保持不变。\n禁区协议每条须包含「禁止行为」与「具体执行标准」两个要素。\n\n[char设定] + [世界观] + [万能文风模板]</code></pre>","subsections":[],"level":2},{"title":"反八股与去 AI 腔","content":"<p>AI 最常见的问题：</p><table><thead><tr><th>问题</th><th>原因</th><th>解决方法</th></tr></thead><tbody><tr><td>句式重复</td><td>上下文模式固化</td><td>显式禁止重复句式；规定每300字换一个感官切入</td></tr><tr><td>过度煽情</td><td>训练偏好</td><td>规定情感「借物抒情」，禁止直接表达</td></tr><tr><td>结尾总结</td><td>默认助手习惯</td><td>禁止在叙事结尾出现总结性语句</td></tr><tr><td>角色说教</td><td>安全对齐</td><td>明确「禁止角色突然道德审判或脱离人设说教」</td></tr><tr><td>替 user 行动</td><td>剧情推进本能</td><td>设置留白艺术规则，明确禁止越权代行</td></tr></tbody></table><p><b>反重复规则示例</b>：</p><pre class=\"code-block\"><code>## 反重复检测\n- 连续三轮不得使用相同句式开头\n- 上轮用视觉切入，本轮优先从听觉/触觉切入\n- 禁用高频词：微微、轻轻、淡淡、默默（每万字不超过5次）\n- 变体也算重复：「微微」和「略微」视为同一词</code></pre>","subsections":[],"level":2},{"title":"<code>$</code> 指令系统","content":"<p><code>$</code> 是 ST 中的强制触发前缀，可用于：</p><table><thead><tr><th>用途</th><th>示例</th></tr></thead><tbody><tr><td>触发特定状态</td><td><code>$总结记忆</code></td></tr><tr><td>切换场景</td><td><code>$快进到三天后</code></td></tr><tr><td>强制角色行为</td><td><code>$角色A主动开口</code></td></tr><tr><td>调整输出格式</td><td><code>$在末尾附加状态栏</code></td></tr></tbody></table><hr>","subsections":[],"level":2}],"level":1},{"title":"十一、常见问题与注意事项","content":"","subsections":[{"title":"Q：AI 一直忘记之前的剧情怎么办？","content":"<ul><li>启用状态栏的 STM + LTM 记忆架构</li><li>配合世界书的关键词触发记忆条目</li><li>每隔 10 轮用 <code>$总结记忆</code> 手动触发归档</li><li>记忆条目写「char视角」而不是「事件陈述」</li></ul>","subsections":[],"level":2},{"title":"Q：角色扮演太出戏/AI腔太重怎么办？","content":"<ul><li>检查人设中是否有具体的「语言指纹」设定</li><li>加入「禁止出现 XX 词语」的负面约束</li><li>添加文风参考书，给 AI 明确的写作锚点</li></ul>","subsections":[],"level":2},{"title":"Q：多人卡角色总是串戏怎么办？","content":"<ul><li>每个角色用独立 XML 标签包裹</li><li>在触发词中加入角色名前缀做区分</li><li>添加「角色互动规则」明确发言顺序</li><li>避免多个角色共用同一套描写词汇</li></ul>","subsections":[],"level":2},{"title":"Q：token 不够用怎么办？","content":"<ul><li>核心设定放人设，细节放世界书（按需注入）</li><li>常驻世界书条目控制在 200 token 以内</li><li>使用 Always On 的内容务必做精简</li><li>资料库用于放置「背景参考」类内容</li></ul>","subsections":[],"level":2},{"title":"Q：好感度/数值总是不按规则变化怎么办？","content":"<ul><li>在人设中明确写出数值变化的<b>具体触发条件</b>，而非模糊描述</li><li>在状态栏说明书中加入「数值变化规则」</li><li>每次关键事件发生后用 <code>$计算好感度变化</code> 强制触发</li></ul>","subsections":[],"level":2},{"title":"写卡前的检查清单","content":"<p>在完成卡的编写后，对照以下清单：</p><ul><li>[ ] 人设是否包含「性格成因」，而不只是性格标签</li><li>[ ] 是否有明确的「语言指纹」（说话方式）</li><li>[ ] 世界观是否涵盖时代背景和核心规则</li><li>[ ] 文风参考书是否有「禁区协议」</li><li>[ ] 状态栏是否有说明书，而不只是空白标签</li><li>[ ] 记忆栏是否配置了 STM + LTM 的执行逻辑</li><li>[ ] 剧情触发条件是否明确，不会产生歧义</li><li>[ ] 是否有留白艺术规则，防止 AI 替 user 行动</li><li>[ ] 是否有反重复规则，防止 AI 腔固化</li></ul><hr><p><i>教程持续更新中。如有问题欢迎交流，禁止拉踩。</i></p>","subsections":[],"level":2}],"level":1}]}};
+
+
+
+
+
+
+
 </script>
 </body>
 </html>
