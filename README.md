@@ -1,105 +1,52 @@
-# chara-card-creator-skill — 角色卡与世界书创作助手
+# ⬡ 图床工具
 
-一个脑洞或者是一串关键词，创建角色卡与配套世界书。为了一叠醋包一盘饺子的小助手！
+一个轻量、极简的文件转 URL 链接工具。上传文件到 GitHub 仓库，通过 jsDelivr 全球 CDN 加速访问，所有平台均可正常显示。
 
-## 功能
+## 特点
 
-- 根据用户设定的角色，生成完整的通用格式角色卡 JSON
-- 支持单角色和群像（多角色）角色卡
-- 自动生成配套的世界书条目（触发词 + 内容）
+- ☁️ **免费** — 基于 GitHub 仓库 + jsDelivr CDN，零成本
+- ⚡ **极速** — 全球 CDN 加速，加载飞快
+- 🔒 **安全** — 随机哈希命名，无法被猜测访问
+- 📄 **全格式支持** — 任何文件类型均可上传（单文件 ≤ 25MB）
+- 🎨 **极简设计** — 黑白灰简约风格，专注功能
+- 💾 **配置模板** — 可保存多套配置（多仓库/多 Token）一键切换
 
-## 安装
+## 使用前配置
 
-### 方法一：使用 install.sh（推荐）
-
-```bash
-chmod +x install.sh
-./install.sh                          # 自动检测平台
-./install.sh --platform claude-code   # 指定 Claude Code
-./install.sh --all                    # 安装到所有检测到的平台
-./install.sh --dry-run                # 预览安装效果
-```
-
-### 方法二：手动安装
-
-| 平台 | 安装路径 |
-|------|---------|
-| Universal | `~/.agents/skills/chara-card-creator-skill/` |
-| Claude Code | `~/.claude/skills/chara-card-creator-skill/` |
-| GitHub Copilot | `.github/skills/chara-card-creator-skill/` |
-| Cursor | `.cursor/rules/chara-card-creator-skill/` |
-| Windsurf | `.windsurf/rules/chara-card-creator-skill/` |
-
-### 方法三：npx
-
-```bash
-npx skills add <repo-url>
-```
+1. 拥有一个 **GitHub 仓库**
+2. 打开 `index.html`，点击右上角 **✱** 查看详细教程
+3. 按教程生成 GitHub Token（点击 **⚙ 设置** → 填入 Token、仓库、分支、路径）
+4. 或点击 **💾 配置模板** 保存多套配置方便切换
 
 ## 使用方法
 
-### 创建单角色卡
-
-```
-/chara-card-creator-skill 帮我创建一个赛博朋克世界的黑客角色
-```
-
-### 创建群像角色卡
-
-```
-/chara-card-creator-skill 设计一个无限流群像，10个角色，各有各的能力体系
-```
-
-### 创建世界书
-
-```
-/chara-card-creator-skill 为这个修仙世界观写一套完整的世界书
-```
-
-### 初始化项目目录
-
-```bash
-python scripts/init_project.py --name "角色名" --type single
-python scripts/init_project.py --name "世界观名" --type group
-```
-
-## 输出目录结构
-
-```
-D:\cc 与 ST\角色卡\{角色名}\
-├── {角色名}.json          # 角色卡 JSON（含内嵌世界书）
-└── {角色名}_世界书.json    # 独立世界书（可选）
-```
-
-## 前置条件
-
-- Python 3.8+（仅 init_project.py 脚本需要）
-- 无需其他外部依赖
-
-## 参考文件
-
-| 文件 | 内容 |
+| 方式 | 操作 |
 |------|------|
-| `references/tavo-format.md` | tavo 角色卡 JSON 格式完整规范 |
-| `references/worldbook-guide.md` | 世界书创作方法论与条目模板 |
-| `references/writing-guide.md` | 角色与世界创作原则、文风指南 |
+| **拖拽上传** | 将文件拖入左侧虚线区域 |
+| **点击上传** | 点击左侧 **「📤 上传文件」** 按钮选择文件 |
 
-## 故障排除
+上传成功后，在右侧「已上传」列表点击 **📋** 一键复制链接。
 
-### 安装后技能未激活
+## 链接格式
 
-1. 确认 SKILL.md 包含有效的 frontmatter（name 和 description 字段）
-2. 重启 AI 编程助手会话
-3. 检查技能目录是否在正确的路径下
-
-### Python 脚本错误
-
-确保使用 Python 3.8 或更高版本：
-
-```bash
-python --version
+```
+https://cdn.jsdelivr.net/gh/用户名/仓库名/路径/文件名
 ```
 
-## 许可
+## 按钮说明
 
-MIT License
+| 按钮 | 位置 | 功能 |
+|------|------|------|
+| 📤 上传文件 | 左侧 | 打开文件选择器 |
+| 💾 | 右上角 | 配置模板管理（保存/加载多套配置） |
+| ✱ | 右上角 | 使用教程与声明 |
+| ⚙ | 右上角 | 设置（Token、仓库、分支、路径） |
+
+## 注意事项
+
+- 单文件最大 **25MB**
+- 支持 **所有文件格式**
+- Token 仅存储在浏览器本地 localStorage
+- 历史记录最多保存 200 条
+- GitHub API 每小时 5000 次请求限制
+- 请勿上传非法、侵权或敏感内容

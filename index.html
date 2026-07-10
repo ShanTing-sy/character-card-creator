@@ -1,0 +1,1157 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>图床工具</title>
+<style>
+/* ===== Reset & Base ===== */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#ffffff;--bg2:#f7f7f7;--bg3:#f0f0f0;--text:#1a1a1a;--text2:#666;
+  --text3:#999;--border:#e0e0e0;--border2:#ccc;--accent:#000;
+  --success:#1a7d36;--error:#c62828;--radius:8px;--shadow:0 1px 4px rgba(0,0,0,.06);
+  --font:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans SC",sans-serif;
+  --transition:.2s ease;
+}
+body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:1.5;min-height:100vh;display:flex;flex-direction:column}
+a{color:var(--text);text-decoration:none}
+
+/* ===== Header ===== */
+header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:16px 28px;border-bottom:1px solid var(--border);flex-shrink:0;
+  background:var(--bg);position:sticky;top:0;z-index:10
+}
+header h1{font-size:18px;font-weight:700;letter-spacing:.5px;display:flex;align-items:center;gap:8px}
+header h1 span{color:var(--text3);font-weight:400}
+.header-actions{display:flex;align-items:center;gap:12px}
+.header-status{font-size:13px;color:var(--text3)}
+.header-status.ok{color:var(--success)}
+.header-status.err{color:var(--error)}
+.btn-icon{
+  background:none;border:1px solid var(--border);border-radius:6px;width:36px;height:36px;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text2);
+  transition:var(--transition);font-size:18px
+}
+.btn-icon:hover{background:var(--bg2);border-color:var(--border2)}
+
+/* ===== Layout ===== */
+.main{display:flex;flex:1;padding:20px;gap:20px;max-width:1300px;width:100%;margin:0 auto}
+.left{flex:0 0 420px;display:flex;flex-direction:column;gap:16px}
+.right{flex:1;display:flex;flex-direction:column;gap:16px;min-width:0}
+
+/* ===== Upload Zone (Left) ===== */
+.upload-zone{
+  border:2px dashed var(--border);border-radius:12px;padding:40px 24px;
+  text-align:center;cursor:pointer;transition:var(--transition);
+  background:var(--bg);flex-shrink:0;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;min-height:220px
+}
+.upload-zone:hover{border-color:var(--text3);background:var(--bg2)}
+.upload-zone.drag-over{border-color:var(--accent);background:var(--bg2)}
+.upload-zone .icon{font-size:48px;margin-bottom:12px;opacity:.6}
+.upload-zone .hint{font-size:14px;color:var(--text2);margin-bottom:16px}
+.upload-zone .hint strong{color:var(--text)}
+.upload-zone .sub-hint{font-size:12px;color:var(--text3);margin-top:4px}
+.upload-btns{display:flex;gap:10px;margin-top:4px}
+.btn{
+  padding:8px 18px;border-radius:6px;border:1px solid var(--border);
+  font-size:13px;cursor:pointer;background:var(--bg);color:var(--text);
+  transition:var(--transition);font-family:var(--font);font-weight:500
+}
+.btn:hover{background:var(--bg2);border-color:var(--border2)}
+.btn-primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+.btn-primary:hover{opacity:.85}
+.btn-sm{padding:5px 12px;font-size:12px}
+.btn-ghost{border-color:transparent;background:none;color:var(--text2)}
+.btn-ghost:hover{background:var(--bg2);color:var(--text)}
+.btn-danger{color:var(--error);border-color:transparent}
+.btn-danger:hover{background:#fbe9e7;border-color:var(--error)}
+.file-input-hidden{display:none}
+
+/* ===== Section Headers ===== */
+.section{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);display:flex;flex-direction:column;transition:var(--transition)}
+.section-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:12px 16px;border-bottom:1px solid var(--border);font-size:13px;
+  font-weight:600;color:var(--text2);flex-shrink:0
+}
+.section-header .count{color:var(--text3);font-weight:400;font-size:12px}
+.section-body{flex:1;overflow-y:auto;padding:8px;min-height:0}
+.section-body::-webkit-scrollbar{width:4px}
+.section-body::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+.section-body::-webkit-scrollbar-track{background:transparent}
+
+/* ===== Upload Queue Items ===== */
+.queue-item{
+  display:flex;flex-direction:column;gap:4px;
+  padding:10px 12px;border-bottom:1px solid var(--border);font-size:13px
+}
+.queue-item:last-child{border-bottom:none}
+.queue-item .qi-header{display:flex;justify-content:space-between;align-items:center}
+.queue-item .qi-name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text);font-weight:500}
+.queue-item .qi-status{font-size:12px;flex-shrink:0}
+.queue-item .qi-status.done{color:var(--success)}
+.queue-item .qi-status.fail{color:var(--error)}
+.queue-item .qi-status.waiting{color:var(--text3)}
+.queue-item .qi-bar{
+  height:4px;background:var(--bg3);border-radius:2px;overflow:hidden
+}
+.queue-item .qi-bar-inner{
+  height:100%;background:var(--accent);border-radius:2px;transition:width .3s ease;width:0
+}
+.queue-item .qi-bar-inner.indeterminate{
+  width:50%;animation:shimmer 1.2s ease-in-out infinite;
+  background:linear-gradient(90deg,var(--accent) 30%,var(--text3) 50%,var(--accent) 70%);
+  background-size:200% 100%;border-radius:2px
+}
+@keyframes shimmer{0%{transform:translateX(-100%)}100%{transform:translateX(200%)}}
+.queue-item .qi-size{font-size:11px;color:var(--text3)}
+
+/* ===== History Items ===== */
+.history-item{
+  display:flex;align-items:center;gap:10px;
+  padding:10px 12px;border-bottom:1px solid var(--border);font-size:13px;
+  transition:var(--transition)
+}
+.history-item:last-child{border-bottom:none}
+.history-item:hover{background:var(--bg2)}
+.history-item .hi-thumb{
+  width:40px;height:40px;border-radius:4px;object-fit:cover;background:var(--bg3);flex-shrink:0
+}
+.history-item .hi-info{flex:1;min-width:0}
+.history-item .hi-name{font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.history-item .hi-url{
+  font-size:11px;color:var(--text3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap
+}
+.history-item .hi-time{font-size:11px;color:var(--text3);white-space:nowrap}
+.history-item .hi-actions{display:flex;gap:4px;flex-shrink:0}
+.history-item .hi-actions button{
+  background:none;border:none;cursor:pointer;padding:4px 6px;border-radius:4px;
+  font-size:12px;color:var(--text2);transition:var(--transition)
+}
+.history-item .hi-actions button:hover{background:var(--bg3);color:var(--text)}
+.history-empty{
+  text-align:center;padding:40px 16px;color:var(--text3);font-size:13px
+}
+
+/* ===== Modal ===== */
+.modal-overlay{
+  display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:100;
+  align-items:center;justify-content:center;animation:fadeIn .15s ease
+}
+.modal-overlay.active{display:flex}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.modal{
+  background:var(--bg);border-radius:12px;width:460px;max-width:92vw;
+  padding:0;box-shadow:0 8px 40px rgba(0,0,0,.12)
+}
+.modal-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:18px 24px;border-bottom:1px solid var(--border)
+}
+.modal-header h2{font-size:16px;font-weight:600}
+.modal-body{padding:20px 24px;display:flex;flex-direction:column;gap:16px}
+.modal-footer{
+  display:flex;justify-content:flex-end;gap:8px;
+  padding:16px 24px;border-top:1px solid var(--border)
+}
+.form-group{display:flex;flex-direction:column;gap:4px}
+.form-group label{font-size:12px;font-weight:600;color:var(--text2)}
+.form-group input{
+  padding:9px 12px;border:1px solid var(--border);border-radius:6px;
+  font-size:13px;font-family:var(--font);outline:none;transition:var(--transition);
+  background:var(--bg);color:var(--text)
+}
+.form-group input:focus{border-color:var(--accent)}
+.form-group input::placeholder{color:var(--text3)}
+.form-note{font-size:11px;color:var(--text3);line-height:1.5}
+
+
+/* ===== Popover ===== */
+.popover-overlay{display:none;position:fixed;inset:0;z-index:90;background:transparent}
+.popover-overlay.active{display:block}
+.popover{display:none;position:fixed;top:62px;right:60px;z-index:91;background:var(--bg);border:1px solid var(--border);border-radius:10px;width:280px;box-shadow:0 6px 32px rgba(0,0,0,.1);font-size:13px;animation:fadeIn .12s ease}
+.popover.active{display:block}
+.popover-header{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-bottom:1px solid var(--border);font-weight:600}
+.popover-body{max-height:240px;overflow-y:auto;padding:4px}
+.popover-body::-webkit-scrollbar{width:4px}
+.popover-body::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+.popover-empty{padding:24px 14px;text-align:center;color:var(--text3);font-size:12px}
+.popover-item{display:flex;align-items:center;justify-content:space-between;padding:9px 10px;border-radius:6px;cursor:pointer;transition:var(--transition)}
+.popover-item:hover{background:var(--bg2)}
+.popover-item.active{background:var(--bg3);font-weight:600}
+.popover-item .pi-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+.popover-item .pi-del{background:none;border:none;cursor:pointer;padding:2px 4px;border-radius:4px;font-size:12px;color:var(--text3);opacity:0;transition:var(--transition)}
+.popover-item:hover .pi-del{opacity:1}
+.popover-item .pi-del:hover{color:var(--error);background:#fbe9e7}
+.popover-footer{padding:10px 14px;border-top:1px solid var(--border)}
+.tutorial-tab.active{color:var(--text)!important;font-weight:600;background:var(--bg);border-left-color:var(--accent)!important}
+.tutorial-tab:hover{background:var(--bg3);color:var(--text)!important}
+#tutorialSteps li,#tutorialDisclaimer li{margin-bottom:4px}
+/* ===== Toast ===== */
+.toast-container{
+  position:fixed;top:20px;right:20px;z-index:200;
+  display:flex;flex-direction:column;gap:8px;pointer-events:none
+}
+.toast{
+  padding:12px 18px;background:var(--text);color:#fff;border-radius:8px;
+  font-size:13px;box-shadow:0 4px 20px rgba(0,0,0,.15);
+  animation:slideIn .25s ease;pointer-events:all;max-width:360px
+}
+.toast.success{background:var(--success)}
+.toast.error{background:var(--error)}
+@keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+
+/* ===== Update notice ===== */
+.update-notice{
+  position:fixed;top:20px;left:50%;transform:translateX(-50%);z-index:50;
+  background:var(--text);color:#fff;padding:14px 24px;border-radius:10px;
+  font-size:14px;box-shadow:0 4px 24px rgba(0,0,0,.15);
+  display:flex;align-items:center;gap:12px;animation:fadeIn .3s ease
+}
+.update-notice button{
+  background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.2);
+  color:#fff;padding:6px 14px;border-radius:6px;cursor:pointer;font-size:12px;
+  font-family:var(--font);transition:var(--transition)
+}
+.update-notice button:hover{background:rgba(255,255,255,.25)}
+
+/* ===== Empty State Image Uploading ===== */
+.queue-empty{
+  text-align:center;padding:32px 16px;color:var(--text3);font-size:13px
+}
+
+/* ===== Responsive ===== */
+@media(max-width:900px){
+  .main{flex-direction:column;padding:12px;gap:12px}
+  .left{flex:none;width:100%}
+  .upload-zone{min-height:180px;padding:24px 16px}
+}
+</style>
+</head>
+<body>
+
+<!-- ===== Header ===== -->
+<header>
+  <h1>⬡ 图床</h1>
+  <div class="header-actions">
+    <span class="header-status" id="statusText">未配置</span>
+    <button class="btn-icon" id="profileBtn" title="配置模板" aria-label="配置模板">💾</button>
+    <button class="btn-icon" id="tutorialBtn" title="使用教程" aria-label="使用教程">✱</button>
+    <button class="btn-icon" id="settingsBtn" title="设置" aria-label="设置">⚙</button>
+  </div>
+</header>
+
+<!-- ===== Main Layout ===== -->
+<div class="main">
+
+  <!-- Left Panel: Upload Zone -->
+  <div class="left">
+    <div class="upload-zone" id="dropZone">
+      <div class="icon">☁</div>
+      <div class="hint">将文件<strong>拖拽</strong>到此处</div>
+      <div class="sub-hint">支持所有文件格式 · 单文件最大 25MB</div>
+    </div>
+    <button class="btn btn-primary" id="uploadBtn" style="width:100%;padding:12px;font-size:14px;font-weight:600">📤 上传文件</button>
+    <input type="file" class="file-input-hidden" id="fileInput" multiple>
+  </div>
+
+  <!-- Right Panel: Queue + History -->
+  <div class="right">
+
+    <!-- Upload Queue -->
+    <div class="section" style="flex:0 0 auto;max-height:240px">
+      <div class="section-header">
+        <span>⬆ 上传队列</span>
+        <span class="count" id="queueCount">0 个文件</span>
+      </div>
+      <div class="section-body" id="queueBody">
+        <div class="queue-empty" id="queueEmpty">等待上传…</div>
+      </div>
+    </div>
+
+    <!-- Upload History -->
+    <div class="section" style="flex:1">
+      <div class="section-header">
+        <span>📁 已上传</span>
+        <span style="display:flex;align-items:center;gap:8px">
+          <span class="count" id="historyCount">0 条记录</span>
+          <button class="btn btn-sm btn-ghost" onclick="clearAllHistory()" style="font-size:11px;padding:2px 6px">清空</button>
+        </span>
+      </div>
+      <div class="section-body" id="historyBody">
+        <div class="history-empty" id="historyEmpty">还没有上传记录</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+<!-- ===== Profile Popover ===== -->
+<div class="popover-overlay" id="profileOverlay"></div>
+<div class="popover" id="profilePopover">
+  <div class="popover-header">
+    <span>💾 配置模板</span>
+    <button class="btn-icon" onclick="closeProfilePopover()" style="width:28px;height:28px;font-size:14px">✕</button>
+  </div>
+  <div class="popover-body" id="profileList">
+    <div class="popover-empty">还没有保存的配置</div>
+  </div>
+  <div class="popover-footer">
+    <button class="btn btn-sm" onclick="saveCurrentProfile()" style="width:100%">📥 保存当前配置</button>
+  </div>
+</div>
+
+<!-- ===== Tutorial Modal ===== -->
+<div class="modal-overlay" id="tutorialModal">
+  <div class="modal" style="width:620px">
+    <div class="modal-header">
+      <h2>✱ 使用教程</h2>
+      <button class="btn-icon" onclick="closeTutorial()" title="关闭">✕</button>
+    </div>
+    <div class="modal-body" style="flex-direction:row;padding:0;min-height:380px">
+      <!-- Left sidebar tabs -->
+      <div style="width:120px;flex-shrink:0;border-right:1px solid var(--border);padding:8px 0;background:var(--bg2);border-radius:0 0 0 12px">
+        <div class="tutorial-tab active" onclick="switchTutorialTab(this, 'steps')" style="padding:10px 14px;cursor:pointer;font-size:13px;color:var(--text2);transition:var(--transition);border-left:3px solid transparent">
+          📖 使用步骤
+        </div>
+        <div class="tutorial-tab" onclick="switchTutorialTab(this, 'disclaimer')" style="padding:10px 14px;cursor:pointer;font-size:13px;color:var(--text2);transition:var(--transition);border-left:3px solid transparent">
+          ⚠️ 声明
+        </div>
+      </div>
+      <!-- Right content -->
+      <div style="flex:1;padding:20px 24px;overflow-y:auto;max-height:420px">
+        <div id="tutorialSteps" style="font-size:13px;line-height:1.8;color:var(--text2)">
+          <h3 style="font-size:15px;color:var(--text);margin-bottom:12px">📦 配置 GitHub Token</h3>
+          <ol style="margin-left:18px">
+            <li>打开 <a href="https://github.com/settings/tokens" target="_blank" style="color:var(--accent);text-decoration:underline">github.com/settings/tokens</a></li>
+            <li>点击 <strong>"Generate new token"</strong> → <strong>"Tokens (classic)"</strong></li>
+            <li>在 "Note" 输入框取个名字，比如 <code>我的图床</code></li>
+            <li>在 "Select scopes" 区域，<strong>只勾选第一个 <code>repo</code></strong>（子项会自动全选）</li>
+            <li>滑到页面底部，点击绿色的 <strong>"Generate token"</strong> 按钮</li>
+            <li>复制生成的 <strong><code>ghp_...</code></strong> 开头的 Token</li>
+            <li>回到本页面，点击右上角 <strong>⚙</strong> 打开设置，把 Token 粘贴到输入框</li>
+            <li>点击 <strong>"保存"</strong>，就可以开始上传了！</li>
+          </ol>
+
+          <h3 style="font-size:15px;color:var(--text);margin:20px 0 12px">📤 上传文件</h3>
+          <ul style="margin-left:18px">
+            <li>将文件拖拽到左侧虚线区域，或点击左侧 <strong>「📤 上传文件」</strong>按钮选择文件</li>
+            <li>支持所有文件格式，单文件最大 25MB</li>
+            <li>上传过程会在右侧上方的「上传队列」显示进度</li>
+            <li>上传成功后，网页链接会自动保存到右侧「已上传」列表</li>
+          </ul>
+
+          <h3 style="font-size:15px;color:var(--text);margin:20px 0 12px">🔗 复制链接</h3>
+          <ul style="margin-left:18px">
+            <li>在「已上传」列表中点击 <strong>📋</strong> 按钮一键复制链接</li>
+            <li>链接可通过 jsDelivr 全球 CDN 加速，所有平台均可正常显示</li>
+          </ul>
+
+          <h3 style="font-size:15px;color:var(--text);margin:20px 0 12px">💾 配置模板</h3>
+          <ul style="margin-left:18px">
+            <li>可以保存多套配置（多个仓库、多个 Token）</li>
+            <li>点击右上角 <strong>💾</strong> 打开配置模板管理</li>
+            <li>点击模板名即可一键切换配置</li>
+          </ul>
+        </div>
+        <div id="tutorialDisclaimer" style="display:none;font-size:13px;line-height:1.8;color:var(--text2)">
+          <h3 style="font-size:15px;color:var(--text);margin-bottom:12px">⚠️ 使用声明与风险承担</h3>
+
+          <div style="padding:12px 14px;background:#fff3cd;border-radius:6px;color:#856404;margin-bottom:16px">
+            <strong>🚨 重要提示</strong>
+            <p style="margin-top:6px">本工具仅为个人使用设计，使用前请确保理解以下内容：</p>
+          </div>
+
+          <h4 style="font-size:13px;color:var(--text);margin:12px 0 6px">1. 数据安全</h4>
+          <p>您的 GitHub Token 只存储在浏览器本地的 localStorage 中，仅用于向 api.github.com 发送请求。本工具不会将您的 Token 发送到任何其他地址。</p>
+
+          <h4 style="font-size:13px;color:var(--text);margin:16px 0 6px">2. 文件存储与访问</h4>
+          <p>上传的文件会存储到您的 GitHub 仓库中。由于文件名为随机生成的字符串，其他人无法猜测出您的文件链接。但请不要上传包含个人隐私信息的文件。</p>
+
+          <h4 style="font-size:13px;color:var(--text);margin:16px 0 6px">3. GitHub API 限制</h4>
+          <p>已验证的请求每小时最多 5000 次，单文件大小不得超过 25MB。超限后会暂时无法上传，等待一段时间后自动恢复。</p>
+
+          <h4 style="font-size:13px;color:var(--text);margin:16px 0 6px">4. CDN 缓存</h4>
+          <p>jsDelivr 全球 CDN 有缓存机制，新上传的文件可能需要几分钟才能全球生效，您可以直接使用 GitHub raw 链接作为备用。</p>
+
+          <h4 style="font-size:13px;color:var(--text);margin:16px 0 6px">5. 责任声明</h4>
+          <p>本工具仅供个人使用，使用者应自行承担上传内容的合规性责任。请勿上传非法、侵权或敏感内容。</p>
+
+          <div style="margin-top:16px;padding:12px 14px;background:#e8f5e9;border-radius:6px;color:#2e7d32">
+            <strong>✅ 总结</strong>
+            <p style="margin-top:4px">随机文件名保护是本工具的核心安全机制。只要不把链接传给不相干的人，您的文件就是安全的。</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- ===== Settings Modal ===== -->
+<div class="modal-overlay" id="settingsModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>⚙ 设置</h2>
+      <button class="btn-icon" onclick="closeSettings()" title="关闭">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>GitHub Token</label>
+        <input type="password" id="cfgToken" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" autocomplete="off">
+      </div>
+      <div class="form-group">
+        <label>仓库地址</label>
+        <input type="text" id="cfgRepo" placeholder="用户名/仓库名" >
+      </div>
+      <div class="form-group">
+        <label>分支</label>
+        <input type="text" id="cfgBranch" placeholder="main" value="main">
+      </div>
+      <div class="form-group">
+        <label>图片存储路径</label>
+        <input type="text" id="cfgPath" placeholder="images/" value="images/">
+      </div>
+      <div class="form-note">
+        🔒 Token 仅存储在浏览器本地，仅用于向 GitHub API 上传图片。<br>
+        📦 通过 GitHub Git Data API 上传，单文件最大 25MB。<br>
+        🌐 访问链接通过 <code>cdn.jsdelivr.net</code> 全球 CDN 加速。
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeSettings()">取消</button>
+      <button class="btn btn-primary" onclick="saveSettings()">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== Toast Container ===== -->
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+/* ============================================================
+   图床工具
+   GitHub Git Data API upload / drag & drop / all file types
+   ============================================================ */
+
+// ===== State =====
+const state = {
+  queue: [],           // {id, file, name, size, status, progress}
+  history: [],         // {id, name, url, thumb, size, time}
+  uploading: false,
+  settings: {
+    token: '',
+    repo: '',
+    branch: 'main',
+    path: 'images/'
+  }
+};
+
+// ===== DOM refs =====
+const $ = s => document.querySelector(s);
+const $$ = s => document.querySelectorAll(s);
+const dropZone = $('#dropZone');
+const queueBody = $('#queueBody');
+const queueEmpty = $('#queueEmpty');
+const queueCount = $('#queueCount');
+const historyBody = $('#historyBody');
+const historyEmpty = $('#historyEmpty');
+const historyCount = $('#historyCount');
+const statusText = $('#statusText');
+const settingsModal = $('#settingsModal');
+const toastContainer = $('#toastContainer');
+
+// ===== Init =====
+function init() {
+  loadSettings();
+  loadHistory();
+  bindEvents();
+  updateStatusBar();
+  refreshProfileUI();
+}
+document.addEventListener('DOMContentLoaded', init);
+
+// ===== Settings =====
+function loadSettings() {
+  try {
+    const raw = localStorage.getItem('st-image-settings');
+    if (raw) Object.assign(state.settings, JSON.parse(raw));
+  } catch(e) {/*ignore*/}
+}
+
+function saveSettings() {
+  const token = $('#cfgToken').value.trim();
+  const repo = $('#cfgRepo').value.trim();
+  const branch = $('#cfgBranch').value.trim();
+  const path = $('#cfgPath').value.trim();
+
+  if (!token) return showToast('请输入 GitHub Token', 'error');
+  if (!repo) return showToast('请输入仓库地址', 'error');
+  if (!branch) branch = 'main';
+  if (!path) path = 'images/';
+
+  state.settings.token = token;
+  state.settings.repo = repo;
+  state.settings.branch = branch;
+  state.settings.path = path.replace(/^\/+|\/+$/g,'') + '/';
+
+  localStorage.setItem('st-image-settings', JSON.stringify(state.settings));
+  closeSettings();
+  updateStatusBar();
+  showToast('设置已保存 ✓', 'success');
+}
+
+function closeSettings() {
+  settingsModal.classList.remove('active');
+}
+
+function openSettings() {
+  $('#cfgToken').value = state.settings.token;
+  $('#cfgRepo').value = state.settings.repo;
+  $('#cfgBranch').value = state.settings.branch;
+  $('#cfgPath').value = state.settings.path.replace(/\/$/,'');
+  renderProfileSelect();
+  settingsModal.classList.add('active');
+}
+
+function updateStatusBar() {
+  if (!state.settings.token || !state.settings.repo) {
+    statusText.textContent = '⚡ 需要配置';
+    statusText.className = 'header-status err';
+  } else {
+    statusText.textContent = '✓ 已就绪';
+    statusText.className = 'header-status ok';
+  }
+}
+
+// ===== Toast =====
+let toastTimer = 0;
+function showToast(msg, type = 'info') {
+  const el = document.createElement('div');
+  el.className = 'toast' + (type === 'success' ? ' success' : type === 'error' ? ' error' : '');
+  el.textContent = msg;
+  toastContainer.appendChild(el);
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { while(toastContainer.firstChild) toastContainer.removeChild(toastContainer.firstChild); }, 3000);
+}
+
+// ===== History =====
+function loadHistory() {
+  try {
+    const raw = localStorage.getItem('st-image-history');
+    if (raw) state.history = JSON.parse(raw);
+  } catch(e) { state.history = []; }
+  renderHistory();
+}
+
+function saveHistory() {
+  try {
+    localStorage.setItem('st-image-history', JSON.stringify(state.history));
+  } catch(e) {
+    // localStorage full — remove oldest entries
+    if (e.name === 'QuotaExceededError' && state.history.length > 10) {
+      state.history = state.history.slice(-50);
+      try { localStorage.setItem('st-image-history', JSON.stringify(state.history)); } catch(e2) {}
+    }
+  }
+  renderHistory();
+}
+
+function addHistory(name, url, size, previewUrl) {
+  state.history.unshift({
+    id: Date.now() + '_' + Math.random().toString(36).slice(2,6),
+    name, url, size, time: Date.now(), previewUrl: previewUrl || null
+  });
+  if (state.history.length > 200) state.history = state.history.slice(0, 200);
+  saveHistory();
+}
+
+function deleteHistory(id) {
+  const item = state.history.find(h => h.id === id);
+  if (item && item.previewUrl) URL.revokeObjectURL(item.previewUrl);
+  state.history = state.history.filter(h => h.id !== id);
+  saveHistory();
+  showToast('已删除记录', 'info');
+}
+
+function clearAllHistory() {
+  if (state.history.length === 0) return;
+  if (!confirm('确定清空所有上传记录？图片文件仍保留在仓库中。')) return;
+  state.history.forEach(h => { if (h.previewUrl) URL.revokeObjectURL(h.previewUrl); });
+  state.history = [];
+  saveHistory();
+  showToast('已清空历史记录', 'info');
+}
+
+function renderHistory() {
+  const body = historyBody;
+  const sorted = [...state.history];
+
+  if (sorted.length === 0) {
+    body.innerHTML = `<div class="history-empty">还没有上传记录</div>`;
+    historyCount.textContent = '0 条记录';
+    return;
+  }
+
+  let html = '';
+  for (const h of sorted) {
+    const timeStr = formatTime(h.time);
+    const sizeStr = formatSize(h.size);
+    html += `
+      <div class="history-item" data-id="${h.id}">
+        <img class="hi-thumb" src="${h.previewUrl || h.url}" alt="${h.name}" loading="lazy"
+          onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 40 40%22><rect width=%2240%22 height=%2240%22 fill=%22%23eee%22/><text x=%2220%22 y=%2224%22 text-anchor=%22middle%22 font-size=%2216%22 fill=%22%23999%22>✕</text></svg>'">
+        <div class="hi-info">
+          <div class="hi-name" title="${escapeHtml(h.name)}">${escapeHtml(h.name)}</div>
+          <div class="hi-url" title="${escapeHtml(h.url)}">${escapeHtml(h.url)}</div>
+        </div>
+        <div class="hi-time">${sizeStr}</div>
+        <div class="hi-actions">
+          <button onclick="copyUrl('${escapeHtml(h.url)}')" title="复制链接">📋</button>
+          <button onclick="deleteHistory('${h.id}')" title="删除记录" class="btn-danger">✕</button>
+        </div>
+      </div>`;
+  }
+
+  body.innerHTML = html;
+  historyCount.textContent = `${sorted.length} 条记录`;
+}
+
+// ===== Queue =====
+function addToQueue(files) {
+  for (const file of files) {
+    if (file.size > 25 * 1024 * 1024) {
+      showToast(`${file.name} 超过 25MB 限制，已跳过`, 'error');
+      continue;
+    }
+
+    // Check for duplicates in queue
+    const dup = state.queue.find(q => q.status === 'waiting' && q.file.name === file.name && q.file.size === file.size);
+    if (dup) continue;
+
+    state.queue.push({
+      id: Date.now() + '_' + Math.random().toString(36).slice(2,6),
+      file,
+      name: file.name,
+      size: file.size,
+      status: 'waiting', // waiting | uploading | done | fail
+      progress: 0
+    });
+  }
+  renderQueue();
+  processQueue();
+}
+
+function renderQueue() {
+  const items = state.queue.filter(q => q.status !== 'done');
+
+  if (items.length === 0) {
+    queueBody.innerHTML = `<div class="queue-empty">等待上传…</div>`;
+    queueCount.textContent = '0 个文件';
+    return;
+  }
+
+  let html = '';
+  for (const q of items) {
+    const sizeStr = formatSize(q.size);
+    let statusHtml = '';
+    let barHtml = '';
+
+    if (q.status === 'waiting') {
+      statusHtml = `<span class="qi-status waiting">排队中</span>`;
+    } else if (q.status === 'uploading') {
+      if (q.progress > 0) {
+        barHtml = `<div class="qi-bar"><div class="qi-bar-inner" style="width:${q.progress}%"></div></div>`;
+      } else {
+        barHtml = `<div class="qi-bar"><div class="qi-bar-inner indeterminate"></div></div>`;
+      }
+      statusHtml = `<span class="qi-status">上传中 ${q.progress > 0 ? q.progress + '%' : ''}</span>`;
+    } else if (q.status === 'fail') {
+      statusHtml = `<span class="qi-status fail">失败</span>`;
+    }
+
+    html += `
+      <div class="queue-item" data-id="${q.id}">
+        <div class="qi-header">
+          <span class="qi-name" title="${escapeHtml(q.name)}">${escapeHtml(q.name)}</span>
+          ${statusHtml}
+        </div>
+        ${barHtml}
+        <div class="qi-size">${sizeStr}</div>
+      </div>`;
+  }
+
+  queueBody.innerHTML = html;
+  queueCount.textContent = `${items.length} 个文件`;
+}
+
+// ===== Upload Logic =====
+async function processQueue() {
+  if (state.uploading) return;
+  const next = state.queue.find(q => q.status === 'waiting');
+  if (!next) return;
+
+  state.uploading = true;
+  next.status = 'uploading';
+  renderQueue();
+
+  try {
+    const previewUrl = URL.createObjectURL(next.file);
+    const url = await uploadFile(next);
+    addHistory(next.name, url, next.size, previewUrl);
+    next.status = 'done';
+    next.progress = 100;
+    showToast(`${next.name} 上传成功 ✓`, 'success');
+  } catch (err) {
+    next.status = 'fail';
+    showToast(`${next.name} 上传失败: ${err.message}`, 'error');
+  }
+
+  renderQueue();
+  state.uploading = false;
+
+  // Process next in queue
+  processQueue();
+}
+
+async function uploadFile(qItem) {
+  const { token, repo, branch, path } = state.settings;
+  if (!token || !repo) throw new Error('请先在设置中配置 GitHub Token 和仓库');
+
+  const file = qItem.file;
+
+  // Generate unique filename
+  const ext = file.name.split('.').pop() || 'jpg';
+  const ts = Date.now();
+  const rand = Math.random().toString(36).slice(2, 10);
+  const filename = `${ts}_${rand}.${ext}`;
+  const filePath = path + filename;
+
+  // Read file as base64
+  const base64 = await readAsBase64(file);
+
+  // Stage 1: Create blob
+  updateProgress(qItem, 10, '创建存储对象…');
+  const blob = await githubRequest(
+    `https://api.github.com/repos/${repo}/git/blobs`,
+    'POST', token,
+    { content: base64, encoding: 'base64' }
+  );
+
+  // Stage 2: Get latest commit
+  updateProgress(qItem, 30, '获取仓库状态…');
+  const ref = await githubRequest(
+    `https://api.github.com/repos/${repo}/git/ref/heads/${branch}`,
+    'GET', token
+  );
+
+  // Stage 3: Get commit object (for tree SHA)
+  updateProgress(qItem, 40, '读取提交树…');
+  const commitResp = await githubRequest(ref.object.url, 'GET', token);
+
+  // Stage 4: Create tree with new file
+  updateProgress(qItem, 55, '更新文件树…');
+  const treeResp = await githubRequest(
+    `https://api.github.com/repos/${repo}/git/trees`,
+    'POST', token,
+    {
+      base_tree: commitResp.tree.sha,
+      tree: [{
+        path: filePath,
+        mode: '100644',
+        type: 'blob',
+        sha: blob.sha
+      }]
+    }
+  );
+
+  // Stage 5: Create commit
+  updateProgress(qItem, 75, '创建提交…');
+  const newCommit = await githubRequest(
+    `https://api.github.com/repos/${repo}/git/commits`,
+    'POST', token,
+    {
+      message: `Upload ${filename}`,
+      tree: treeResp.sha,
+      parents: [commitResp.sha]
+    }
+  );
+
+  // Stage 6: Update reference
+  updateProgress(qItem, 90, '推送到仓库…');
+  await githubRequest(
+    `https://api.github.com/repos/${repo}/git/refs/heads/${branch}`,
+    'PATCH', token,
+    { sha: newCommit.sha, force: false }
+  );
+
+  updateProgress(qItem, 100, '完成');
+
+  // Return jsDelivr CDN URL
+  return `https://cdn.jsdelivr.net/gh/${repo}/${filePath}`;
+}
+
+function updateProgress(qItem, pct, label) {
+  qItem.progress = pct;
+  // Also update the DOM if this item is rendered
+  const el = queueBody.querySelector(`[data-id="${qItem.id}"]`);
+  if (el) {
+    const bar = el.querySelector('.qi-bar-inner');
+    if (bar) {
+      bar.style.width = pct + '%';
+      bar.className = 'qi-bar-inner';
+    }
+    const statusEl = el.querySelector('.qi-status');
+    if (statusEl) {
+      statusEl.textContent = pct > 0 && pct < 100 ? `上传中 ${pct}%` : label || '';
+    }
+  }
+}
+
+// ===== GitHub API Helper =====
+async function githubRequest(url, method, token, body) {
+  const opts = {
+    method,
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Accept': 'application/vnd.github+json',
+      'User-Agent': 'ImageHost/1.0'
+    }
+  };
+  if (body) {
+    opts.headers['Content-Type'] = 'application/json';
+    opts.body = JSON.stringify(body);
+  }
+
+  const res = await fetch(url, opts);
+  const data = await res.json();
+
+  if (!res.ok) {
+    const msg = data.message || `HTTP ${res.status}`;
+    // Handle rate limiting
+    if (res.status === 403 && data.message && data.message.includes('rate limit')) {
+      throw new Error('GitHub API 频率限制，请等待几分钟后重试');
+    }
+    if (res.status === 401) {
+      throw new Error('Token 无效或已过期，请在设置中更新');
+    }
+    if (res.status === 403 && data.message && data.message.includes('Resource not accessible')) {
+      throw new Error(
+        'Token 没有仓库访问权限。请修复：\n' +
+        '1. 打开 github.com/settings/tokens\n' +
+        '2. 找到这个 token，在 "Repository access" 选择 "All repositories"\n' +
+        '3. 或在 "Repository permissions" 中设置 Contents 权限为 "Read and write"\n' +
+        '4. 也可以新建一个 Token：选 "Tokens (classic)"，勾选 repo 权限'
+      );
+    }
+    throw new Error(msg);
+  }
+
+  return data;
+}
+
+// ===== File reading =====
+function readAsBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const base64 = reader.result.split(',')[1];
+      resolve(base64);
+    };
+    reader.onerror = () => reject(new Error('文件读取失败'));
+    reader.readAsDataURL(file);
+  });
+}
+
+// ===== Drop / File Handling =====
+function getFilesFromDataTransfer(dt) {
+  const files = [];
+  const promises = [];
+
+  if (dt.items) {
+    for (let i = 0; i < dt.items.length; i++) {
+      const entry = dt.items[i].webkitGetAsEntry ? dt.items[i].webkitGetAsEntry() : null;
+      if (entry) {
+        promises.push(traverseEntry(entry, files));
+      }
+    }
+  } else if (dt.files) {
+    for (let i = 0; i < dt.files.length; i++) {
+      files.push(dt.files[i]);
+    }
+  }
+
+  if (promises.length > 0) {
+    return Promise.all(promises).then(() => files);
+  }
+  return Promise.resolve(files);
+}
+
+function traverseEntry(entry, files) {
+  return new Promise((resolve) => {
+    if (entry.isFile) {
+      entry.file((file) => {
+        files.push(file); resolve();
+      }, resolve);
+    } else if (entry.isDirectory) {
+      const reader = entry.createReader();
+      const readEntries = () => {
+        reader.readEntries((entries) => {
+          if (entries.length === 0) resolve();
+          else {
+            Promise.all(entries.map(e => traverseEntry(e, files))).then(readEntries);
+          }
+        }, resolve);
+      };
+      readEntries();
+    } else {
+      resolve();
+    }
+  });
+}
+
+// ===== Event Binding =====
+function bindEvents() {
+  // Tutorial modal
+  $('#tutorialBtn').addEventListener('click', (e) => { e.stopPropagation(); openTutorial(); });
+  document.getElementById('tutorialModal').addEventListener('click', (e) => {
+    if (e.target === document.getElementById('tutorialModal')) closeTutorial();
+  });
+
+  // Profile popover
+  $('#profileBtn').addEventListener('click', (e) => {
+    e.stopPropagation();
+    const pop = document.getElementById('profilePopover');
+    if (pop && pop.classList.contains('active')) { closeProfilePopover(); return; }
+    openProfilePopover();
+  });
+  document.getElementById('profileOverlay').addEventListener('click', closeProfilePopover);
+  const profileSel = document.getElementById('cfgProfileSelect');
+  if (profileSel) profileSel.addEventListener('change', () => { if (profileSel.value) loadProfile(profileSel.value); });
+
+  // Settings
+  $('#settingsBtn').addEventListener('click', openSettings);
+  settingsModal.addEventListener('click', (e) => {
+    if (e.target === settingsModal) closeSettings();
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') { closeSettings(); closeTutorial(); }
+  });
+
+  // File pickers (folder button removed - use drag & drop)
+
+  // Upload button
+  const uploadBtn = $('#uploadBtn');
+  const fileInput = $('#fileInput');
+  if (uploadBtn && fileInput) {
+    uploadBtn.addEventListener('click', () => fileInput.click());
+    fileInput.addEventListener('change', (e) => {
+      if (e.target.files.length) {
+        addToQueue(e.target.files);
+        fileInput.value = '';
+      }
+    });
+  }
+
+  // Drag & Drop
+  dropZone.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    dropZone.classList.add('drag-over');
+  });
+
+  dropZone.addEventListener('dragleave', (e) => {
+    e.preventDefault();
+    dropZone.classList.remove('drag-over');
+  });
+
+  dropZone.addEventListener('drop', async (e) => {
+    e.preventDefault();
+    dropZone.classList.remove('drag-over');
+
+    if (!state.settings.token || !state.settings.repo) {
+      showToast('请先在设置中配置 GitHub Token 和仓库', 'error');
+      return;
+    }
+
+    const files = await getFilesFromDataTransfer(e.dataTransfer);
+    if (files.length === 0) {
+      showToast('未检测到图片文件', 'info');
+      return;
+    }
+    addToQueue(files);
+    showToast(`已添加 ${files.length} 个文件`, 'info');
+  });
+
+  // Click to open settings if not configured
+  dropZone.addEventListener('click', (e) => {
+    if (e.target.tagName === 'BUTTON' || e.target.closest('button')) return;
+    if (!state.settings.token || !state.settings.repo) {
+      openSettings();
+    }
+  });
+}
+
+// ===== Utility =====
+function formatSize(bytes) {
+  if (!bytes) return '';
+  if (bytes < 1024) return bytes + 'B';
+  if (bytes < 1048576) return (bytes / 1024).toFixed(1) + 'KB';
+  return (bytes / 1048576).toFixed(1) + 'MB';
+}
+
+function formatTime(ts) {
+  const d = new Date(ts);
+  const pad = n => String(n).padStart(2, '0');
+  return `${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+// ===== Clipboard =====
+async function copyUrl(url) {
+  try {
+    await navigator.clipboard.writeText(url);
+    showToast('链接已复制到剪贴板 ✓', 'success');
+  } catch (e) {
+    // Fallback
+    const ta = document.createElement('textarea');
+    ta.value = url;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    showToast('链接已复制到剪贴板 ✓', 'success');
+  }
+}
+
+
+// ===== Tutorial Modal =====
+function openTutorial() { document.getElementById('tutorialModal').classList.add('active'); }
+function closeTutorial() { document.getElementById('tutorialModal').classList.remove('active'); }
+function switchTutorialTab(el, tab) {
+  document.querySelectorAll('.tutorial-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('tutorialSteps').style.display = tab === 'steps' ? 'block' : 'none';
+  document.getElementById('tutorialDisclaimer').style.display = tab === 'disclaimer' ? 'block' : 'none';
+}
+
+// ===== Profile Management =====
+function getProfiles() {
+  try { return JSON.parse(localStorage.getItem('st-image-profiles') || '{}'); }
+  catch(e) { return {}; }
+}
+function saveProfiles(profiles) { localStorage.setItem('st-image-profiles', JSON.stringify(profiles)); }
+function getActiveProfile() { return localStorage.getItem('st-image-active-profile') || ''; }
+function setActiveProfile(name) {
+  if (name) localStorage.setItem('st-image-active-profile', name);
+  else localStorage.removeItem('st-image-active-profile');
+}
+
+function renderProfileList() {
+  const profiles = getProfiles();
+  const active = getActiveProfile();
+  const list = document.getElementById('profileList');
+  if (!list) return;
+  const names = Object.keys(profiles);
+  if (names.length === 0) { list.innerHTML = '<div class="popover-empty">还没有保存的配置</div>'; return; }
+  let html = '';
+  for (const name of names) {
+    const safeName = escapeHtml(name);
+    html += '<div class="popover-item' + (name === active ? ' active' : '') + '" data-profile="' + safeName + '" onclick="loadProfile(this.dataset.profile)">' +
+      '<span class="pi-name">' + safeName + '</span>' +
+      '<button class="pi-del" onclick="event.stopPropagation();deleteProfile(this.parentElement.dataset.profile)" title="删除">✕</button></div>';
+  }
+  list.innerHTML = html;
+}
+function renderProfileSelect() {
+  const sel = document.getElementById('cfgProfileSelect');
+  if (!sel) return;
+  const profiles = getProfiles();
+  const active = getActiveProfile();
+  sel.innerHTML = '<option value="">-- 选择模板快速填入 --</option>';
+  for (const name of Object.keys(profiles)) {
+    const opt = document.createElement('option');
+    opt.value = name;
+    opt.textContent = name + (profiles[name].repo ? ' (' + profiles[name].repo + ')' : '');
+    if (name === active) opt.selected = true;
+    sel.appendChild(opt);
+  }
+}
+
+function refreshProfileUI() { renderProfileList(); renderProfileSelect(); }
+
+function saveCurrentProfile() {
+  const token = (document.getElementById('cfgToken')?.value || state.settings.token || '').trim();
+  const repo = (document.getElementById('cfgRepo')?.value || state.settings.repo || '').trim();
+  const branch = (document.getElementById('cfgBranch')?.value || state.settings.branch || 'main').trim();
+  const path = (document.getElementById('cfgPath')?.value || state.settings.path || 'images/').trim();
+  if (!repo) { showToast('请先填写仓库地址', 'error'); return; }
+  const name = prompt('配置模板名称：', repo.replace('/', '-'));
+  if (!name) return;
+  const profiles = getProfiles();
+  profiles[name] = { token, repo, branch: branch || 'main', path: path || 'images/' };
+  saveProfiles(profiles);
+  setActiveProfile(name);
+  refreshProfileUI();
+  showToast('配置「' + name + '」已保存', 'success');
+}
+
+function loadProfile(name) {
+  const profiles = getProfiles();
+  const p = profiles[name];
+  if (!p) { showToast('配置不存在', 'error'); return; }
+  Object.assign(state.settings, p);
+  state.settings.path = p.path || 'images/';
+  localStorage.setItem('st-image-settings', JSON.stringify(state.settings));
+  setActiveProfile(name);
+  updateStatusBar();
+  const t = document.getElementById('cfgToken');
+  const r = document.getElementById('cfgRepo');
+  const b = document.getElementById('cfgBranch');
+  const pt = document.getElementById('cfgPath');
+  if (t) t.value = p.token || '';
+  if (r) r.value = p.repo || '';
+  if (b) b.value = p.branch || '';
+  if (pt) pt.value = (p.path || 'images/').replace(/\/$/,'');
+  refreshProfileUI();
+  closeProfilePopover();
+  showToast('已加载配置「' + name + '」', 'success');
+}
+
+function deleteProfile(name) {
+  if (!confirm('确定删除配置「' + name + '」？')) return;
+  const profiles = getProfiles();
+  delete profiles[name];
+  saveProfiles(profiles);
+  if (getActiveProfile() === name) setActiveProfile('');
+  refreshProfileUI();
+  showToast('配置「' + name + '」已删除', 'info');
+}
+
+function deleteSelectedProfile() {
+  const sel = document.getElementById('cfgProfileSelect');
+  if (!sel || !sel.value) { showToast('请先选择一个模板', 'info'); return; }
+  deleteProfile(sel.value);
+}
+
+function openProfilePopover() {
+  document.getElementById('profileOverlay').classList.add('active');
+  document.getElementById('profilePopover').classList.add('active');
+  renderProfileList();
+}
+
+function closeProfilePopover() {
+  document.getElementById('profileOverlay').classList.remove('active');
+  document.getElementById('profilePopover').classList.remove('active');
+}
+
+</script>
+</body>
+</html>

@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>图床 · 移动版</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#ffffff;--bg2:#f7f7f7;--bg3:#f0f0f0;--text:#1a1a1a;--text2:#666;
+  --text3:#999;--border:#e0e0e0;--accent:#000;--success:#1a7d36;--error:#c62828;
+  --radius:10px;--font:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans SC",sans-serif;
+  --safe-bottom:env(safe-area-inset-bottom,0px);
+}
+body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;-webkit-tap-highlight-color:transparent}
+
+/* ===== Header ===== */
+header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 16px;border-bottom:1px solid var(--border);position:sticky;top:0;
+  background:var(--bg);z-index:10;gap:8px
+}
+header h1{font-size:17px;font-weight:700;white-space:nowrap}
+.header-right{display:flex;align-items:center;gap:6px;flex-shrink:0}
+.status-dot{width:8px;height:8px;border-radius:50%;background:var(--text3);flex-shrink:0}
+.status-dot.ok{background:var(--success)}
+.status-dot.err{background:var(--error)}
+.btn-icon{
+  background:none;border:1px solid var(--border);border-radius:8px;width:38px;height:38px;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  font-size:18px;color:var(--text2);transition:.15s;flex-shrink:0
+}
+.btn-icon:active{background:var(--bg2);transform:scale(.94)}
+
+/* ===== Main ===== */
+.main{padding:12px;flex:1;display:flex;flex-direction:column;gap:12px;max-width:600px;margin:0 auto;width:100%}
+
+/* ===== Upload Zone ===== */
+.upload-zone{
+  border:2px dashed var(--border);border-radius:14px;padding:32px 20px;
+  text-align:center;cursor:pointer;transition:.2s;background:var(--bg);
+  display:flex;flex-direction:column;align-items:center;gap:8px;
+  min-height:140px;justify-content:center
+}
+.upload-zone:active{background:var(--bg2);border-color:var(--text3)}
+.upload-zone.drag-over{border-color:var(--accent);background:var(--bg2)}
+.upload-zone .icon{font-size:36px;opacity:.5}
+.upload-zone .hint{font-size:14px;color:var(--text2)}
+.upload-zone .hint strong{color:var(--text)}
+.upload-zone .sub-hint{font-size:12px;color:var(--text3)}
+.upload-btn-row{display:flex;gap:8px;width:100%;margin-top:4px}
+.upload-btn-row button{flex:1;padding:12px;border-radius:10px;border:1px solid var(--border);
+  font-size:14px;font-family:var(--font);font-weight:600;cursor:pointer;transition:.15s}
+.upload-btn-row button:active{transform:scale(.97)}
+.btn-upload{background:var(--accent);color:#fff;border-color:var(--accent)!important}
+.btn-folder{background:var(--bg);color:var(--text)}
+.file-hidden{display:none}
+
+/* ===== Section ===== */
+.section{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);display:flex;flex-direction:column}
+.section-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:12px 14px;border-bottom:1px solid var(--border);font-size:13px;
+  font-weight:600;color:var(--text2)
+}
+.section-header .count{font-weight:400;font-size:12px;color:var(--text3)}
+.section-body{flex:1;overflow-y:auto;padding:4px;max-height:260px}
+.section-body::-webkit-scrollbar{width:3px}
+.section-body::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+.empty-state{text-align:center;padding:28px 16px;color:var(--text3);font-size:13px}
+
+/* ===== Queue Items ===== */
+.q-item{
+  display:flex;flex-direction:column;gap:4px;
+  padding:10px 12px;border-bottom:1px solid var(--border);font-size:13px
+}
+.q-item:last-child{border-bottom:none}
+.q-item .qi-top{display:flex;justify-content:space-between;align-items:center}
+.q-item .qi-name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500}
+.q-item .qi-status{font-size:12px;flex-shrink:0}
+.q-item .qi-status.waiting{color:var(--text3)}
+.q-item .qi-status.fail{color:var(--error)}
+.q-item .qi-bar{height:4px;background:var(--bg3);border-radius:2px;overflow:hidden}
+.q-item .qi-bar-inner{height:100%;background:var(--accent);border-radius:2px;transition:width .3s;width:0}
+.q-item .qi-bar-inner.indeterminate{width:60%;animation:shimmer 1.2s ease-in-out infinite;
+  background:linear-gradient(90deg,var(--accent) 30%,var(--text3) 50%,var(--accent) 70%);background-size:200%}
+@keyframes shimmer{0%{transform:translateX(-100%)}100%{transform:translateX(200%)}}
+.q-item .qi-size{font-size:11px;color:var(--text3)}
+
+/* ===== History Items ===== */
+.h-item{
+  display:flex;align-items:center;gap:10px;padding:10px 12px;
+  border-bottom:1px solid var(--border);font-size:13px;transition:.15s
+}
+.h-item:last-child{border-bottom:none}
+.h-item:active{background:var(--bg2)}
+.h-item .hi-thumb{
+  width:40px;height:40px;border-radius:6px;object-fit:cover;background:var(--bg3);flex-shrink:0
+}
+.h-item .hi-info{flex:1;min-width:0}
+.h-item .hi-name{font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.h-item .hi-url{font-size:11px;color:var(--text3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.h-item .hi-time{font-size:11px;color:var(--text3);white-space:nowrap;flex-shrink:0}
+.h-item .hi-copy{
+  background:none;border:none;font-size:18px;cursor:pointer;padding:6px;
+  border-radius:6px;transition:.15s;flex-shrink:0
+}
+.h-item .hi-copy:active{background:var(--bg3);transform:scale(.9)}
+.h-item .hi-del{
+  background:none;border:none;font-size:14px;cursor:pointer;padding:6px;
+  border-radius:6px;transition:.15s;color:var(--text3);flex-shrink:0
+}
+.h-item .hi-del:active{background:#fbe9e7;color:var(--error);transform:scale(.9)}
+
+/* ===== Settings Modal ===== */
+.modal-overlay{
+  display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:100;
+  align-items:flex-end;justify-content:center
+}
+.modal-overlay.active{display:flex}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.modal{
+  background:var(--bg);border-radius:14px 14px 0 0;width:100%;max-width:500px;
+  max-height:85vh;overflow-y:auto;animation:slideUp .25s ease;
+  padding:0 0 calc(16px + var(--safe-bottom)) 0
+}
+.modal-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:16px 18px 12px;position:sticky;top:0;background:var(--bg);z-index:2
+}
+.modal-header::before{content:'';width:36px;height:4px;background:var(--border2);
+  border-radius:2px;position:absolute;top:6px;left:50%;transform:translateX(-50%)}
+.modal-header h2{font-size:16px;font-weight:600}
+.modal-body{padding:4px 18px 12px;display:flex;flex-direction:column;gap:14px}
+.modal-footer{
+  display:flex;gap:8px;padding:12px 18px 0;border-top:1px solid var(--border)
+}
+.modal-footer button{flex:1;padding:12px;border-radius:10px;border:1px solid var(--border);
+  font-size:14px;font-family:var(--font);font-weight:600;cursor:pointer;background:var(--bg);color:var(--text)}
+.modal-footer button:active{transform:scale(.97)}
+.modal-footer .btn-primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+.fg{display:flex;flex-direction:column;gap:4px}
+.fg label{font-size:12px;font-weight:600;color:var(--text2)}
+.fg input{
+  padding:11px 12px;border:1px solid var(--border);border-radius:8px;font-size:14px;
+  font-family:var(--font);outline:none;background:var(--bg);color:var(--text);-webkit-appearance:none
+}
+.fg input:focus{border-color:var(--accent)}
+.fg input::placeholder{color:var(--text3)}
+.form-note{font-size:11px;color:var(--text3);line-height:1.6}
+
+/* ===== Tutorial Modal ===== */
+.tuto-btn-close{
+  background:none;border:none;font-size:14px;color:var(--text3);cursor:pointer;padding:4px
+}
+.tuto-content{font-size:13px;line-height:1.8;color:var(--text2)}
+.tuto-content h3{font-size:14px;color:var(--text);margin:14px 0 6px}
+.tuto-content ol,.tuto-content ul{margin-left:16px}
+.tuto-content li{margin-bottom:4px}
+.tuto-content a{color:var(--accent);text-decoration:underline}
+.tuto-warn{background:#fff3cd;border-radius:6px;padding:10px 12px;color:#856404;font-size:12px;margin:10px 0}
+.tuto-green{background:#e8f5e9;border-radius:6px;padding:10px 12px;color:#2e7d32;font-size:12px}
+
+/* ===== Toast ===== */
+.toast-container{position:fixed;top:12px;left:12px;right:12px;z-index:200;display:flex;flex-direction:column;gap:6px;pointer-events:none}
+.toast{
+  padding:12px 16px;background:var(--text);color:#fff;border-radius:10px;font-size:13px;
+  box-shadow:0 4px 20px rgba(0,0,0,.12);animation:toastIn .25s ease;pointer-events:all
+}
+.toast.success{background:var(--success)}
+.toast.error{background:var(--error)}
+@keyframes toastIn{from{transform:translateY(-20px);opacity:0}to{transform:translateY(0);opacity:1}}
+</style>
+</head>
+<body>
+
+<!-- ===== Header ===== -->
+<header>
+  <h1>⬡ 图床</h1>
+  <div class="header-right">
+    <span class="status-dot" id="statusDot" title="未配置"></span>
+    <button class="btn-icon" id="tutorialBtn" title="教程">✱</button>
+    <button class="btn-icon" id="settingsBtn" title="设置">⚙</button>
+  </div>
+</header>
+
+<!-- ===== Main ===== -->
+<div class="main">
+
+  <!-- Upload Zone -->
+  <div class="upload-zone" id="dropZone">
+    <div class="icon">☁</div>
+    <div class="hint">将文件<strong>拖拽</strong>到此处</div>
+    <div class="sub-hint">所有格式 · 最大 25MB</div>
+    <div class="upload-btn-row">
+      <button class="btn-upload" id="uploadBtn">📤 上传文件</button>
+      <button class="btn-folder" id="folderBtn">📂 文件夹</button>
+    </div>
+  </div>
+  <input type="file" class="file-hidden" id="fileInput" multiple>
+  <input type="file" class="file-hidden" id="folderInput" webkitdirectory multiple>
+
+  <!-- Queue -->
+  <div class="section">
+    <div class="section-header">
+      <span>⬆ 上传队列</span>
+      <span class="count" id="queueCount">0 个</span>
+    </div>
+    <div class="section-body" id="queueBody">
+      <div class="empty-state" id="queueEmpty">等待上传…</div>
+    </div>
+  </div>
+
+  <!-- History -->
+  <div class="section" style="flex:1">
+    <div class="section-header">
+      <span>📁 已上传</span>
+      <span style="display:flex;align-items:center;gap:6px">
+        <span class="count" id="historyCount">0 条</span>
+        <button onclick="clearAllHistory()" style="background:none;border:none;font-size:11px;color:var(--text3);cursor:pointer;padding:2px">清空</button>
+      </span>
+    </div>
+    <div class="section-body" id="historyBody">
+      <div class="empty-state" id="historyEmpty">还没有上传记录</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ===== Settings Modal ===== -->
+<div class="modal-overlay" id="settingsModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>⚙ 设置</h2>
+      <button class="tuto-btn-close" onclick="closeSettings()">关闭</button>
+    </div>
+    <div class="modal-body">
+      <div class="fg">
+        <label>GitHub Token</label>
+        <input type="password" id="cfgToken" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" autocomplete="off">
+      </div>
+      <div class="fg">
+        <label>仓库地址</label>
+        <input type="text" id="cfgRepo" placeholder="用户名/仓库名">
+      </div>
+      <div class="fg">
+        <label>分支</label>
+        <input type="text" id="cfgBranch" placeholder="main" value="main">
+      </div>
+      <div class="fg">
+        <label>存储路径</label>
+        <input type="text" id="cfgPath" placeholder="images/" value="images/">
+      </div>
+      <div class="form-note">
+        🔒 Token 仅存在本地，仅发往 GitHub API。<br>
+        📦 单文件最大 25MB · 🌐 jsDelivr CDN 加速
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button onclick="closeSettings()">取消</button>
+      <button class="btn-primary" onclick="saveSettings()">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== Tutorial Modal ===== -->
+<div class="modal-overlay" id="tutorialModal">
+  <div class="modal" style="max-height:80vh">
+    <div class="modal-header" style="border-bottom:none">
+      <h2>✱ 使用教程</h2>
+      <button class="tuto-btn-close" onclick="closeTutorial()">关闭</button>
+    </div>
+    <div class="modal-body" style="padding-top:0">
+      <!-- Tabs -->
+      <div style="display:flex;gap:0;border-bottom:1px solid var(--border);margin:0 -18px 8px;padding:0 18px">
+        <div class="tuto-tab active" onclick="switchTab(this,'steps')" style="padding:8px 14px;font-size:13px;font-weight:600;color:var(--text3);border-bottom:2px solid transparent;cursor:pointer">📖 步骤</div>
+        <div class="tuto-tab" onclick="switchTab(this,'disc')" style="padding:8px 14px;font-size:13px;font-weight:600;color:var(--text3);border-bottom:2px solid transparent;cursor:pointer">⚠️ 声明</div>
+      </div>
+      <!-- Steps -->
+      <div id="tutoSteps" class="tuto-content">
+        <h3>📦 配置 Token</h3>
+        <ol>
+          <li>打开 <a href="https://github.com/settings/tokens" target="_blank">github.com/settings/tokens</a></li>
+          <li>点 <strong>"Generate new token"</strong> → <strong>"Tokens (classic)"</strong></li>
+          <li>取个名字，勾选 <strong><code>repo</code></strong></li>
+          <li>生成并复制 <code>ghp_...</code> 开头的 Token</li>
+          <li>点 ⚙ 设置 → 粘贴 Token → 保存</li>
+        </ol>
+        <h3>📤 上传文件</h3>
+        <ul><li>拖拽到上方区域，或点「上传文件」/「文件夹」按钮</li><li>支持所有格式，单文件 ≤ 25MB</li></ul>
+        <h3>🔗 复制链接</h3>
+        <ul><li>在「已上传」列表中点击 📋 复制 CDN 链接</li></ul>
+      </div>
+      <!-- Disclaimer -->
+      <div id="tutoDisc" class="tuto-content" style="display:none">
+        <h3>⚠️ 声明</h3>
+        <div class="tuto-warn"><strong>🚨 重要</strong><br>本工具仅为个人使用设计。</div>
+        <p><strong>1. 数据安全</strong><br>Token 仅存 localStorage，仅发往 api.github.com。</p>
+        <p><strong>2. 文件存储</strong><br>文件存入你的 GitHub 仓库。随机文件名防止猜测。</p>
+        <p><strong>3. API 限制</strong><br>每小时 5000 次请求，单文件 ≤ 25MB。</p>
+        <p><strong>4. CDN 缓存</strong><br>新文件需几分钟全球生效。</p>
+        <p><strong>5. 责任</strong><br>请勿上传违法内容，后果自负。</p>
+        <div class="tuto-green"><strong>✅ 总结</strong><br>随机文件名保护是核心安全机制。不传链接即安全。</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== Toast ===== -->
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+/* ============================================================
+   图床工具 · 移动版
+   GitHub Git Data API upload / drag & drop / all file types
+   ============================================================ */
+
+const state = {
+  queue: [], history: [], uploading: false,
+  settings: { token: '', repo: '', branch: 'main', path: 'images/' }
+};
+
+const $ = s => document.querySelector(s);
+const $$ = s => document.querySelectorAll(s);
+const $id = id => document.getElementById(id);
+
+// ===== Init =====
+function init() {
+  loadSettings(); loadHistory(); bindEvents(); updateStatus();
+}
+document.addEventListener('DOMContentLoaded', init);
+
+// ===== Settings =====
+function loadSettings() {
+  try { const r = localStorage.getItem('mb-image-settings'); if (r) Object.assign(state.settings, JSON.parse(r)); } catch(e) {}
+}
+function saveSettings() {
+  const t = $id('cfgToken').value.trim(), r = $id('cfgRepo').value.trim();
+  let b = $id('cfgBranch').value.trim(), p = $id('cfgPath').value.trim();
+  if (!t) return toast('请输入 Token','error'); if (!r) return toast('请输入仓库','error');
+  if (!b) b='main'; if (!p) p='images/';
+  state.settings = { token:t, repo:r, branch:b, path:p.replace(/^\/+|\/+$/g,'')+'/' };
+  localStorage.setItem('mb-image-settings', JSON.stringify(state.settings));
+  closeSettings(); updateStatus(); toast('已保存','success');
+}
+function closeSettings() { $id('settingsModal').classList.remove('active'); }
+function openSettings() {
+  $id('cfgToken').value = state.settings.token; $id('cfgRepo').value = state.settings.repo;
+  $id('cfgBranch').value = state.settings.branch; $id('cfgPath').value = state.settings.path.replace(/\/$/,'');
+  $id('settingsModal').classList.add('active');
+}
+function updateStatus() {
+  const dot = $id('statusDot');
+  if (!state.settings.token || !state.settings.repo) { dot.className='status-dot err'; dot.title='未配置'; }
+  else { dot.className='status-dot ok'; dot.title='已就绪'; }
+}
+
+// ===== Toast =====
+let tt = 0;
+function toast(m,t) {
+  const e=document.createElement('div'); e.className='toast'+(t==='success'?' success':t==='error'?' error':'');
+  e.textContent=m; $id('toastContainer').appendChild(e);
+  clearTimeout(tt); tt=setTimeout(()=>{while($id('toastContainer').firstChild)$id('toastContainer').removeChild($id('toastContainer').firstChild)},2500);
+}
+
+// ===== Tutorial =====
+function openTutorial() { $id('tutorialModal').classList.add('active'); }
+function closeTutorial() { $id('tutorialModal').classList.remove('active'); }
+function switchTab(el, tab) {
+  $$('.tuto-tab').forEach(t=>{t.classList.remove('active');t.style.color='var(--text3)';t.style.borderColor='transparent'});
+  el.classList.add('active'); el.style.color='var(--text)'; el.style.borderBottomColor='var(--accent)';
+  $id('tutoSteps').style.display = tab==='steps'?'block':'none';
+  $id('tutoDisc').style.display = tab==='disc'?'block':'none';
+}
+
+// ===== History =====
+function loadHistory() {
+  try { const r=localStorage.getItem('mb-image-history'); if(r) state.history=JSON.parse(r); } catch(e){}
+  renderHistory();
+}
+function saveHistory() {
+  try { localStorage.setItem('mb-image-history', JSON.stringify(state.history)); } catch(e){}
+  renderHistory();
+}
+function addHistory(name, url, size, previewUrl) {
+  state.history.unshift({id:Date.now()+'_'+Math.random().toString(36).slice(2,6), name, url, size, time:Date.now(), previewUrl:previewUrl||null});
+  if (state.history.length>200) state.history=state.history.slice(0,200);
+  saveHistory();
+}
+function deleteHistory(id) {
+  const item=state.history.find(h=>h.id===id);
+  if(item&&item.previewUrl) URL.revokeObjectURL(item.previewUrl);
+  state.history=state.history.filter(h=>h.id!==id); saveHistory(); toast('已删除','info');
+}
+function clearAllHistory() {
+  if(!state.history.length) return;
+  if(!confirm('清空记录？文件仍保留在仓库中。')) return;
+  state.history.forEach(h=>{if(h.previewUrl)URL.revokeObjectURL(h.previewUrl)});
+  state.history=[]; saveHistory(); toast('已清空','info');
+}
+function renderHistory() {
+  const sorted=[...state.history];
+  if(!sorted.length){ $id('historyBody').innerHTML='<div class="empty-state">还没有上传记录</div>'; $id('historyCount').textContent='0 条'; return; }
+  let html='';
+  for(const h of sorted){
+    html+='<div class="h-item" data-id="'+h.id+'">'+
+      '<img class="hi-thumb" src="'+(h.previewUrl||h.url)+'" alt="'+esc(h.name)+'" loading="lazy"'+
+      ' onerror="this.src=\'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 40 40%22><rect width=%2240%22 height=%2240%22 fill=%22%23eee%22/><text x=%2220%22 y=%2224%22 text-anchor=%22middle%22 font-size=%2216%22 fill=%22%23999%22>✕</text></svg>\'">'+
+      '<div class="hi-info"><div class="hi-name" title="'+esc(h.name)+'">'+esc(h.name)+'</div>'+
+      '<div class="hi-url" title="'+esc(h.url)+'">'+esc(h.url)+'</div></div>'+
+      '<div class="hi-time">'+fmtSize(h.size)+'</div>'+
+      '<button class="hi-copy" onclick="copyUrl(\''+esc(h.url)+'\')" title="复制">📋</button>'+
+      '<button class="hi-del" onclick="deleteHistory(\''+h.id+'\')" title="删除">✕</button></div>';
+  }
+  $id('historyBody').innerHTML=html; $id('historyCount').textContent=sorted.length+' 条';
+}
+
+// ===== Queue =====
+function addToQueue(files) {
+  for(const f of files){
+    if(f.size>25*1024*1024){ toast(f.name+' 超过25MB','error'); continue; }
+    if(state.queue.find(q=>q.status==='waiting'&&q.file.name===f.name&&q.file.size===f.size)) continue;
+    state.queue.push({id:Date.now()+'_'+Math.random().toString(36).slice(2,6), file:f, name:f.name, size:f.size, status:'waiting', progress:0});
+  }
+  renderQueue(); processQueue();
+}
+function renderQueue() {
+  const items=state.queue.filter(q=>q.status!=='done');
+  if(!items.length){ $id('queueBody').innerHTML='<div class="empty-state">等待上传…</div>'; $id('queueCount').textContent='0 个'; return; }
+  let html='';
+  for(const q of items){
+    let st='', bar='', sz=fmtSize(q.size);
+    if(q.status==='waiting') st='<span class="qi-status waiting">排队</span>';
+    else if(q.status==='uploading'){
+      bar='<div class="qi-bar"><div class="qi-bar-inner'+(q.progress>0?'" style="width:'+q.progress+'%"':'-indeterminate"')+'></div></div>';
+      st='<span class="qi-status">上传'+(q.progress>0?' '+q.progress+'%':'')+'</span>';
+    } else if(q.status==='fail') st='<span class="qi-status fail">失败</span>';
+    html+='<div class="q-item" data-id="'+q.id+'"><div class="qi-top"><span class="qi-name" title="'+esc(q.name)+'">'+esc(q.name)+'</span>'+st+'</div>'+bar+'<div class="qi-size">'+sz+'</div></div>';
+  }
+  $id('queueBody').innerHTML=html; $id('queueCount').textContent=items.length+' 个';
+}
+
+// ===== Upload =====
+async function processQueue() {
+  if(state.uploading) return;
+  const next=state.queue.find(q=>q.status==='waiting');
+  if(!next) return;
+  state.uploading=true; next.status='uploading'; renderQueue();
+  try {
+    const pv=URL.createObjectURL(next.file);
+    const url=await uploadFile(next);
+    addHistory(next.name, url, next.size, pv);
+    next.status='done'; next.progress=100;
+    toast(next.name+' 成功','success');
+  } catch(err) {
+    next.status='fail';
+    toast(next.name+' 失败: '+err.message,'error');
+  }
+  renderQueue(); state.uploading=false; processQueue();
+}
+
+async function uploadFile(q) {
+  const {token,repo,branch,path}=state.settings;
+  if(!token||!repo) throw new Error('请先配置 Token 和仓库');
+  const ext=q.file.name.split('.').pop()||'jpg', ts=Date.now(), rand=Math.random().toString(36).slice(2,10);
+  const filename=ts+'_'+rand+'.'+ext, filePath=path+filename;
+  const base64=await readFile(q.file);
+  const blob=await gh(`https://api.github.com/repos/${repo}/git/blobs`,'POST',{content:base64,encoding:'base64'});
+  const ref=await gh(`https://api.github.com/repos/${repo}/git/ref/heads/${branch}`,'GET');
+  const co=await gh(ref.object.url,'GET');
+  const tr=await gh(`https://api.github.com/repos/${repo}/git/trees`,'POST',{base_tree:co.tree.sha,tree:[{path:filePath,mode:'100644',type:'blob',sha:blob.sha}]});
+  await gh(`https://api.github.com/repos/${repo}/git/commits`,'POST',{message:'Upload '+filename,tree:tr.sha,parents:[co.sha]});
+  await gh(`https://api.github.com/repos/${repo}/git/refs/heads/${branch}`,'PATCH',{sha:co.sha,force:false});
+  return `https://cdn.jsdelivr.net/gh/${repo}/${filePath}`;
+}
+
+function upQ(q,pct){ q.progress=pct; const el=$id('queueBody').querySelector('[data-id="'+q.id+'"]'); if(!el)return; const bar=el.querySelector('.qi-bar-inner'); if(bar){bar.style.width=pct+'%';bar.className='qi-bar-inner'} const st=el.querySelector('.qi-status'); if(st)st.textContent=pct>0&&pct<100?'上传 '+pct+'%':''; }
+
+async function gh(url,method,body){
+  const opts={method,headers:{'Authorization':'Bearer '+state.settings.token,'Accept':'application/vnd.github+json','User-Agent':'ImageHost-M/1.0'}};
+  if(body){opts.headers['Content-Type']='application/json';opts.body=JSON.stringify(body)}
+  const res=await fetch(url,opts); const data=await res.json();
+  if(!res.ok){
+    if(res.status===403&&data.message&&data.message.includes('rate limit')) throw new Error('频率限制，请稍后重试');
+    if(res.status===401) throw new Error('Token 无效，请在设置中更新');
+    if(res.status===403&&data.message&&data.message.includes('Resource not accessible')) throw new Error('Token 没有仓库权限，请检查设置');
+    throw new Error(data.message||'HTTP '+res.status);
+  }
+  return data;
+}
+
+function readFile(file){return new Promise((rs,rj)=>{const r=new FileReader();r.onload=()=>rs(r.result.split(',')[1]);r.onerror=()=>rj(new Error('读取失败'));r.readAsDataURL(file)})}
+
+function getFiles(dt){
+  const files=[],ps=[];
+  if(dt.items){for(let i=0;i<dt.items.length;i++){const e=dt.items[i].webkitGetAsEntry?dt.items[i].webkitGetAsEntry():null;if(e)ps.push(traverse(e,files))}}
+  else if(dt.files){for(let i=0;i<dt.files.length;i++)files.push(dt.files[i])}
+  return ps.length?Promise.all(ps).then(()=>files):Promise.resolve(files);
+}
+function traverse(entry,files){return new Promise(rs=>{if(entry.isFile){entry.file(f=>{files.push(f);rs()},rs)}else if(entry.isDirectory){const r=entry.createReader();const rd=()=>{r.readEntries(es=>{if(!es.length)rs();else Promise.all(es.map(e=>traverse(e,files))).then(rd)},rs)};rd()}else rs()})}
+
+// ===== Events =====
+function bindEvents() {
+  $id('tutorialBtn').addEventListener('click',openTutorial);
+  $id('tutorialModal').addEventListener('click',e=>{if(e.target===$id('tutorialModal'))closeTutorial()});
+  $id('settingsBtn').addEventListener('click',openSettings);
+  $id('settingsModal').addEventListener('click',e=>{if(e.target===$id('settingsModal'))closeSettings()});
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeSettings();closeTutorial()}});
+
+  $id('uploadBtn').addEventListener('click',()=>$id('fileInput').click());
+  $id('folderBtn').addEventListener('click',()=>$id('folderInput').click());
+  $id('fileInput').addEventListener('change',e=>{if(e.target.files.length){addToQueue(e.target.files);e.target.value=''}});
+  $id('folderInput').addEventListener('change',e=>{if(e.target.files.length){addToQueue(e.target.files);e.target.value=''}});
+
+  const dz=$id('dropZone');
+  dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('drag-over')});
+  dz.addEventListener('dragleave',e=>{e.preventDefault();dz.classList.remove('drag-over')});
+  dz.addEventListener('drop',async e=>{
+    e.preventDefault();dz.classList.remove('drag-over');
+    if(!state.settings.token||!state.settings.repo){toast('请先配置','error');return}
+    const files=await getFiles(e.dataTransfer);
+    if(!files.length){toast('未检测到文件','info');return}
+    addToQueue(files); toast('已添加 '+files.length+' 个文件','info');
+  });
+  dz.addEventListener('click',e=>{
+    if(e.target.tagName==='BUTTON'||e.target.closest('button')) return;
+    if(!state.settings.token||!state.settings.repo) openSettings(); else $id('fileInput').click();
+  });
+}
+
+// ===== Utils =====
+function fmtSize(b){if(!b)return'';if(b<1024)return b+'B';if(b<1048576)return(b/1024).toFixed(1)+'KB';return(b/1048576).toFixed(1)+'MB'}
+function esc(s){const d=document.createElement('div');d.textContent=s;return d.innerHTML}
+async function copyUrl(url){
+  try{await navigator.clipboard.writeText(url);toast('已复制','success')}catch(e){
+    const ta=document.createElement('textarea');ta.value=url;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);toast('已复制','success')
+  }
+}
+</script>
+</body>
+</html>
