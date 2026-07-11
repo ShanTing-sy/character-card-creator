@@ -62,8 +62,8 @@
 
   /* Editor Panel */
   .editor-panel{flex:1;min-width:280px;display:flex;flex-direction:column;min-height:0;overflow:hidden;background:var(--bg);transition:background .25s}
-  .editor-toolbar{background:var(--surface);border-bottom:1px solid var(--border);padding:6px 14px;display:flex;align-items:center;gap:8px;flex-shrink:0;font-size:.73rem;color:var(--text-muted)}
-  .editor-body{flex:1;display:flex;flex-direction:column;min-height:0;overflow:hidden}
+  .editor-toolbar{background:var(--surface);border-bottom:1px solid var(--border);padding:6px 14px;display:flex;align-items:center;gap:8px;row-gap:4px;flex-shrink:0;flex-wrap:wrap;min-height:34px;font-size:.73rem;color:var(--text-muted)}
+  .editor-body{flex:1;min-height:0;overflow:hidden;display:flex;flex-direction:column}
 
   /* Bottom Tabs */
   .bottom-tabs{background:var(--surface);border-top:1px solid var(--border);padding:0 10px;display:flex;align-items:center;gap:1px;flex-shrink:0;height:38px;transition:background .25s,border-color .25s}
@@ -89,6 +89,18 @@
   .entry-item.drag-over{border-color:var(--accent2);background:color-mix(in srgb,var(--accent2) 10%,var(--surface2))}
   .drag-handle{cursor:grab;color:var(--text-muted);font-size:.7rem;flex-shrink:0}
   .drag-handle:active{cursor:grabbing}
+
+  /* ── Preset Batch Mode ── */
+  .entry-item.pb-checked{background:color-mix(in srgb,var(--accent) 15%,var(--surface2));border-color:var(--accent)}
+  .entry-item .pb-cb{width:13px;height:13px;accent-color:var(--accent);cursor:pointer;flex-shrink:0;margin:0;opacity:0;transition:opacity .12s}
+  .entry-item.pb-show-cb .pb-cb{opacity:1}
+  .entry-item.pb-show-cb .drag-handle{opacity:.4}
+  .pb-batch-bar{display:flex;align-items:center;gap:6px;padding:4px 10px;background:color-mix(in srgb,var(--accent) 8%,var(--surface));border-bottom:1px solid var(--border);flex-shrink:0;flex-wrap:wrap}
+  .pb-batch-bar .pb-batch-count{font-size:.68rem;color:var(--text-muted);margin-right:4px}
+  .pb-batch-bar .pb-batch-btn{font-size:.65rem;padding:2px 8px;border-radius:4px;border:none;cursor:pointer;font-weight:600;transition:all .12s;white-space:nowrap}
+  .pb-batch-bar .pb-batch-btn:hover{filter:brightness(1.12)}
+  .pb-batch-bar .pb-batch-btn:disabled{opacity:.4;cursor:default}
+  .editor-list-header.pb-header{background:color-mix(in srgb,var(--accent) 10%,var(--surface))}
 
   /* Right Panel */
   .right-panel{width:360px;min-width:180px;flex-shrink:0;background:var(--surface);border-left:1px solid var(--border);display:flex;flex-direction:column;min-height:0;overflow:hidden;transition:background .25s,border-color .25s}
@@ -222,6 +234,12 @@
   .code-box pre code{font-size:.72rem;line-height:1.6}
   .code-box.collapsed pre{max-height:0;overflow:hidden}
   .code-box .expand-toggle{font-size:.65rem;cursor:pointer;color:var(--accent);user-select:none}
+	/* 触发方式切换按钮 */
+	.trigger-toggle{display:flex;gap:0;border-radius:8px;overflow:hidden;border:1px solid var(--border);width:fit-content}
+	.trigger-toggle button{padding:7px 16px;font-size:.78rem;font-weight:600;border:none;cursor:pointer;background:var(--surface2);color:var(--text-muted);transition:all .18s;white-space:nowrap}
+	.trigger-toggle button:first-child{border-right:1px solid var(--border)}
+	.trigger-toggle button.active{background:var(--accent);color:#fff}
+	.trigger-toggle button:hover:not(.active){color:var(--text);background:color-mix(in srgb,var(--accent) 8%,var(--surface2))}
 
   /* 蕼的教程 — 折叠模板块 */
   .si-collapse{margin:10px 0;border:1px solid var(--border);border-radius:8px;overflow:hidden}
@@ -307,6 +325,16 @@
   .ed-sf-entry.active{background:color-mix(in srgb,var(--accent) 15%,var(--surface2));color:var(--accent)}
   .ed-sf-entry .ed-sf-eidx{font-size:.58rem;color:var(--text-muted);width:16px;flex-shrink:0;text-align:right}
 
+  /* ── Source Entry Batch Mode ── */
+  .ed-sf-entry .sf-cb{width:12px;height:12px;accent-color:var(--accent);cursor:pointer;flex-shrink:0;margin:0;opacity:0;transition:opacity .1s}
+  .ed-sf-entry.sf-batch-show .sf-cb{opacity:1}
+  .ed-sf-entry.sf-checked{background:color-mix(in srgb,var(--accent) 18%,var(--surface2))!important;color:var(--accent)}
+  .sf-batch-bar{display:flex;align-items:center;gap:5px;padding:3px 8px;background:color-mix(in srgb,var(--accent) 8%,var(--surface));border-bottom:1px solid var(--border);flex-shrink:0;flex-wrap:wrap;font-size:.65rem}
+  .sf-batch-bar .sf-batch-count{color:var(--text-muted);margin-right:3px}
+  .sf-batch-bar .sf-batch-btn{font-size:.62rem;padding:1px 7px;border-radius:4px;border:none;cursor:pointer;font-weight:600;transition:all .1s;white-space:nowrap}
+  .sf-batch-bar .sf-batch-btn:hover{filter:brightness(1.12)}
+  .sf-batch-bar .sf-batch-btn:disabled{opacity:.4;cursor:default}
+
   /* Source preview (upper right) */
   .editdesk-source-preview{width:30%;min-width:160px;flex-shrink:0;overflow-y:auto;padding:8px 12px;display:flex;flex-direction:column;gap:6px;background:color-mix(in srgb,var(--surface) 30%,var(--bg));border-left:1px solid var(--border)}
 
@@ -322,19 +350,39 @@
   .editdesk-working-list-body{flex:1;overflow-y:auto;padding:3px}
   .editdesk-working-editor{width:55%;min-width:180px;flex-shrink:0;overflow-y:auto;padding:10px 14px;display:flex;flex-direction:column;gap:9px;background:var(--bg);border-left:1px solid var(--border)}
   .editdesk-working-toolbar{background:var(--surface);border-top:1px solid var(--border);padding:5px 10px;display:flex;align-items:center;gap:5px;flex-shrink:0;flex-wrap:wrap}
+  /* ── Ed Working Item ── */
   .ed-working-item{display:flex;align-items:center;gap:5px;padding:5px 8px;border-radius:5px;cursor:pointer;font-size:.73rem;border:1px solid transparent;transition:all .12s;user-select:none}
   .ed-working-item:hover{background:var(--surface2)}
   .ed-working-item.active{background:var(--surface2);border-color:var(--accent)}
   .ed-working-item.drag-over{border-color:var(--accent2);background:color-mix(in srgb,var(--accent2) 10%,var(--surface2))}
+  .ed-working-item .ed-wcb{width:13px;height:13px;accent-color:var(--accent);cursor:pointer;flex-shrink:0;margin:0;opacity:0;transition:opacity .12s}
+  .ed-working-item.ed-batch-show .ed-wcb{opacity:1}
+  .ed-working-item.ed-batch-checked{background:color-mix(in srgb,var(--accent) 15%,var(--surface2));border-color:var(--accent)}
   .ed-working-item .ed-widx{font-size:.63rem;color:var(--text-muted);width:16px;flex-shrink:0;text-align:right}
   .ed-working-item .ed-wname{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .ed-working-item .ed-wdel{font-size:.6rem;color:var(--text-muted);cursor:pointer;padding:0 2px;flex-shrink:0;opacity:0;transition:opacity .12s}
   .ed-working-item:hover .ed-wdel{opacity:1}
   .ed-working-item .ed-wdel:hover{color:var(--danger)}
+  .ed-working-item.ed-batch-show .ed-wdel{display:none}
+  .ed-batch-bar{display:flex;align-items:center;gap:6px;padding:4px 8px;background:color-mix(in srgb,var(--accent) 8%,var(--surface));border-bottom:1px solid var(--border);flex-shrink:0;flex-wrap:wrap}
+  .ed-batch-bar .ed-batch-count{font-size:.68rem;color:var(--text-muted);margin-right:4px}
+  .ed-batch-bar .ed-batch-btn{font-size:.65rem;padding:2px 8px;border-radius:4px;border:none;cursor:pointer;font-weight:600;transition:all .12s}
+  .ed-batch-bar .ed-batch-btn:hover{filter:brightness(1.12)}
 
   /* Empty states for edit desk */
   .ed-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;height:100%;color:var(--text-muted);font-size:.75rem;padding:20px;text-align:center}
   .ed-empty .ed-empty-icon{font-size:2rem;opacity:.5}
+
+
+  .draft-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px}
+  .draft-card{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px;cursor:pointer;transition:all .12s}
+  .draft-card:hover{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 5%,var(--surface2))}
+  .draft-card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
+  .draft-card-header span:first-child{font-size:.62rem;font-weight:700;padding:1px 7px;border-radius:8px;background:color-mix(in srgb,var(--accent2) 15%,transparent);color:var(--accent2)}
+  .draft-card-title{font-weight:700;font-size:.78rem;margin:4px 0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .draft-card-preview{font-size:.67rem;color:var(--text-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .draft-tag{transition:all .12s}
+  .draft-tag.active{background:var(--accent)!important;color:#fff!important}
 </style>
 </head>
 <body>
@@ -342,7 +390,7 @@
 <header>
   <span class="header-logo">🌌</span>
   <h1>Caelum<span>写卡助手</span></h1>
-  <div class="header-actions">
+  <div class="header-actions"><button class="btn btn-secondary btn-xs" onclick="showDrafts()" title="存储管理器" style="margin-right:2px">📦</button><button class="btn btn-secondary btn-xs" onclick="showCustomPersonaModal()" title="自定义AI助手" style="margin-right:2px">+</button>
     <!-- AI 助手选择 -->
     <select id="aiPersonaSelect" onchange="switchAIPersona(this.value)" style="width:auto;font-size:.73rem;padding:5px 8px" title="选择 AI 助手人格">
       <option value="caelum">🌌 山停 · 万能辅助</option>
@@ -530,6 +578,7 @@ let state = {
 };
 let selectedIndex=-1, selectedWBIndex=-1, selectedRegexIndex=-1, selectedCharCardIndex=-1;
 let dragSrcIndex=-1, editorMode='preset', rightTab='preview';
+let presetBatchMode=false, presetBatchSet=new Set(); // 预设批量模式
 
 // AI 状态
 let aiConfig={baseUrl:'https://api.openai.com/v1',apiKey:'',model:'gpt-4o',maxTokens:2000,temperature:0.7,topP:0.9};
@@ -541,7 +590,9 @@ let aiCurrentPersona='caelum';
 let editDesk={
   mode:'preset', sourceFiles:[], selectedSourceFileId:null,
   selectedSourceEntryIndex:-1, workingEntries:[], selectedWorkingIndex:-1,
-  splitPercent:55, upperVSplit:38, lowerVSplit:40, clipboard:null
+  splitPercent:55, upperVSplit:38, lowerVSplit:40, clipboard:null,
+  batchMode:false, batchSet:new Set(),
+  sourceBatchMode:false, sourceBatchSet:new Set()
 };
 let wsRightWidth=360; // workspace right panel width (px)
 
@@ -576,17 +627,19 @@ function getModeActions(mode){
   var btns='';
   switch(mode){
     case 'editdesk':btns=`<button class="btn btn-secondary btn-xs" onclick="openSourceFile()">📂 打开源文件</button><button class="btn btn-secondary btn-xs" onclick="newSourceFile()">✨ 新建空文件</button><button class="btn btn-success btn-xs" onclick="exportWorkingPreset()">💾 导出工作区</button><button class="btn btn-danger btn-xs" onclick="clearEditDeskWorking()">🗑 清空工作区</button>`;break;
-    case 'preset':btns=`<button class="btn btn-secondary btn-xs" onclick="importPreset()">📂 导入预设</button><button class="btn btn-secondary btn-xs" onclick="newPreset()">✨ 新建预设</button><button class="btn btn-success btn-xs" onclick="exportPreset()">💾 导出</button><button class="btn btn-danger btn-xs" onclick="clearPresets()">🗑 清除预设</button>`;break;
-    case 'worldbook':btns=`<button class="btn btn-secondary btn-xs" onclick="importWorldBook()">📂 导入</button><button class="btn btn-primary btn-xs" onclick="addWBEntry()">＋ 添加</button><button class="btn btn-success btn-xs" onclick="exportWorldBook()">💾 导出</button><button class="btn btn-danger btn-xs" onclick="clearWorldBook()">🗑 清除</button>`;break;
-    case 'regex':btns=`<button class="btn btn-secondary btn-xs" onclick="importRegexFile()">📂 导入</button><button class="btn btn-primary btn-xs" onclick="addRegexEntry()">＋ 添加</button><button class="btn btn-success btn-xs" onclick="exportRegex()">💾 导出</button><button class="btn btn-danger btn-xs" onclick="clearRegex()">🗑 清除</button>`;break;
+    case 'preset':btns=`<button class="btn btn-secondary btn-xs" onclick="importPreset()">📂 导入预设</button><button class="btn btn-secondary btn-xs" onclick="newPreset()">✨ 新建预设</button><button class="btn btn-success btn-xs" onclick="exportPreset()">💾 导出</button><button class="btn btn-warning btn-xs" onclick="saveDraft()">💾 暂存</button><button class="btn btn-danger btn-xs" onclick="clearPresets()">🗑 清除预设</button><button class="btn btn-xs" style="background:color-mix(in srgb,var(--accent2) 15%,var(--surface2));color:var(--accent2);border:1px solid var(--accent2)" onclick="toggleBindPanel('preset')">🔗 绑定正则</button>`;break;
+    case 'worldbook':btns=`<button class="btn btn-secondary btn-xs" onclick="importWorldBook()">📂 导入</button><button class="btn btn-primary btn-xs" onclick="addWBEntry()">＋ 添加</button><button class="btn btn-success btn-xs" onclick="exportWorldBook()">💾 导出</button><button class="btn btn-warning btn-xs" onclick="saveDraft()">💾 暂存</button><button class="btn btn-danger btn-xs" onclick="clearWorldBook()">🗑 清除</button><button class="btn btn-xs" style="background:color-mix(in srgb,var(--accent2) 15%,var(--surface2));color:var(--accent2);border:1px solid var(--accent2)" onclick="toggleBindPanel('worldbook')">🔗 绑定正则</button>`;break;
+    case 'regex':btns=`<button class="btn btn-secondary btn-xs" onclick="importRegexFile()">📂 导入</button><button class="btn btn-primary btn-xs" onclick="addRegexEntry()">＋ 添加</button><button class="btn btn-success btn-xs" onclick="exportRegex()">💾 导出</button><button class="btn btn-warning btn-xs" onclick="saveDraft()">💾 暂存</button><button class="btn btn-danger btn-xs" onclick="clearRegex()">🗑 清除</button>`;break;
     case 'global':btns=`<button class="btn btn-secondary btn-xs" onclick="importPreset()">📂 导入预设</button><button class="btn btn-secondary btn-xs" onclick="newPreset()">✨ 新建预设</button><button class="btn btn-success btn-xs" onclick="exportPreset()">💾 导出</button>`;break;
-    case 'charcard':btns=`<button class="btn btn-secondary btn-xs" onclick="importCharCard()">📂 导入</button><button class="btn btn-primary btn-xs" onclick="addCharCard()">＋ 新建</button><button class="btn btn-success btn-xs" onclick="exportCharCard(selectedCharCardIndex)">💾 导出</button><button class="btn btn-danger btn-xs" onclick="clearCharCards()">🗑 清除</button>`;break;
+    case 'charcard':btns=`<button class="btn btn-secondary btn-xs" onclick="importCharCard()">📂 导入</button><button class="btn btn-primary btn-xs" onclick="addCharCard()">＋ 新建</button><button class="btn btn-success btn-xs" onclick="exportCharCard(selectedCharCardIndex)">💾 导出</button><button class="btn btn-warning btn-xs" onclick="saveDraft()">💾 暂存</button><button class="btn btn-danger btn-xs" onclick="clearCharCards()">🗑 清除</button>`;break;
   }
   return btns;
 }
 function switchEditorMode(mode){
   editorMode=mode;
   selectedWBIndex=-1; selectedRegexIndex=-1;
+  // Reset preset batch mode when leaving preset
+  if(mode!=='preset'){presetBatchMode=false;presetBatchSet=new Set();}
   const map={editdesk:['btabEditDesk','paneEditDesk'],preset:['btabPreset','panePreset'],worldbook:['btabWorldBook','paneWorldBook'],regex:['btabRegex','paneRegex'],global:['btabGlobal','paneGlobal'],charcard:['btabCharCard','paneCharCard']};
   Object.entries(map).forEach(([m,[btab,pane]])=>{
     document.getElementById(btab).classList.toggle('active',mode===m);
@@ -608,6 +661,7 @@ function switchEditorMode(mode){
   else if(mode==='charcard')renderCharCardEditor();
   else if(mode==='editdesk')renderEditDesk();
   updatePreview();
+loadCustomPersonas();
 }
 
 /* ═══════════════════════════════════════════
@@ -680,20 +734,23 @@ function renderEditor(){
 
   let h=`<div class="editor-split">
     <div class="editor-list-panel">
-      <div class="editor-list-header"><span>📝 提示词 (${prompts.length})</span>
+      <div class="editor-list-header${presetBatchMode?' pb-header':''}"><span>📝 提示词 (${prompts.length})</span>
         <button class="btn btn-primary btn-xs" onclick="addPrompt()">+</button>
+        <button class="btn btn-secondary btn-xs ${presetBatchMode?'btn-warning':''}" onclick="togglePresetBatchMode()" title="批量操作模式" style="font-size:.65rem;padding:2px 7px">☑</button>
       </div>
+      ${presetBatchMode?renderPresetBatchBar():''}
       <div class="editor-list-body" id="promptListBody">`;
   if(!prompts.length)h+=`<div style="padding:16px;text-align:center;color:var(--text-muted);font-size:.78rem">暂无提示词</div>`;
   else prompts.forEach((p,i)=>{h+=`
-    <div class="entry-item${i===selectedIndex?' active':''}" onclick="selectPrompt(${i})" draggable="true" data-pidx="${i}" id="pitem_${i}">
+    <div class="entry-item${i===selectedIndex?' active':''}${presetBatchSet.has(i)?' pb-checked':''}${presetBatchMode?' pb-show-cb':''}" onclick="${presetBatchMode?'event.stopPropagation();togglePresetBatchCheck('+i+')':'selectPrompt('+i+')'}" draggable="${presetBatchMode?'false':'true'}" data-pidx="${i}" id="pitem_${i}">
+      <input type="checkbox" class="pb-cb"${presetBatchSet.has(i)?' checked':''} onclick="event.stopPropagation();togglePresetBatchCheck(${i})" title="选择/取消">
       <span class="drag-handle" title="拖拽排序" onclick="event.stopPropagation()">⠿</span>
       <span style="font-size:.82rem;flex-shrink:0">${roleEmoji[p.role]||'📄'}</span>
       <div style="flex:1;min-width:0">
-        <div style="font-size:.77rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escHtml(p.name||'未命名')}</div>
+        <div class="entry-title" style="font-size:.77rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escHtml(p.name||'未命名')}</div>
         <div style="font-size:.66rem;color:var(--text-muted)">${roleName[p.role]||p.role}${p.marker?' · 标记':''}${p.system_prompt?' · 系统':''}</div>
       </div>
-      <span class="toggle-enabled ${p.enabled?'on':'off'}" title="启用/禁用" onclick="event.stopPropagation();state.prompts[${i}].enabled=!state.prompts[${i}].enabled;renderEditor();updatePreview()"></span>
+      <span class="toggle-enabled ${p.enabled?'on':'off'}" title="启用/禁用" onclick="event.stopPropagation();${presetBatchMode?'togglePresetBatchCheck('+i+')':'state.prompts['+i+'].enabled=!state.prompts['+i+'].enabled;renderEditor();updatePreview()'}"></span>
     </div>`;});
   h+=`</div></div><div class="editor-detail-panel" id="presetDetail">`;
 
@@ -722,13 +779,70 @@ function renderEditor(){
   initScrollWatcher();
 }
 
+/* ═══════════════════════════════════════════
+   Preset — Batch Operations
+═══════════════════════════════════════════ */
+function renderPresetBatchBar(){
+  const n=presetBatchSet.size;
+  return `<div class="pb-batch-bar">
+    <span class="pb-batch-count">☑ 已选 ${n} 项</span>
+    <button class="pb-batch-btn" style="background:var(--surface2);color:var(--text);border:1px solid var(--border)" onclick="presetBatchSelectAll()">全选</button>
+    <button class="pb-batch-btn" style="background:var(--surface2);color:var(--text-muted);border:1px solid var(--border)" onclick="presetBatchClearAll()">取消</button>
+    <button class="pb-batch-btn" style="background:color-mix(in srgb,var(--success) 12%,var(--surface2));color:var(--success);border:1px solid color-mix(in srgb,var(--success) 30%,var(--border))" onclick="presetBatchToggleEnabled(true)" ${n===0?'disabled':''}>✅ 启用</button>
+    <button class="pb-batch-btn" style="background:color-mix(in srgb,var(--warning) 12%,var(--surface2));color:var(--warning);border:1px solid color-mix(in srgb,var(--warning) 30%,var(--border))" onclick="presetBatchToggleEnabled(false)" ${n===0?'disabled':''}>⏸ 禁用</button>
+    <span style="flex:1"></span>
+    <button class="pb-batch-btn" style="background:color-mix(in srgb,var(--danger) 15%,var(--surface2));color:var(--danger);border:1px solid color-mix(in srgb,var(--danger) 35%,var(--border))" onclick="presetBatchDelete()" ${n===0?'disabled':''}>🗑 批量删除</button>
+  </div>`;
+}
+
+function togglePresetBatchMode(){
+  presetBatchMode=!presetBatchMode;
+  if(!presetBatchMode) presetBatchSet=new Set();
+  renderEditor();
+}
+
+function togglePresetBatchCheck(idx){
+  if(presetBatchSet.has(idx)) presetBatchSet.delete(idx);
+  else presetBatchSet.add(idx);
+  renderEditor();
+}
+
+function presetBatchSelectAll(){
+  for(let i=0;i<state.prompts.length;i++) presetBatchSet.add(i);
+  renderEditor();
+}
+
+function presetBatchClearAll(){
+  presetBatchSet=new Set();
+  renderEditor();
+}
+
+function presetBatchDelete(){
+  const indices=Array.from(presetBatchSet).sort((a,b)=>b-a);
+  if(!indices.length) return;
+  if(!confirm(`确定要批量删除选中的 ${indices.length} 个提示词吗？`)) return;
+  indices.forEach(idx=>state.prompts.splice(idx,1));
+  presetBatchSet=new Set();
+  selectedIndex=Math.min(selectedIndex,state.prompts.length-1);
+  if(!state.prompts.length) selectedIndex=-1;
+  syncPromptOrder();
+  renderEditor();updatePreview();
+  toast('🗑 已批量删除 '+indices.length+' 个提示词');
+}
+
+function presetBatchToggleEnabled(on){
+  presetBatchSet.forEach(idx=>{state.prompts[idx].enabled=on});
+  renderEditor();updatePreview();
+  toast((on?'✅ 已批量启用 ':'⏸ 已批量禁用 ')+presetBatchSet.size+' 个提示词');
+}
+
 function renderPromptDetail(p,idx){
   const macros=['{{char}}','{{user}}','{{personality}}','{{description}}','{{scenario}}','{{mesExamples}}','{{history}}','{{group}}'];
   return `
     <div class="field-group"><label>标识符 &amp; 名称</label>
       <div class="field-row">
         <div><span class="sub-label">identifier</span><input type="text" value="${escHtml(p.identifier)}" oninput="updateField('identifier',this.value)"/></div>
-        <div><span class="sub-label">显示名称</span><input type="text" value="${escHtml(p.name)}" oninput="updateField('name',this.value);renderEditor()"/></div>
+        <div><span class="sub-label">显示名称</span><input type="text" value="${escHtml(p.name)}" oninput="updateField('name',this.value);updateEntryName(this.value)"/></div>
       </div></div>
     <div class="field-group"><label>角色 &amp; 属性</label>
       <div class="field-row" style="margin-bottom:10px">
@@ -748,6 +862,7 @@ function renderPromptDetail(p,idx){
 }
 
 function updateField(key,value){if(selectedIndex<0)return;state.prompts[selectedIndex][key]=value;syncPromptOrder();updatePreview()}
+function updateEntryName(val){var item=document.getElementById('pitem_'+selectedIndex);if(item){var nd=item.querySelector('.entry-title');if(nd)nd.textContent=val||'未命名'}}
 function insertMacro(m){const ta=document.getElementById('contentArea');if(!ta)return;const s=ta.selectionStart,e=ta.selectionEnd,v=ta.value;ta.value=v.substring(0,s)+m+v.substring(e);ta.selectionStart=ta.selectionEnd=s+m.length;updateField('content',ta.value);ta.focus()}
 function syncPromptOrder(){const m={};(state.prompt_order[0]?.order||[]).forEach(o=>{m[o.identifier]=o.enabled});state.prompt_order[0]={character_id:state.prompt_order[0]?.character_id??100001,order:state.prompts.map(p=>({identifier:p.identifier,enabled:m[p.identifier]!==undefined?m[p.identifier]:p.enabled}))}}
 function addPrompt(){const p=makePrompt(Date.now());if(selectedIndex>=0&&selectedIndex<state.prompts.length){state.prompts.splice(selectedIndex+1,0,p);selectedIndex++}else{state.prompts.push(p);selectedIndex=state.prompts.length-1}syncPromptOrder();if(editorMode!=='preset')switchEditorMode('preset');else renderEditor();updatePreview();toast('✅ 已添加提示词')}
@@ -780,14 +895,33 @@ function renderWorldBookEditor(){
   initScrollWatcher();
 }
 function renderWBDetail(e,idx){const pos=[{v:0,l:'0 · before_char'},{v:1,l:'1 · after_char'},{v:2,l:'2 · before_author'},{v:3,l:'3 · after_author'},{v:4,l:'4 · at_depth'}];return`
-  <div class="field-group"><label>触发词 (keys)</label><input type="text" value="${escHtml(e.keys)}" placeholder="多个触发词用英文逗号分隔" oninput="updateWBField('keys',this.value,${idx})"/><div class="param-hint">AI 消息中包含这些词时将触发此条目</div></div>
-  <div class="field-group"><label>内容 (content)</label><textarea rows="6" placeholder="条目正文…" oninput="updateWBField('content',this.value,${idx})">${escHtml(e.content)}</textarea></div>
-  <div class="field-group"><label>注释 (comment)</label><input type="text" value="${escHtml(e.comment)}" placeholder="备忘注释" oninput="updateWBField('comment',this.value,${idx})"/></div>
-  <div class="field-group"><label>注入设置</label><div class="field-row" style="margin-bottom:8px"><div><span class="sub-label">注入位置</span><select onchange="updateWBField('position',parseInt(this.value),${idx})">${pos.map(o=>`<option value="${o.v}" ${e.position===o.v?'selected':''}>${o.l}</option>`).join('')}</select></div><div><span class="sub-label">注入深度</span><input type="number" value="${e.depth}" min="0" max="100" oninput="updateWBField('depth',parseInt(this.value)||4,${idx})"/></div></div><div class="field-row"><div><span class="sub-label">排序顺序</span><input type="number" value="${e.order}" min="0" max="10000" oninput="updateWBField('order',parseInt(this.value)||100,${idx})"/></div><div><span class="sub-label">触发概率</span><input type="number" value="${e.probability}" min="0" max="100" oninput="updateWBField('probability',parseInt(this.value)||100,${idx})"/><div class="param-hint">0~100，100=始终触发</div></div></div></div>
-  <div class="field-group"><label>行为开关</label><div style="display:grid;grid-template-columns:1fr 1fr;gap:5px">${[['wb_enabled','enabled',e.enabled,'启用'],['wb_sel','selective',e.selective,'选择性'],['wb_const','constant',e.constant,'常驻'],['wb_regex','use_regex',e.use_regex,'正则匹配键'],['wb_excl','exclude_recursion',e.exclude_recursion,'排除递归']].map(([id,key,val,label])=>`<div class="checkbox-row"><input type="checkbox" id="${id}_${idx}" ${val?'checked':''} onchange="updateWBField('${key}',this.checked,${idx})"/><label for="${id}_${idx}">${label}</label></div>`).join('')}</div></div>
-  <div style="display:flex;justify-content:flex-end"><button class="btn btn-danger btn-sm" onclick="deleteWBEntry(${idx})">🗑 删除此条目</button></div>`}
+	<div class="field-group"><label>触发方式</label>
+		<div class="trigger-toggle">
+			<button class="${!e.constant?'active':''}" onclick="toggleWBTriggerMode(${idx},'keyword')">🔑 关键词触发</button>
+			<button class="${e.constant?'active':''}" onclick="toggleWBTriggerMode(${idx},'constant')">📌 默认触发</button>
+		</div>
+		<div class="param-hint">关键词触发：AI 消息包含指定词时触发 · 默认触发：始终激活（无需关键词）</div>
+	</div>
+	<div class="field-group" id="wb_keys_group_${idx}" style="${e.constant?'display:none':''}"><label>触发词 (keys)</label><input type="text" value="${escHtml(e.keys)}" placeholder="多个触发词用英文逗号分隔" oninput="updateWBField('keys',this.value,${idx})"/><div class="param-hint">AI 消息中包含这些词时将触发此条目</div></div>
+	<div class="field-group"><label>内容 (content)</label><textarea rows="6" placeholder="条目正文…" oninput="updateWBField('content',this.value,${idx})">${escHtml(e.content)}</textarea></div>
+	<div class="field-group"><label>注释 (comment)</label><input type="text" value="${escHtml(e.comment)}" placeholder="备忘注释" oninput="updateWBField('comment',this.value,${idx})"/></div>
+	<div class="field-group"><label>注入设置</label>
+		<div class="field-row" style="margin-bottom:8px">
+			<div><span class="sub-label">注入位置</span><select onchange="updateWBField('position',parseInt(this.value),${idx})">${pos.map(o=>`<option value="${o.v}" ${e.position===o.v?'selected':''}>${o.l}</option>`).join('')}</select></div>
+			<div><span class="sub-label">注入深度</span><input type="number" value="${e.depth}" min="0" max="100" oninput="updateWBField('depth',parseInt(this.value)||4,${idx})"/></div>
+		</div>
+		<div class="field-row">
+			<div><span class="sub-label">排序顺序</span><input type="number" value="${e.order}" min="0" max="10000" oninput="updateWBField('order',parseInt(this.value)||100,${idx})"/></div>
+			<div><span class="sub-label">触发概率</span><input type="number" value="${e.probability}" min="0" max="100" oninput="updateWBField('probability',parseInt(this.value)||100,${idx})"/><div class="param-hint">0~100，100=始终触发</div></div>
+		</div>
+	</div>
+	<div class="field-group"><label>行为开关</label>
+		<div style="display:grid;grid-template-columns:1fr 1fr;gap:5px">${[['wb_enabled','enabled',e.enabled,'启用'],['wb_sel','selective',e.selective,'选择性'],['wb_regex','use_regex',e.use_regex,'正则匹配键'],['wb_excl','exclude_recursion',e.exclude_recursion,'排除递归']].map(([id,key,val,label])=>`<div class="checkbox-row"><input type="checkbox" id="${id}_${idx}" ${val?'checked':''} onchange="updateWBField('${key}',this.checked,${idx})"/><label for="${id}_${idx}">${label}</label></div>`).join('')}</div>
+	</div>
+	<div style="display:flex;justify-content:flex-end;margin-top:8px"><button class="btn btn-danger btn-sm" onclick="deleteWBEntry(${idx})">🗑 删除此条目</button></div>`}
 function selectWBEntry(i){selectedWBIndex=i;renderWorldBookEditor()}
 function updateWBField(k,v,idx){if(idx<0||idx>=state.worldbook_entries.length)return;state.worldbook_entries[idx][k]=v;updatePreview()}
+function toggleWBTriggerMode(idx,mode){if(idx<0||idx>=state.worldbook_entries.length)return;if(mode==='constant'){state.worldbook_entries[idx].constant=true;state.worldbook_entries[idx].keys=''}else{state.worldbook_entries[idx].constant=false}renderWorldBookEditor();updatePreview()}
 function addWBEntry(){const e=makeWorldBookEntry(Date.now());if(selectedWBIndex>=0&&selectedWBIndex<state.worldbook_entries.length){state.worldbook_entries.splice(selectedWBIndex+1,0,e);selectedWBIndex++}else{state.worldbook_entries.push(e);selectedWBIndex=state.worldbook_entries.length-1}renderWorldBookEditor();updatePreview();toast('✅ 已添加世界书条目')}
 function deleteWBEntry(idx){if(idx<0||idx>=state.worldbook_entries.length)return;state.worldbook_entries.splice(idx,1);selectedWBIndex=Math.min(selectedWBIndex,state.worldbook_entries.length-1);if(!state.worldbook_entries.length)selectedWBIndex=-1;renderWorldBookEditor();updatePreview();toast('🗑 已删除')}
 function exportWorldBook(){const o={};state.worldbook_entries.forEach((e,i)=>{o[String(i)]=wbToST(e,i)});downloadJSON({entries:o},'worldbook.json');toast('💾 世界书已导出')}
@@ -1110,7 +1244,7 @@ function renderGlobalEditor(){
     <div class="checkbox-row"><input type="checkbox" id="gp_image" ${state.image_inlining?'checked':''} onchange="state.image_inlining=this.checked;updatePreview()"/><label for="gp_image">图片内联发送 (image_inlining)</label></div>
     <div class="checkbox-row"><input type="checkbox" id="gp_video" ${state.video_inlining?'checked':''} onchange="state.video_inlining=this.checked;updatePreview()"/><label for="gp_video">视频内联发送 (video_inlining)</label></div>
     <div style="margin-top:8px"><div class="param-label"><span>names_behavior</span></div><select onchange="state.names_behavior=parseInt(this.value);updatePreview()"><option value="0" ${state.names_behavior===0?'selected':''}>0 · 默认</option><option value="1" ${state.names_behavior===1?'selected':''}>1 · 始终添加名称</option><option value="2" ${state.names_behavior===2?'selected':''}>2 · 从不添加名称</option></select></div>
-    <div style="margin-top:8px"><div class="param-label"><span>bias_preset_selected</span></div><input type="text" value="${escHtml(state.bias_preset_selected)}" oninput="state.bias_preset_selected=this.value;updatePreview()"/></div>
+    <div style="margin-top:8px"><div class="param-label"><span>bias_preset_selected</span></div><input type="text" value="${escHtml(state.bias_preset_selected)}" oninput="state.bias_preset_selected=this.value;updatePreview()"/></div><div class="param-section"><div class="param-section-header"><span>🔗 导出时绑定正则</span></div><div class="param-section-body"><div class="tag-row" id="presetRegexBindArea"></div><div class="param-hint">勾选后导出预设时将弹窗确认是否包含正则</div></div></div>
   </div></div>`;
 
   // Format
@@ -1129,7 +1263,18 @@ function renderGlobalEditor(){
   // Slider bindings
   pane.querySelectorAll('.slider-sync').forEach(r=>{const k=r.dataset.key,n=pane.querySelector(`.num-sync[data-key="${k}"]`);r.addEventListener('input',()=>{const v=parseFloat(r.value);if(n)n.value=v;state[k]=v;updatePreview()});if(n){n.addEventListener('input',()=>{const v=parseFloat(n.value);if(!isNaN(v)){r.value=v;state[k]=v;updatePreview()}})}});
   initScrollWatcher();
-};
+  setTimeout(function(){
+    var area=document.getElementById("presetRegexBindArea");
+    if(area){
+      var h="";
+      state.regex_entries.forEach(function(re){
+        var on=bindRegexPreset.includes(re.uid);
+        h+='<label class="tag-chip "'+(on?'on':'off')+'" style="cursor:pointer" data-uid="'+re.uid+'" onclick="togglePresetBind(this.dataset.uid);renderGlobalEditor()">🔧 '+(re.scriptName||"未命名").substring(0,18)+'</label>';
+      });
+      area.innerHTML=h||'<span style="font-size:.68rem;color:var(--text-muted)">暂无正则 — 请先在「正则」模块创建</span>';
+    }
+  },100);
+	}
 
 /* ═══════════════════════════════════════════
    Drag helper
@@ -1439,11 +1584,11 @@ function toggleMorePopover(){var m=document.getElementById('morePopover');m.styl
 document.addEventListener('click',function(e){var btn=document.getElementById('btnMore');var pop=document.getElementById('morePopover');if(pop&&btn&&!btn.contains(e.target)&&!pop.contains(e.target))pop.style.display='none'});
 
 /* ── 分模块清除 ── */
-function clearPresets(){if(!confirm('确定要清除所有预设提示词吗？'))return;state.prompts=[];state.prompt_order=[{character_id:100001,order:[]}];selectedIndex=-1;renderEditor();updatePreview();toast('🗑 预设已清除')}
+function clearPresets(){if(!confirm('确定要清除所有预设提示词吗？'))return;state.prompts=[];state.prompt_order=[{character_id:100001,order:[]}];selectedIndex=-1;presetBatchMode=false;presetBatchSet=new Set();renderEditor();updatePreview();toast('🗑 预设已清除')}
 function clearWorldBook(){if(!confirm('确定要清除所有世界书条目吗？'))return;state.worldbook_entries=[];selectedWBIndex=-1;renderWorldBookEditor();updatePreview();toast('🗑 世界书已清除')}
 function clearRegex(){if(!confirm('确定要清除所有正则条目吗？'))return;state.regex_entries=[];selectedRegexIndex=-1;renderRegexEditor();updatePreview();toast('🗑 正则已清除')}
 function clearCharCards(){if(!confirm('确定要清除所有角色卡吗？'))return;state.charcards=[];selectedCharCardIndex=-1;renderCharCardEditor();updatePreview();toast('🗑 角色卡已清除')}
-function clearEditDeskWorking(){if(!confirm('确定要清空编辑台工作区吗？'))return;editDesk.workingEntries=[];editDesk.selectedWorkingIndex=-1;renderEditDesk();updatePreview();toast('🗑 工作区已清空')}
+function clearEditDeskWorking(){if(!confirm('确定要清空编辑台工作区吗？'))return;editDesk.workingEntries=[];editDesk.selectedWorkingIndex=-1;editDesk.batchMode=false;editDesk.batchSet=new Set();renderEditDesk();updatePreview();toast('🗑 工作区已清空')}
 
 function clearAll(){if(!confirm('确定要清除所有数据吗？\n\n将删除所有提示词、全局参数、世界书条目、正则条目和角色卡。\n此操作不可撤销！'))return;state={preset_name:'新预设',temperature:1,top_p:1,top_k:0,top_a:0,min_p:0,repetition_penalty:1,frequency_penalty:0,presence_penalty:0,max_context_unlocked:false,openai_max_context:200000,openai_max_tokens:4096,stream_openai:true,names_behavior:0,wrap_in_quotes:false,image_inlining:false,video_inlining:false,send_if_empty:'',impersonation_prompt:'',new_chat_prompt:'',new_group_chat_prompt:'[Start a new group chat. Group members: {{group}}]',new_example_chat_prompt:'[Example Chat]',continue_nudge_prompt:'',group_nudge_prompt:'',bias_preset_selected:'Default (none)',wi_format:'{0}',scenario_format:'{{scenario}}',personality_format:'{{personality}}',prompts:[],prompt_order:[{character_id:100001,order:[]}],worldbook_entries:[],regex_entries:[],charcards:[]};selectedIndex=-1;selectedWBIndex=-1;selectedRegexIndex=-1;selectedCharCardIndex=-1;editDesk={mode:'preset',sourceFiles:[],selectedSourceFileId:null,selectedSourceEntryIndex:-1,workingEntries:[],selectedWorkingIndex:-1,splitPercent:55,upperVSplit:38,lowerVSplit:40,clipboard:null};editorMode='preset';switchEditorMode('preset');renderEditor();updatePreview();toast('🗑 已清除所有数据')}
 
@@ -1770,6 +1915,8 @@ function switchEditDeskMode(mode){
   editDesk.selectedSourceEntryIndex=-1;
   editDesk.selectedWorkingIndex=-1;
   editDesk.clipboard=null;
+  editDesk.batchMode=false; editDesk.batchSet=new Set();
+  editDesk.sourceBatchMode=false; editDesk.sourceBatchSet=new Set();
   renderEditDesk();
   updatePreview();
 }
@@ -1806,9 +1953,11 @@ function renderEditDesk(){
     </div>`;
   });
   h+=`<button class="ed-tab-add" onclick="openSourceFile()" title="打开文件">+</button>
+          <button class="ed-tab-add ${editDesk.sourceBatchMode?'active':''}" onclick="toggleSourceBatchMode()" title="源条目批量操作" style="font-size:.65rem;padding:2px 8px;${editDesk.sourceBatchMode?'color:var(--accent);background:color-mix(in srgb,var(--accent) 12%,var(--surface))':''}">☑</button>
         </div>
         <button class="ed-tab-scroll-btn" onclick="scrollTabBar(200)" title="向右滚动">▶</button>
       </div>
+      ${editDesk.sourceBatchMode?renderSourceBatchBar():''}
       <div class="editdesk-source-entries" id="edSourceEntries">`;
   if(!editDesk.sourceFiles.length){
     h+=`<div class="ed-empty"><div class="ed-empty-icon">📂</div><span>点击 + 打开 JSON 文件</span></div>`;
@@ -1820,7 +1969,9 @@ function renderEditDesk(){
       sf.entries.forEach((e,i)=>{
         const nm=e.name||e.scriptName||e.keys||(e.uid||'');
         const act=i===editDesk.selectedSourceEntryIndex?' active':'';
-        h+=`<div class="ed-sf-entry${act}" onclick="selectSourceEntry('${sf.id}',${i})" draggable="true" data-sfid="${sf.id}" data-seidx="${i}">
+        const checked=editDesk.sourceBatchSet.has(i)?' checked':'';
+        h+=`<div class="ed-sf-entry${act}${editDesk.sourceBatchSet.has(i)?' sf-checked':''}${editDesk.sourceBatchMode?' sf-batch-show':''}" onclick="${editDesk.sourceBatchMode?'event.stopPropagation();toggleSourceBatchCheck('+i+')':'selectSourceEntry('+"'"+sf.id+"'"+','+i+')'}" draggable="${editDesk.sourceBatchMode?'false':'true'}" data-sfid="${sf.id}" data-seidx="${i}">
+          <input type="checkbox" class="sf-cb"${checked} onclick="event.stopPropagation();toggleSourceBatchCheck(${i})" title="选择/取消">
           <span class="ed-sf-eidx">#${i+1}</span>
           <span style="flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escHtml(String(nm).substring(0,40))}</span>
         </div>`;
@@ -1847,7 +1998,9 @@ function renderEditDesk(){
         <span>📝 工作区 (${editDesk.workingEntries.length})</span>
         <button class="btn btn-secondary btn-xs" onclick="openTemplateFile()" title="打开已有文件作为模板">📂</button>
         <button class="btn btn-primary btn-xs" onclick="addWorkingEntry()" title="新建空条目">+</button>
+        <button class="btn btn-secondary btn-xs ${editDesk.batchMode?'btn-warning':''}" onclick="toggleEdBatchMode()" title="批量操作模式" style="font-size:.65rem;padding:2px 7px">☑</button>
       </div>
+      ${editDesk.batchMode?renderEdBatchBar():''}
       <div class="editdesk-working-list-body" id="edWorkingList">`;
   if(!editDesk.workingEntries.length){
     h+=`<div class="ed-empty"><div class="ed-empty-icon">📋</div><span>选中源条目后<br>点击 📥 复制源条目</span></div>`;
@@ -1855,8 +2008,11 @@ function renderEditDesk(){
     editDesk.workingEntries.forEach((e,i)=>{
       const nm=e.name||e.scriptName||e.keys||(e.uid||e.identifier||'');
       const act=i===editDesk.selectedWorkingIndex?' active':'';
-      h+=`<div class="ed-working-item${act}" onclick="selectWorkingEntry(${i})" draggable="true" data-widx="${i}">
-        <span class="drag-handle" style="cursor:grab;font-size:.6rem;color:var(--text-muted);flex-shrink:0" onclick="event.stopPropagation()" title="拖拽排序">⠿</span>
+      const checked=editDesk.batchSet.has(i)?' checked':'';
+      const bchk=editDesk.batchMode?' ed-batch-checked':'';
+      h+=`<div class="ed-working-item${act}${bchk}${editDesk.batchMode?' ed-batch-show':''}" onclick="${editDesk.batchMode?'event.stopPropagation();toggleEdWorkingCheck('+i+')':'selectWorkingEntry('+i+')'}" draggable="${editDesk.batchMode?'false':'true'}" data-widx="${i}">
+        <input type="checkbox" class="ed-wcb"${checked} onclick="event.stopPropagation();toggleEdWorkingCheck(${i})" title="选择/取消">
+        <span class="drag-handle" style="cursor:${editDesk.batchMode?'default':'grab'};font-size:.6rem;color:var(--text-muted);flex-shrink:0" onclick="event.stopPropagation()" title="${editDesk.batchMode?'':'拖拽排序'}">⠿</span>
         <span class="ed-widx">#${i+1}</span>
         <span class="ed-wname">${escHtml(String(nm).substring(0,28))}</span>
         <span class="ed-wdel" onclick="event.stopPropagation();deleteWorkingEntry(${i})" title="删除">✕</span>
@@ -1874,22 +2030,50 @@ function renderEditDesk(){
   h+=`</div></div>`;
 
   // ── Bottom toolbar ──
-  h+=`<div class="editdesk-working-toolbar">
-    <button class="btn btn-warning btn-xs" onclick="deleteWorkingEntry(editDesk.selectedWorkingIndex)" ${editDesk.selectedWorkingIndex<0?'disabled':''}>🗑 删除</button>
-    <button class="btn btn-secondary btn-xs" onclick="moveWorkingEntry(editDesk.selectedWorkingIndex,-1)" ${editDesk.selectedWorkingIndex<=0?'disabled':''}>⬆ 上移</button>
-    <button class="btn btn-secondary btn-xs" onclick="moveWorkingEntry(editDesk.selectedWorkingIndex,1)" ${editDesk.selectedWorkingIndex<0||editDesk.selectedWorkingIndex>=editDesk.workingEntries.length-1?'disabled':''}>⬇ 下移</button>
-    <span style="flex:1"></span>
-    <button class="btn btn-secondary btn-xs" onclick="copyFromSourceToWorking()" ${!(editDesk.selectedSourceFileId&&editDesk.selectedSourceEntryIndex>=0)?'disabled':''}>📥 复制源条目</button>
-    <button class="btn btn-secondary btn-xs" onclick="copyWorkingToClipboard()" ${editDesk.selectedWorkingIndex<0?'disabled':''}>📋 复制</button>
-    <button class="btn btn-secondary btn-xs" onclick="pasteClipboardToWorking()" ${!editDesk.clipboard?'disabled':''}>📄 粘贴</button>
-    <button class="btn btn-success btn-xs" onclick="exportWorkingPreset()">💾 导出工作区</button>
-  </div>`;
+  if(editDesk.batchMode){
+    const n=editDesk.batchSet.size;
+    h+=`<div class="editdesk-working-toolbar" style="background:color-mix(in srgb,var(--accent) 10%,var(--surface));border-top:1px solid var(--accent)">
+      <span style="font-size:.72rem;font-weight:700;color:var(--accent)">☑ 批量操作</span>
+      <span style="font-size:.68rem;color:var(--text-muted)">(已选 ${n} 项)</span>
+      <button class="btn btn-secondary btn-xs" onclick="batchSelectAll()" title="全选">📌 全选</button>
+      <button class="btn btn-secondary btn-xs" onclick="batchClearAll()" title="取消全选">✕ 取消</button>
+      <span style="flex:1"></span>
+      <button class="btn btn-danger btn-xs" onclick="batchDeleteWorking()" ${n===0?'disabled':''}>🗑 批量删除</button>
+      <button class="btn btn-secondary btn-xs" onclick="batchMoveWorking(-1)" ${n===0?'disabled':''}>⬆ 批量上移</button>
+      <button class="btn btn-secondary btn-xs" onclick="batchMoveWorking(1)" ${n===0?'disabled':''}>⬇ 批量下移</button>
+      <button class="btn btn-secondary btn-xs" onclick="batchCopyWorking()" ${n===0?'disabled':''}>📋 批量复制</button>
+      <button class="btn btn-warning btn-xs" onclick="toggleEdBatchMode()" style="border-color:var(--accent);color:var(--accent)">✕ 退出批量</button>
+    </div>`;
+  }else{
+    h+=`<div class="editdesk-working-toolbar">
+      <button class="btn btn-warning btn-xs" onclick="deleteWorkingEntry(editDesk.selectedWorkingIndex)" ${editDesk.selectedWorkingIndex<0?'disabled':''}>🗑 删除</button>
+      <button class="btn btn-secondary btn-xs" onclick="moveWorkingEntry(editDesk.selectedWorkingIndex,-1)" ${editDesk.selectedWorkingIndex<=0?'disabled':''}>⬆ 上移</button>
+      <button class="btn btn-secondary btn-xs" onclick="moveWorkingEntry(editDesk.selectedWorkingIndex,1)" ${editDesk.selectedWorkingIndex<0||editDesk.selectedWorkingIndex>=editDesk.workingEntries.length-1?'disabled':''}>⬇ 下移</button>
+      <span style="flex:1"></span>
+      <button class="btn btn-secondary btn-xs" onclick="copyFromSourceToWorking()" ${!(editDesk.selectedSourceFileId&&editDesk.selectedSourceEntryIndex>=0)?'disabled':''}>📥 复制源条目</button>
+      <button class="btn btn-secondary btn-xs" onclick="copyWorkingToClipboard()" ${editDesk.selectedWorkingIndex<0?'disabled':''}>📋 复制</button>
+      <button class="btn btn-secondary btn-xs" onclick="pasteClipboardToWorking()" ${!editDesk.clipboard?'disabled':''}>📄 粘贴</button>
+      <button class="btn btn-success btn-xs" onclick="exportWorkingPreset()">💾 导出工作区</button>
+    </div>`;
+  }
 
   h+=`</div></div>`;
+
+  // ── Preserve scroll positions before DOM rebuild ──
+  const _srcScroll=document.getElementById('edSourceEntries')?.scrollTop||0;
+  const _wkScroll=document.getElementById('edWorkingList')?.scrollTop||0;
+  const _edScroll=document.getElementById('edWorkingEditor')?.scrollTop||0;
+  const _prevScroll=document.getElementById('edSourcePreview')?.scrollTop||0;
+
   pane.innerHTML=h;
 
-  setTimeout(()=>{
-    // Auto-scroll active tab into view
+  // ⚡ 同步恢复滚动位置（不经过浏览器渲染帧，无抖动）
+  const se=document.getElementById('edSourceEntries');if(se&&_srcScroll)se.scrollTop=_srcScroll;
+  const wl=document.getElementById('edWorkingList');if(wl&&_wkScroll)wl.scrollTop=_wkScroll;
+  const we=document.getElementById('edWorkingEditor');if(we&&_edScroll)we.scrollTop=_edScroll;
+  const sp=document.getElementById('edSourcePreview');if(sp&&_prevScroll)sp.scrollTop=_prevScroll;
+
+  setTimeout(function(){
     const bar2=document.getElementById('edTabBar');
     const activeTab=bar2?.querySelector('.ed-tab.active');
     if(activeTab)activeTab.scrollIntoView({behavior:'smooth',block:'nearest',inline:'nearest'});
@@ -1945,8 +2129,34 @@ function renderEditDeskSourcePreview(){
     h+=`<div class="field-group"><label>角色 / 属性</label><div style="font-size:.76rem;color:var(--text-muted)">role: ${escHtml(e.role||'system')} | 注入位置: ${e.injection_position??0} | 深度: ${e.injection_depth??4}</div></div>`;
     h+=`<div class="field-group"><label>内容</label><pre style="font-size:.73rem;white-space:pre-wrap;max-height:200px;overflow-y:auto;background:var(--surface2);padding:10px;border-radius:6px;border:1px solid var(--border)">${escHtml((e.content||'').substring(0,2000))}</pre></div>`;
   }else if(editDesk.mode==='worldbook'){
-    h+=`<div class="field-group"><label>触发词</label><div style="font-size:.8rem">${escHtml(e.keys||'(无触发词)')}</div></div>`;
-    h+=`<div class="field-group"><label>内容</label><pre style="font-size:.73rem;white-space:pre-wrap;max-height:200px;overflow-y:auto;background:var(--surface2);padding:10px;border-radius:6px;border:1px solid var(--border)">${escHtml((e.content||'').substring(0,2000))}</pre></div>`;
+		return `<div class="field-group"><label>触发方式</label>
+			<div class="trigger-toggle">
+				<button class="${!e.constant?'active':''}" onclick="toggleWorkingTriggerMode(${idx},'keyword')">🔑 关键词触发</button>
+				<button class="${e.constant?'active':''}" onclick="toggleWorkingTriggerMode(${idx},'constant')">📌 默认触发</button>
+			</div>
+			<div class="param-hint">关键词触发：AI 消息包含指定词时触发 · 默认触发：始终激活（无需关键词）</div>
+		</div>
+		<div class="field-group" id="ed_wb_keys_group_${idx}" style="${e.constant?'display:none':''}"><label>触发词</label><input type="text" value="${escHtml(e.keys)}" placeholder="英文逗号分隔" oninput="updateWorkingField('keys',this.value,${idx})"/></div>
+		<div class="field-group"><label>内容</label><textarea rows="6" oninput="updateWorkingField('content',this.value,${idx})">${escHtml(e.content)}</textarea></div>
+		<div class="field-group"><label>注释</label><input type="text" value="${escHtml(e.comment)}" oninput="updateWorkingField('comment',this.value,${idx})"/></div>
+		<div class="field-group"><label>注入设置</label>
+			<div class="field-row" style="margin-bottom:8px">
+				<div><span class="sub-label">位置</span><select onchange="updateWorkingField('position',parseInt(this.value),${idx})"><option value="0" ${e.position===0?'selected':''}>0·before_char</option><option value="1" ${e.position===1?'selected':''}>1·after_char</option><option value="2" ${e.position===2?'selected':''}>2·before_author</option><option value="3" ${e.position===3?'selected':''}>3·after_author</option><option value="4" ${e.position===4?'selected':''}>4·at_depth</option></select></div>
+				<div><span class="sub-label">深度</span><input type="number" value="${e.depth??4}" min="0" max="100" oninput="updateWorkingField('depth',parseInt(this.value)||4,${idx})"/></div>
+			</div>
+			<div class="field-row">
+				<div><span class="sub-label">排序顺序</span><input type="number" value="${e.order??100}" min="0" max="10000" oninput="updateWorkingField('order',parseInt(this.value)||100,${idx})"/></div>
+				<div><span class="sub-label">触发概率</span><input type="number" value="${e.probability??100}" min="0" max="100" oninput="updateWorkingField('probability',parseInt(this.value)||100,${idx})"/><div class="param-hint">0~100，100=始终触发</div></div>
+			</div>
+		</div>
+		<div class="field-group"><label>行为开关</label>
+			<div style="display:grid;grid-template-columns:1fr 1fr;gap:5px">
+				<div class="checkbox-row"><input type="checkbox" id="ed_wb_enabled_${idx}" ${e.enabled!==false?'checked':''} onchange="updateWorkingField('enabled',this.checked,${idx})"/><label for="ed_wb_enabled_${idx}">启用</label></div>
+				<div class="checkbox-row"><input type="checkbox" id="ed_wb_sel_${idx}" ${e.selective?'checked':''} onchange="updateWorkingField('selective',this.checked,${idx})"/><label for="ed_wb_sel_${idx}">选择性</label></div>
+				<div class="checkbox-row"><input type="checkbox" id="ed_wb_regex_${idx}" ${e.use_regex?'checked':''} onchange="updateWorkingField('use_regex',this.checked,${idx})"/><label for="ed_wb_regex_${idx}">正则匹配键</label></div>
+				<div class="checkbox-row"><input type="checkbox" id="ed_wb_excl_${idx}" ${e.exclude_recursion?'checked':''} onchange="updateWorkingField('exclude_recursion',this.checked,${idx})"/><label for="ed_wb_excl_${idx}">排除递归</label></div>
+			</div>
+		</div>`;
   }else if(editDesk.mode==='regex'){
     h+=`<div class="field-group"><label>名称 / ID</label><div style="font-size:.8rem">${escHtml(e.scriptName||e.id||'(未命名)')}</div></div>`;
     h+=`<div class="field-group"><label>匹配模式</label><pre style="font-size:.73rem;white-space:pre-wrap;background:var(--surface2);padding:8px;border-radius:6px;border:1px solid var(--border)">${escHtml((e.findRegex||'').substring(0,500))}</pre></div>`;
@@ -1963,23 +2173,47 @@ function renderEditDeskWorkingDetail(e,idx){
     const macros=['{{char}}','{{user}}','{{personality}}','{{description}}','{{scenario}}','{{mesExamples}}','{{history}}','{{group}}'];
     return `<div class="field-group"><label>标识符 &amp; 名称</label>
       <div class="field-row"><div><span class="sub-label">identifier</span><input type="text" value="${escHtml(e.identifier)}" oninput="updateWorkingField('identifier',this.value,${idx})"/></div>
-      <div><span class="sub-label">显示名称</span><input type="text" value="${escHtml(e.name)}" oninput="updateWorkingField('name',this.value,${idx});renderEditDesk()"/></div></div></div>
+      <div><span class="sub-label">显示名称</span><input type="text" value="${escHtml(e.name)}" oninput="updateWorkingField('name',this.value,${idx});updateWItemName(${idx},this.value)"/></div></div></div>
     <div class="field-group"><label>角色</label>
       <div class="field-row"><div><span class="sub-label">role</span><select onchange="updateWorkingField('role',this.value,${idx})"><option value="system" ${e.role==='system'?'selected':''}>system</option><option value="user" ${e.role==='user'?'selected':''}>user</option><option value="assistant" ${e.role==='assistant'?'selected':''}>assistant</option></select></div>
       <div><span class="sub-label">注入深度</span><input type="number" value="${e.injection_depth??4}" min="0" max="100" oninput="updateWorkingField('injection_depth',parseInt(this.value)||0,${idx})"/></div></div></div>
     <div class="field-group"><label>内容</label><textarea rows="6" oninput="updateWorkingField('content',this.value,${idx})">${escHtml(e.content)}</textarea>
       <div class="macro-strip">${macros.map(m=>`<button class="btn btn-secondary btn-xs" onclick="insertWorkingMacro('${m}',${idx})">${m}</button>`).join('')}</div></div>`;
   }else if(editDesk.mode==='worldbook'){
-    return `<div class="field-group"><label>触发词</label><input type="text" value="${escHtml(e.keys)}" placeholder="英文逗号分隔" oninput="updateWorkingField('keys',this.value,${idx})"/></div>
-    <div class="field-group"><label>内容</label><textarea rows="6" oninput="updateWorkingField('content',this.value,${idx})">${escHtml(e.content)}</textarea></div>
-    <div class="field-group"><label>注入设置</label><div class="field-row"><div><span class="sub-label">位置</span><select onchange="updateWorkingField('position',parseInt(this.value),${idx})"><option value="0" ${e.position===0?'selected':''}>0·before_char</option><option value="1" ${e.position===1?'selected':''}>1·after_char</option><option value="2" ${e.position===2?'selected':''}>2·before_author</option><option value="3" ${e.position===3?'selected':''}>3·after_author</option><option value="4" ${e.position===4?'selected':''}>4·at_depth</option></select></div><div><span class="sub-label">深度</span><input type="number" value="${e.depth??4}" min="0" max="100" oninput="updateWorkingField('depth',parseInt(this.value)||4,${idx})"/></div></div></div>
-    <div class="field-group"><label>注释</label><input type="text" value="${escHtml(e.comment)}" oninput="updateWorkingField('comment',this.value,${idx})"/></div>`;
+	    return `<div class="field-group"><label>触发方式</label>
+	      <div class="trigger-toggle">
+	        <button class="${!e.constant?'active':''}" onclick="toggleWorkingTriggerMode(${idx},'keyword')">🔑 关键词触发</button>
+	        <button class="${e.constant?'active':''}" onclick="toggleWorkingTriggerMode(${idx},'constant')">📌 默认触发</button>
+	      </div>
+	      <div class="param-hint">关键词触发：AI 消息包含指定词时触发 · 默认触发：始终激活（无需关键词）</div>
+	    </div>
+	    <div class="field-group" id="ed_wb_keys_group_${idx}" style="${e.constant?'display:none':''}"><label>触发词</label><input type="text" value="${escHtml(e.keys)}" placeholder="英文逗号分隔" oninput="updateWorkingField('keys',this.value,${idx})"/></div>
+	    <div class="field-group"><label>内容</label><textarea rows="6" oninput="updateWorkingField('content',this.value,${idx})">${escHtml(e.content)}</textarea></div>
+	    <div class="field-group"><label>注释</label><input type="text" value="${escHtml(e.comment)}" oninput="updateWorkingField('comment',this.value,${idx})"/></div>
+	    <div class="field-group"><label>注入设置</label>
+	      <div class="field-row" style="margin-bottom:8px">
+	        <div><span class="sub-label">位置</span><select onchange="updateWorkingField('position',parseInt(this.value),${idx})"><option value="0" ${e.position===0?'selected':''}>0·before_char</option><option value="1" ${e.position===1?'selected':''}>1·after_char</option><option value="2" ${e.position===2?'selected':''}>2·before_author</option><option value="3" ${e.position===3?'selected':''}>3·after_author</option><option value="4" ${e.position===4?'selected':''}>4·at_depth</option></select></div>
+	        <div><span class="sub-label">深度</span><input type="number" value="${e.depth??4}" min="0" max="100" oninput="updateWorkingField('depth',parseInt(this.value)||4,${idx})"/></div>
+	      </div>
+	      <div class="field-row">
+	        <div><span class="sub-label">排序顺序</span><input type="number" value="${e.order??100}" min="0" max="10000" oninput="updateWorkingField('order',parseInt(this.value)||100,${idx})"/></div>
+	        <div><span class="sub-label">触发概率</span><input type="number" value="${e.probability??100}" min="0" max="100" oninput="updateWorkingField('probability',parseInt(this.value)||100,${idx})"/><div class="param-hint">0~100，100=始终触发</div></div>
+	      </div>
+	    </div>
+	    <div class="field-group"><label>行为开关</label>
+	      <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px">
+	        <div class="checkbox-row"><input type="checkbox" id="ed_wb_enabled_${idx}" ${e.enabled!==false?'checked':''} onchange="updateWorkingField('enabled',this.checked,${idx})"/><label for="ed_wb_enabled_${idx}">启用</label></div>
+	        <div class="checkbox-row"><input type="checkbox" id="ed_wb_sel_${idx}" ${e.selective?'checked':''} onchange="updateWorkingField('selective',this.checked,${idx})"/><label for="ed_wb_sel_${idx}">选择性</label></div>
+	        <div class="checkbox-row"><input type="checkbox" id="ed_wb_regex_${idx}" ${e.use_regex?'checked':''} onchange="updateWorkingField('use_regex',this.checked,${idx})"/><label for="ed_wb_regex_${idx}">正则匹配键</label></div>
+	        <div class="checkbox-row"><input type="checkbox" id="ed_wb_excl_${idx}" ${e.exclude_recursion?'checked':''} onchange="updateWorkingField('exclude_recursion',this.checked,${idx})"/><label for="ed_wb_excl_${idx}">排除递归</label></div>
+	      </div>
+	    </div>`;
   }else if(editDesk.mode==='regex'){
     return `<div class="field-group"><label>名称</label><input type="text" value="${escHtml(e.scriptName)}" oninput="updateWorkingField('scriptName',this.value,${idx})"/></div>
     <div class="field-group"><label>匹配 (findRegex)</label><textarea rows="3" oninput="updateWorkingField('findRegex',this.value,${idx})">${escHtml(e.findRegex)}</textarea></div>
     <div class="field-group"><label>替换 (replaceString)</label><textarea rows="3" oninput="updateWorkingField('replaceString',this.value,${idx})">${escHtml(e.replaceString)}</textarea></div>`;
   }else if(editDesk.mode==='charcard'){
-    return `<div class="field-group"><label>角色名称</label><input type="text" value="${escHtml(e.name)}" oninput="updateWorkingField('name',this.value,${idx});renderEditDesk()"/></div>
+    return `<div class="field-group"><label>角色名称</label><input type="text" value="${escHtml(e.name)}" oninput="updateWorkingField('name',this.value,${idx});updateWItemName(${idx},this.value)"/></div>
     <div class="field-group"><label>描述</label><textarea rows="3" oninput="updateWorkingField('description',this.value,${idx})">${escHtml(e.description)}</textarea></div>
     <div class="field-group"><label>性格</label><textarea rows="3" oninput="updateWorkingField('personality',this.value,${idx})">${escHtml(e.personality)}</textarea></div>
     <div class="field-group"><label>开场白</label><textarea rows="3" oninput="updateWorkingField('first_mes',this.value,${idx})">${escHtml(e.first_mes)}</textarea></div>`;
@@ -2058,6 +2292,7 @@ function scrollTabBar(delta){
 function selectSourceTab(id){
   editDesk.selectedSourceFileId=id;
   editDesk.selectedSourceEntryIndex=-1;
+  editDesk.sourceBatchSet=new Set();
   renderEditDesk();
   // Auto-scroll active tab into view
   setTimeout(()=>{
@@ -2073,6 +2308,7 @@ function closeSourceFile(id){
     editDesk.selectedSourceFileId=editDesk.sourceFiles.length>0?editDesk.sourceFiles[0].id:null;
     editDesk.selectedSourceEntryIndex=-1;
   }
+  editDesk.sourceBatchSet=new Set();
   renderEditDesk();
 }
 
@@ -2098,6 +2334,9 @@ function updateWorkingField(key,value,idx){
   editDesk.workingEntries[idx][key]=value;
   updatePreview();
 }
+function updateWItemName(idx,val){var items=document.querySelectorAll('#edWorkingList .ed-working-item');if(items[idx]){var ns=items[idx].querySelector('.ed-wname');if(ns)ns.textContent=String(val||'').substring(0,28)}}
+function toggleWorkingTriggerMode(idx,mode){if(idx<0||idx>=editDesk.workingEntries.length)return;if(mode==='constant'){editDesk.workingEntries[idx].constant=true;editDesk.workingEntries[idx].keys=''}else{editDesk.workingEntries[idx].constant=false}renderEditDesk();updatePreview()}
+
 
 function insertWorkingMacro(m,idx){
   const pane=document.getElementById('edWorkingEditor');
@@ -2184,6 +2423,163 @@ function pasteClipboardToWorking(){
   editDesk.selectedWorkingIndex=insIdx;
   renderEditDesk();updatePreview();
   toast('📄 已粘贴');
+}
+
+/* ═══════════════════════════════════════════
+   Edit Desk — Batch Operations
+═══════════════════════════════════════════ */
+function renderEdBatchBar(){
+  const n=editDesk.batchSet.size;
+  return `<div class="ed-batch-bar">
+    <span class="ed-batch-count">☑ 已选 ${n} 项</span>
+    <button class="ed-batch-btn" style="background:var(--surface2);color:var(--text);border:1px solid var(--border)" onclick="batchSelectAll()">全选</button>
+    <button class="ed-batch-btn" style="background:var(--surface2);color:var(--text-muted);border:1px solid var(--border)" onclick="batchClearAll()">取消</button>
+    <span style="flex:1"></span>
+    <button class="ed-batch-btn" style="background:color-mix(in srgb,var(--danger) 15%,var(--surface2));color:var(--danger);border:1px solid color-mix(in srgb,var(--danger) 35%,var(--border))" onclick="batchDeleteWorking()" ${n===0?'disabled':''}>🗑 批量删除</button>
+  </div>`;
+}
+
+/* ═══════════════════════════════════════════
+   Edit Desk — Source Batch Operations
+═══════════════════════════════════════════ */
+function renderSourceBatchBar(){
+  const n=editDesk.sourceBatchSet.size;
+  const sfid=editDesk.selectedSourceFileId;
+  return `<div class="sf-batch-bar">
+    <span class="sf-batch-count">☑ 已选 ${n} 项</span>
+    <button class="sf-batch-btn" style="background:var(--surface2);color:var(--text);border:1px solid var(--border)" onclick="sourceBatchSelectAll()">全选</button>
+    <button class="sf-batch-btn" style="background:var(--surface2);color:var(--text-muted);border:1px solid var(--border)" onclick="sourceBatchClearAll()">取消</button>
+    <span style="flex:1"></span>
+    <button class="sf-batch-btn" style="background:color-mix(in srgb,var(--accent2) 15%,var(--surface2));color:var(--accent2);border:1px solid color-mix(in srgb,var(--accent2) 30%,var(--border))" onclick="sourceBatchCopyToWorking()" ${n===0?'disabled':''}>📥 批量复制到工作区</button>
+    <button class="sf-batch-btn" style="background:color-mix(in srgb,var(--danger) 15%,var(--surface2));color:var(--danger);border:1px solid color-mix(in srgb,var(--danger) 35%,var(--border))" onclick="sourceBatchDelete()" ${n===0?'disabled':''}>🗑 删除</button>
+  </div>`;
+}
+
+function toggleSourceBatchMode(){
+  editDesk.sourceBatchMode=!editDesk.sourceBatchMode;
+  if(!editDesk.sourceBatchMode) editDesk.sourceBatchSet=new Set();
+  renderEditDesk();
+}
+
+function toggleSourceBatchCheck(idx){
+  if(editDesk.sourceBatchSet.has(idx)) editDesk.sourceBatchSet.delete(idx);
+  else editDesk.sourceBatchSet.add(idx);
+  renderEditDesk();
+}
+
+function sourceBatchSelectAll(){
+  const sf=editDesk.sourceFiles.find(f=>f.id===editDesk.selectedSourceFileId);
+  if(!sf) return;
+  for(let i=0;i<sf.entries.length;i++) editDesk.sourceBatchSet.add(i);
+  renderEditDesk();
+}
+
+function sourceBatchClearAll(){
+  editDesk.sourceBatchSet=new Set();
+  renderEditDesk();
+}
+
+function sourceBatchCopyToWorking(){
+  const indices=Array.from(editDesk.sourceBatchSet).sort((a,b)=>a-b);
+  if(!indices.length) return;
+  const sf=editDesk.sourceFiles.find(f=>f.id===editDesk.selectedSourceFileId);
+  if(!sf) return;
+  indices.forEach(idx=>{
+    const clone=deepCloneEntry(sf.entries[idx]);
+    editDesk.workingEntries.push(clone);
+  });
+  editDesk.selectedWorkingIndex=editDesk.workingEntries.length-1;
+  editDesk.sourceBatchSet=new Set();
+  renderEditDesk();updatePreview();
+  toast('📥 已批量复制 '+indices.length+' 个条目到工作区');
+}
+
+function sourceBatchDelete(){
+  const indices=Array.from(editDesk.sourceBatchSet).sort((a,b)=>b-a);
+  if(!indices.length) return;
+  if(!confirm(`确定要从源文件中删除选中的 ${indices.length} 个条目吗？`)) return;
+  const sf=editDesk.sourceFiles.find(f=>f.id===editDesk.selectedSourceFileId);
+  if(!sf) return;
+  indices.forEach(idx=>sf.entries.splice(idx,1));
+  editDesk.sourceBatchSet=new Set();
+  editDesk.selectedSourceEntryIndex=Math.min(editDesk.selectedSourceEntryIndex,sf.entries.length-1);
+  if(!sf.entries.length) editDesk.selectedSourceEntryIndex=-1;
+  renderEditDesk();updatePreview();
+  toast('🗑 已从源文件删除 '+indices.length+' 个条目');
+}
+
+function toggleEdBatchMode(){
+  editDesk.batchMode=!editDesk.batchMode;
+  if(!editDesk.batchMode) editDesk.batchSet=new Set();
+  renderEditDesk();
+}
+
+function toggleEdWorkingCheck(idx){
+  if(editDesk.batchSet.has(idx)) editDesk.batchSet.delete(idx);
+  else editDesk.batchSet.add(idx);
+  renderEditDesk();
+}
+
+function batchSelectAll(){
+  for(let i=0;i<editDesk.workingEntries.length;i++) editDesk.batchSet.add(i);
+  renderEditDesk();
+}
+
+function batchClearAll(){
+  editDesk.batchSet=new Set();
+  renderEditDesk();
+}
+
+function batchDeleteWorking(){
+  const indices=Array.from(editDesk.batchSet).sort((a,b)=>b-a);
+  if(!indices.length) return;
+  if(!confirm(`确定要批量删除选中的 ${indices.length} 个条目吗？`)) return;
+  indices.forEach(idx=>editDesk.workingEntries.splice(idx,1));
+  editDesk.batchSet=new Set();
+  editDesk.selectedWorkingIndex=Math.min(editDesk.selectedWorkingIndex,editDesk.workingEntries.length-1);
+  if(!editDesk.workingEntries.length) editDesk.selectedWorkingIndex=-1;
+  renderEditDesk();updatePreview();
+  toast('🗑 已批量删除 '+indices.length+' 个条目');
+}
+
+function batchMoveWorking(dir){
+  const indices=Array.from(editDesk.batchSet).sort((a,b)=>dir>0?b-a:a-b);
+  if(!indices.length) return;
+  let moved=false;
+  if(dir<0){ // move up
+    indices.forEach(idx=>{
+      if(idx>0 && !editDesk.batchSet.has(idx-1)){
+        const tmp=editDesk.workingEntries[idx];
+        editDesk.workingEntries[idx]=editDesk.workingEntries[idx-1];
+        editDesk.workingEntries[idx-1]=tmp;
+        editDesk.batchSet.delete(idx);
+        editDesk.batchSet.add(idx-1);
+        moved=true;
+      }
+    });
+  }else{ // move down
+    const rev=indices.slice().reverse();
+    rev.forEach(idx=>{
+      if(idx<editDesk.workingEntries.length-1 && !editDesk.batchSet.has(idx+1)){
+        const tmp=editDesk.workingEntries[idx];
+        editDesk.workingEntries[idx]=editDesk.workingEntries[idx+1];
+        editDesk.workingEntries[idx+1]=tmp;
+        editDesk.batchSet.delete(idx);
+        editDesk.batchSet.add(idx+1);
+        moved=true;
+      }
+    });
+  }
+  if(moved){renderEditDesk();updatePreview();}
+  else toast('⚠️ 所选条目已到达边缘');
+}
+
+function batchCopyWorking(){
+  const indices=Array.from(editDesk.batchSet).sort((a,b)=>a-b);
+  if(!indices.length) return;
+  const clones=indices.map(idx=>deepCloneEntry(editDesk.workingEntries[idx]));
+  editDesk.clipboardBatch=clones;
+  toast('📋 已批量复制 '+clones.length+' 个条目到批量剪贴板');
 }
 
 function buildEditDeskPreview(){
@@ -2299,10 +2695,221 @@ function loadWSWidth(){try{const v=localStorage.getItem('st_ws_right_width');if(
 /* ═══════════════════════════════════════════
    Init
 ═══════════════════════════════════════════ */
+
+
+/* ══════════════ localStorage 持久化 ══════════════ */
+var _saveTimer=null;
+function saveStateToStorage(){
+  try{localStorage.setItem('st_full_state',JSON.stringify({state:state,aiConfig:aiConfig,aiPersona:aiCurrentPersona,wsRightWidth:wsRightWidth,aiPersonas:window._customAI||[]}))}catch(e){}
+}
+function loadStateFromStorage(){
+  try{
+    var s=localStorage.getItem('st_full_state');
+    if(s){var d=JSON.parse(s);if(d.state)state=d.state;if(d.aiConfig)aiConfig=d.aiConfig;if(d.aiPersona)aiCurrentPersona=d.aiPersona;if(d.wsRightWidth)wsRightWidth=d.wsRightWidth;if(d.aiPersonas)window._customAI=d.aiPersonas;updatePersonaLabel();try{document.getElementById('aiPersonaSelect').value=aiCurrentPersona}catch(e){}return true}
+  }catch(e){}
+  window._customAI=[];return false;
+}
+function autoSave(){clearTimeout(_saveTimer);_saveTimer=setTimeout(saveStateToStorage,800)}
+var _origUpdatePreview2=updatePreview;
+updatePreview=function(){_origUpdatePreview2();autoSave();};
+
+/* ══════════════ 草稿存储 ══════════════ */
+function saveDraft(){
+  var draft={time:new Date().toLocaleString(),ts:Date.now()};
+  if(editorMode==='worldbook'){draft.type='worldbook';draft.name='世界书';draft.data=JSON.parse(JSON.stringify(state.worldbook_entries));draft.count=draft.data.length;draft.tag='世界书'}
+  else if(editorMode==='regex'){draft.type='regex';draft.name='正则';draft.data=JSON.parse(JSON.stringify(state.regex_entries));draft.count=draft.data.length;draft.tag='正则'}
+  else if(editorMode==='charcard'&&selectedCharCardIndex>=0){var c=state.charcards[selectedCharCardIndex];draft.type='charcard';draft.name=c.name||'角色卡';draft.data=JSON.parse(JSON.stringify(c));draft.count=1;draft.tag='角色卡'}
+  else{draft.type='preset';draft.name=state.preset_name||'预设';draft.data={n:state.preset_name,p:JSON.parse(JSON.stringify(state.prompts)),po:JSON.parse(JSON.stringify(state.prompt_order)),t:state.temperature,tp:state.top_p};draft.count=state.prompts.length;draft.tag='预设'}
+  var drafts=[];try{drafts=JSON.parse(localStorage.getItem('st_drafts')||'[]')}catch(e){}
+  drafts.unshift(draft);if(drafts.length>30)drafts.length=30;
+  localStorage.setItem('st_drafts',JSON.stringify(drafts));toast('💾 已暂存：'+draft.name);
+}
+function showDrafts(){
+  var drafts=[];try{drafts=JSON.parse(localStorage.getItem('st_drafts')||'[]')}catch(e){}
+  if(!drafts.length){toast('📭 暂无存储');return}
+  var tags=[];var seen={};drafts.forEach(function(d){if(!seen[d.tag]){seen[d.tag]=1;tags.push(d.tag)}});
+  var h='<input type="text" id="draftSearch" placeholder="🔍 搜索存储内容…" style="width:100%;font-size:.76rem;margin-bottom:8px" oninput="searchDrafts(this.value)"><div style="display:flex;gap:6px;align-items:center;margin-bottom:12px;flex-wrap:wrap">';
+  h+='<span style="font-weight:700;font-size:.76rem">🏷</span>';
+  h+='<button class="btn btn-xs draft-tag active" onclick="filterDrafts(\'all\',this)" style="background:var(--accent);color:#fff">全部</button>';
+  tags.forEach(function(t){h+='<button class="btn btn-xs draft-tag" onclick="filterDrafts(\''+t+'\',this)">'+t+'</button>'});
+  h+='</div><div class="draft-cards" id="draftCards">';
+  drafts.forEach(function(d,i){
+    var pv=d.count!==undefined?d.count+'条':'';if(d.type==='charcard'&&d.data&&d.data.description)pv=d.data.description.substring(0,40);
+    h+='<div class="draft-card" data-tag="'+d.tag+'" onclick="restoreDraft('+i+')"><div class="draft-card-header"><span>'+d.tag+'</span><span style="font-size:.6rem;color:var(--text-muted)">'+d.time+'</span></div><div class="draft-card-title">'+d.name+'</div><div class="draft-card-preview">'+pv+'</div><button class="btn btn-danger btn-xs" style="margin-top:4px" onclick="event.stopPropagation();deleteDraft('+i+')">🗑</button></div>';
+  });
+  h+='</div>';
+  showGM('📦 存储管理器',h);window._drafts=drafts;
+}
+function searchDrafts(q){var cards=document.querySelectorAll('.draft-card');if(!cards.length)return;var lq=q.toLowerCase();cards.forEach(function(c){var text=(c.textContent||'').toLowerCase();c.style.display=!lq||text.indexOf(lq)>=0?'block':'none'})}
+function filterDrafts(tag,btn){
+  document.querySelectorAll('.draft-tag').forEach(function(b){b.style.background='';b.style.color='';b.classList.remove('active')});
+  btn.classList.add('active');btn.style.background='var(--accent)';btn.style.color='#fff';
+  document.querySelectorAll('.draft-card').forEach(function(c){c.style.display=(tag==='all'||c.dataset.tag===tag)?'block':'none'});
+}
+function restoreDraft(i){
+  var drafts=window._drafts;if(!drafts||i>=drafts.length)return;var d=drafts[i];
+  if(d.type==='worldbook'&&d.data){state.worldbook_entries=d.data;if(editorMode!=='worldbook')switchEditorMode('worldbook');else renderWorldBookEditor();}
+  else if(d.type==='regex'&&d.data){state.regex_entries=d.data;if(editorMode!=='regex')switchEditorMode('regex');else renderRegexEditor();}
+  else if(d.type==='charcard'&&d.data){state.charcards.push(d.data);selectedCharCardIndex=state.charcards.length-1;if(editorMode!=='charcard')switchEditorMode('charcard');else renderCharCardEditor();}
+  else if(d.type==='preset'&&d.data){if(d.data.n)state.preset_name=d.data.n;if(d.data.p)state.prompts=d.data.p;if(d.data.po)state.prompt_order=d.data.po;if(d.data.t!==undefined)state.temperature=d.data.t;if(d.data.tp!==undefined)state.top_p=d.data.tp;if(editorMode!=='preset')switchEditorMode('preset');else renderEditor();}
+  updatePreview();closeGM();toast('✅ 已恢复');
+}
+function deleteDraft(i){var drafts=window._drafts;if(!drafts||i>=drafts.length)return;drafts.splice(i,1);localStorage.setItem('st_drafts',JSON.stringify(drafts));showDrafts();toast('🗑 已删除')}
+function showGM(title,body){
+  var m=document.getElementById('genModal');if(!m){
+    m=document.createElement('div');m.id='genModal';m.className='modal-overlay';m.onclick=function(e){if(e.target===m)closeGM()};
+    m.innerHTML='<div class="modal-dialog guide-modal" onclick="event.stopPropagation()"><div style="display:flex;align-items:center;justify-content:space-between"><h3 id="genModalTitle"></h3><button class="btn btn-secondary btn-xs" onclick="closeGM()">✕</button></div><div id="genModalBody"></div></div>';
+    document.body.appendChild(m);
+  }
+  document.getElementById('genModalTitle').textContent=title;
+  document.getElementById('genModalBody').innerHTML=body;m.classList.add('show');
+}
+function closeGM(){var m=document.getElementById('genModal');if(m)m.classList.remove('show')}
+
+/* ══════════════ 自定义AI小助手 (标签+搜索) ══════════════ */
+function showCustomPersonaModal(){
+  var cp=JSON.parse(localStorage.getItem("st_custom_ai")||"[]");window._customAI=cp;
+  var s="";
+  s+="<div style='display:flex;gap:8px;align-items:center;margin-bottom:8px'>";
+  s+="<input type='text' id='cpSearch' placeholder='🔍 搜索助手…' style='flex:1;font-size:.76rem' oninput='filterPersonaCards()'>";
+  s+="<button class='btn btn-primary btn-xs' onclick='addCustomPersona()'>＋ 新建</button></div>";
+  s+="<div style='display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px' id='cpTagBar'></div>";
+  s+="<div style='max-height:400px;overflow-y:auto' id='cpCardList'></div>";
+  showGM("🤖 自定义AI小助手",s);renderPersonaCards("all","");
+}
+
+function renderPersonaCards(filterTag,searchText){
+  var cp=window._customAI||[];
+  if(!filterTag)filterTag="all";if(!searchText)searchText="";
+  var allTags=[],seen={};
+  cp.forEach(function(p){(p.tags||"通用").split(/[,，]/).forEach(function(t){t=t.trim();if(t&&!seen[t]){seen[t]=1;allTags.push(t)}})});
+  var tb=document.getElementById("cpTagBar");
+  if(tb){
+    var th=[];
+    function tbtn(tag,label){
+      var isActive=filterTag===tag;
+      return "<button class='btn btn-xs draft-tag'"+(isActive?" style='background:var(--accent);color:#fff'":"")+" onclick=\"renderPersonaCards('"+tag+"',document.getElementById('cpSearch')?document.getElementById('cpSearch').value:'')\">"+label+"</button>";
+    }
+    th.push(tbtn("all","全部"));
+    allTags.forEach(function(t){th.push(tbtn(t,t))});
+    tb.innerHTML=th.join("");
+  }
+  var list=document.getElementById("cpCardList");if(!list)return;
+  var filtered=cp.filter(function(p){
+    var mt=filterTag==="all"||(p.tags||"通用").split(/[,，]/).map(function(x){return x.trim()}).indexOf(filterTag)>=0;
+    var ms=!searchText||(p.name+p.prompt+p.tags).indexOf(searchText)>=0;
+    return mt&&ms;
+  });
+  if(!filtered.length){list.innerHTML="<p style='color:var(--text-muted);font-size:.74rem;padding:20px;text-align:center'>未找到</p>";return}
+  var cards=[];
+  filtered.forEach(function(p){var i=cp.indexOf(p);
+    cards.push("<div class='draft-card' onclick='editCustomPersona("+i+")'>");
+    cards.push("<div class='draft-card-header'><span style='background:color-mix(in srgb,var(--accent) 15%,transparent);color:var(--accent)'>AI</span><span style='font-size:.6rem;color:var(--text-muted)'>"+(p.tags||"通用")+"</span></div>");
+    cards.push("<div class='draft-card-title'>"+p.name+"</div>");
+    cards.push("<div class='draft-card-preview'>"+p.prompt.substring(0,50)+"…</div>");
+    cards.push("<button class='btn btn-danger btn-xs' style='margin-top:4px' onclick='event.stopPropagation();deleteCustomPersona("+i+")'>🗑</button>");
+    cards.push("</div>");
+  });
+  list.innerHTML="<div class='draft-cards'>"+cards.join("")+"</div>";
+}
+function filterPersonaCards(){var s=document.getElementById("cpSearch");renderPersonaCards("all",s?s.value:"")}
+function addCustomPersona(){var cp=window._customAI||[];cp.push({name:"新助手",tags:"通用",prompt:"你是一个有用的助手。请用中文回复。"});localStorage.setItem("st_custom_ai",JSON.stringify(cp));window._customAI=cp;loadCustomPersonas();showCustomPersonaModal();toast("✅ 已创建")}
+function editCustomPersona(i){var cp=window._customAI||[];if(i>=cp.length)return;var p=cp[i];var h="";h+="<div class='field-group'><label>名称</label><input type='text' id='cpName' value='"+p.name.replace(/'/g,"&#39;")+"'></div>";h+="<div class='field-group'><label>标签</label><input type='text' id='cpTags' value='"+(p.tags||"通用")+"'></div>";h+="<div class='field-group'><label>提示词</label><textarea id='cpPrompt' rows='8'>"+p.prompt.replace(/</g,"&lt;")+"</textarea></div>";h+="<button class='btn btn-primary btn-sm' onclick='saveCustomPersona("+i+")'>💾</button>";showGM("✏️ 编辑",h)}
+function saveCustomPersona(i){var cp=window._customAI||[];if(i>=cp.length)return;cp[i].name=document.getElementById("cpName").value||"助手";cp[i].tags=document.getElementById("cpTags").value||"通用";cp[i].prompt=document.getElementById("cpPrompt").value||"";localStorage.setItem("st_custom_ai",JSON.stringify(cp));window._customAI=cp;loadCustomPersonas();showCustomPersonaModal();toast("✅ 已保存")}
+function deleteCustomPersona(i){var cp=window._customAI||[];if(i>=cp.length)return;if(!confirm("删除"))return;cp.splice(i,1);localStorage.setItem("st_custom_ai",JSON.stringify(cp));window._customAI=cp;loadCustomPersonas();showCustomPersonaModal();toast("🗑 已删除")}
+
+function loadCustomPersonas(){
+  var cp=[];try{cp=JSON.parse(localStorage.getItem('st_custom_ai')||'[]')}catch(e){}window._customAI=cp;
+  var sel=document.getElementById('aiPersonaSelect');if(!sel)return;
+  var cur=sel.value;
+  sel.innerHTML='<option value="caelum">🌌 山停 · 万能辅助</option><option value="ying">🎭 影 · 角色塑造</option><option value="xian">🎪 弦 · 情节设计</option><option value="rang">🌍 壤 · 世界观构筑</option>';
+  cp.forEach(function(p){var k='cust_'+p.name.replace(/[^a-z0-9\u4e00-\u9fa5]/gi,'');AI_PERSONAS[k]={name:p.name,icon:p.icon,prompt:p.prompt,_default:p.prompt};sel.innerHTML+='<option value="'+k+'">💬 '+p.name+'</option>'});
+  if(cur)sel.value=cur;
+}
+
+/* ══════════════ 世界书/预设绑定正则 ══════════════ */
+var bindRegexWB=[],bindRegexPreset=[];
+function toggleWBBind(uid){var i=bindRegexWB.indexOf(uid);if(i>=0)bindRegexWB.splice(i,1);else bindRegexWB.push(uid)}
+function togglePresetBind(uid){var i=bindRegexPreset.indexOf(uid);if(i>=0)bindRegexPreset.splice(i,1);else bindRegexPreset.push(uid)}
+
+// Monkey-patch export
+var _origEWB=exportWorldBook;
+exportWorldBook=function(){
+  var includeRegex=false;
+  if(bindRegexWB.length>0){
+    includeRegex=confirm('当前已绑定'+bindRegexWB.length+'条正则。\n\n点「确定」：导出世界书+正则\n点「取消」：仅导出世界书');
+  }
+  var out={entries:{}};
+  state.worldbook_entries.forEach(function(e,i){out.entries[String(i)]=wbToST(e,i)});
+  if(includeRegex&&bindRegexWB.length>0){var b=[];bindRegexWB.forEach(function(uid){var re=state.regex_entries.find(function(r){return r.uid===uid});if(re)b.push({id:re.id||re.uid,scriptName:re.scriptName,findRegex:re.findRegex,replaceString:re.replaceString,trimStrings:re.trimStrings||[],placement:re.placement,disabled:re.disabled,markdownOnly:re.markdownOnly,promptOnly:re.promptOnly,runOnEdit:re.runOnEdit,substituteRegex:re.substituteRegex||0,minDepth:re.minDepth,maxDepth:re.maxDepth})});if(b.length>0){if(!out.extensions)out.extensions={};out.extensions.regex_scripts=b}}
+  downloadJSON(out,'worldbook.json');toast('💾 世界书已导出'+(includeRegex?'（含'+bindRegexWB.length+'条正则）':''))
+};
+var _origBO=buildOutput;
+var _presetIncludeRegex=false;
+buildOutput=function(){
+  var o=_origBO();
+  if(_presetIncludeRegex&&bindRegexPreset.length>0){var b=[];bindRegexPreset.forEach(function(uid){var re=state.regex_entries.find(function(r){return r.uid===uid});if(re)b.push({id:re.id||re.uid,scriptName:re.scriptName,findRegex:re.findRegex,replaceString:re.replaceString,trimStrings:re.trimStrings||[],placement:re.placement,disabled:re.disabled,markdownOnly:re.markdownOnly,promptOnly:re.promptOnly,runOnEdit:re.runOnEdit,substituteRegex:re.substituteRegex||0,minDepth:re.minDepth,maxDepth:re.maxDepth})});if(b.length>0){if(!o.extensions)o.extensions={};o.extensions.regex_scripts=b}}
+  return o;
+};
+var _origEP=exportPreset;
+exportPreset=function(){
+  if(editorMode==='global'||editorMode==='preset'){
+    if(bindRegexPreset.length>0)_presetIncludeRegex=confirm('当前已绑定'+bindRegexPreset.length+'条正则。\n\n点「确定」：导出预设+正则\n点「取消」：仅导出预设');
+    else _presetIncludeRegex=false;
+  }
+  _origEP();
+};
+
+
+/* ════════ 绑定正则面板 ════════ */
+var _bindPanelType=null;
+function toggleBindPanel(type){
+  if(_bindPanelType===type){closeBindPanel();return}
+  _bindPanelType=type;
+  var panel=document.getElementById('bindPanel');
+  if(!panel){
+    panel=document.createElement('div');panel.id='bindPanel';
+    panel.style.cssText='position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:9998;background:var(--surface);border:1px solid var(--border);border-radius:12px;box-shadow:0 8px 40px var(--shadow);width:500px;max-width:92vw;max-height:70vh;overflow-y:auto;padding:16px;display:none';
+    document.body.appendChild(panel);
+    document.addEventListener('click',function(e){if(_bindPanelType&&!panel.contains(e.target)&&!e.target.closest('[onclick*="toggleBindPanel"]'))closeBindPanel()});
+  }
+  panel.style.display='block';
+  var items=[];
+  state.regex_entries.forEach(function(r){items.push({uid:r.uid,name:r.scriptName||'未命名',src:'当前正则',find:r.findRegex?r.findRegex.substring(0,30):''})});
+  try{var drafts=JSON.parse(localStorage.getItem('st_drafts')||'[]');drafts.forEach(function(d){if(d.type==='regex'&&d.data&&Array.isArray(d.data)){d.data.forEach(function(r){items.push({uid:r.uid||r.id||'',name:r.scriptName||'草稿正则',src:'存储·'+d.time})})}})}catch(e){}
+  var seen={},uniq=[];items.forEach(function(it){if(it.uid&&!seen[it.uid]){seen[it.uid]=1;uniq.push(it)}});
+  var bindList=type==='worldbook'?bindRegexWB:bindRegexPreset;
+  var title=type==='worldbook'?'世界书':'预设';
+  var lines=[];
+  lines.push('<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">');
+  lines.push('<h3 style="margin:0;font-size:.85rem">🔗 绑定正则到'+title+'</h3>');
+  lines.push('<button class="btn btn-secondary btn-xs" onclick="closeBindPanel()">✕</button></div>');
+  lines.push('<p style="font-size:.7rem;color:var(--text-muted);margin-bottom:8px">勾选后，导出时将弹窗确认是否一并包含所选正则</p>');
+  if(!uniq.length){
+    lines.push('<p style="color:var(--text-muted);font-size:.74rem;text-align:center;padding:20px">暂无正则条目，请先在「正则」模块创建</p>');
+  }else{
+    lines.push('<div style="display:flex;gap:6px;margin-bottom:8px">');
+    lines.push('<button class="btn btn-xs" style="background:var(--accent);color:#fff" data-type="'+type+'" data-on="1" onclick="selectAllBind(this.dataset.type,true)">全选</button>');
+    lines.push('<button class="btn btn-secondary btn-xs" data-type="'+type+'" data-on="0" onclick="selectAllBind(this.dataset.type,false)">取消全选</button></div>');
+    uniq.forEach(function(it){
+      var on=bindList.includes(it.uid);
+      lines.push('<label style="display:flex;align-items:center;gap:8px;padding:6px 10px;margin:2px 0;border-radius:6px;cursor:pointer;background:'+(on?'color-mix(in srgb,var(--accent2) 8%,var(--surface2))':'var(--surface2)')+';font-size:.74rem">');
+      lines.push('<input type="checkbox" '+(on?'checked':'')+' data-type="'+type+'" data-uid="'+it.uid+'" onchange="toggleRegexBind(this.dataset.type,this.dataset.uid)">');
+      lines.push(it.name+' <span style="font-size:.64rem;color:var(--text-muted)">'+it.src+'</span></label>');
+    });
+  }
+  panel.innerHTML=lines.join('');
+}
+function closeBindPanel(){var p=document.getElementById('bindPanel');if(p)p.style.display='none';_bindPanelType=null}
+function toggleRegexBind(type,uid){var list=type==='worldbook'?bindRegexWB:bindRegexPreset;var i=list.indexOf(uid);if(i>=0)list.splice(i,1);else list.push(uid);toggleBindPanel(type)}
+function selectAllBind(type,on){var list=type==='worldbook'?bindRegexWB:bindRegexPreset;list.length=0;if(on){state.regex_entries.forEach(function(r){list.push(r.uid)})}toggleBindPanel(type)}
+
 loadWSWidth();
-renderEditor();
-updatePreview();
-initScrollWatcher();
+
+loadStateFromStorage();
+
+// 改用 switchEditorMode 以确保工具栏也被正确初始化
+switchEditorMode(editorMode);
 
 
 
