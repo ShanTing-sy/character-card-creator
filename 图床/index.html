@@ -108,7 +108,8 @@ header h1 span{color:var(--text3);font-weight:400}
   background-size:200% 100%;border-radius:2px
 }
 @keyframes shimmer{0%{transform:translateX(-100%)}100%{transform:translateX(200%)}}
-.queue-item .qi-size{font-size:11px;color:var(--text3)}
+..qi-cancel:hover{color:var(--error)!important;background:#fbe9e7!important}
+queue-item .qi-size{font-size:11px;color:var(--text3)}
 
 /* ===== History Items ===== */
 .history-item{
@@ -191,6 +192,25 @@ header h1 span{color:var(--text3);font-weight:400}
 .tutorial-tab.active{color:var(--text)!important;font-weight:600;background:var(--bg);border-left-color:var(--accent)!important}
 .tutorial-tab:hover{background:var(--bg3);color:var(--text)!important}
 #tutorialSteps li,#tutorialDisclaimer li{margin-bottom:4px}
+
+/* ===== Vault Grid ===== */
+.vault-item{position:relative;border-radius:8px;overflow:hidden;border:1px solid var(--border);background:var(--bg2);transition:var(--transition);aspect-ratio:1;display:flex;flex-direction:column}
+.vault-item:hover{border-color:var(--text3);box-shadow:0 2px 8px rgba(0,0,0,.06)}
+.vault-item .vi-thumb{flex:1;width:100%;object-fit:cover;background:var(--bg3);min-height:0;cursor:pointer}
+.vault-item .vi-info{padding:6px 8px;background:var(--bg);border-top:1px solid var(--border)}
+.vault-item .vi-name{font-size:11px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.vault-item .vi-tags{display:flex;flex-wrap:wrap;gap:3px;margin-top:3px}
+.vault-item .vi-tag{font-size:9px;padding:1px 5px;border-radius:3px;background:var(--bg3);color:var(--text3);cursor:pointer}
+.vault-item .vi-tag:hover{color:var(--text)}
+.vault-item .vi-actions{position:absolute;top:4px;right:4px;display:none;gap:2px}
+.vault-item:hover .vi-actions{display:flex}
+.vault-item .vi-actions button{background:rgba(255,255,255,.9);border:none;border-radius:4px;width:26px;height:26px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--text2);transition:var(--transition);backdrop-filter:blur(4px)}
+.vault-item .vi-actions button:active{transform:scale(.9)}
+.vault-item .vi-actions .vi-del:hover{color:var(--error);background:#fbe9e7}
+#vaultTagBar,.vault-tag-bar{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;padding:0 4px}
+#vaultTagBar .vtb-item{font-size:8px;padding:0 8px;border-radius:3px;border:1px solid var(--border);cursor:pointer;transition:all .15s;background:var(--bg);color:var(--text2);line-height:22px;height:22px;letter-spacing:.3px}
+#vaultTagBar .vtb-item:hover{background:var(--bg3);border-color:var(--text3);color:var(--text)}
+#vaultTagBar .vtb-item.active{background:#222;color:#fff;border-color:#222;font-weight:500}
 /* ===== Toast ===== */
 .toast-container{
   position:fixed;top:20px;right:20px;z-index:200;
@@ -254,6 +274,7 @@ header h1 span{color:var(--text3);font-weight:400}
       <div class="icon">☁</div>
       <div class="hint">将文件<strong>拖拽</strong>到此处</div>
       <div class="sub-hint">支持所有文件格式 · 单文件最大 25MB</div>
+
     </div>
     <button class="btn btn-primary" id="uploadBtn" style="width:100%;padding:12px;font-size:14px;font-weight:600">📤 上传文件</button>
     <input type="file" class="file-input-hidden" id="fileInput" multiple>
@@ -276,15 +297,19 @@ header h1 span{color:var(--text3);font-weight:400}
     <!-- Upload History -->
     <div class="section" style="flex:1">
       <div class="section-header">
-        <span>📁 已上传</span>
-        <span style="display:flex;align-items:center;gap:8px">
-          <span class="count" id="historyCount">0 条记录</span>
+        <span style="display:flex;align-items:center;gap:6px">
+          <span style="font-weight:600">📁 已上传</span>
+        </span>
+        <span style="display:flex;align-items:center;gap:6px">
+          <button class="btn btn-sm btn-ghost" onclick="openVaultModal()" title="存储库" style="font-size:12px;padding:3px 8px">🗄 存储库</button>
+          <span class="count" id="historyCount">0 条</span>
           <button class="btn btn-sm btn-ghost" onclick="clearAllHistory()" style="font-size:11px;padding:2px 6px">清空</button>
         </span>
       </div>
       <div class="section-body" id="historyBody">
         <div class="history-empty" id="historyEmpty">还没有上传记录</div>
       </div>
+      <!-- Vault will open as modal -->
     </div>
 
   </div>
@@ -404,16 +429,9 @@ header h1 span{color:var(--text3);font-weight:400}
         <input type="password" id="cfgToken" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" autocomplete="off">
       </div>
       <div class="form-group">
-        <label>仓库地址</label>
-        <input type="text" id="cfgRepo" placeholder="用户名/仓库名" >
-      </div>
-      <div class="form-group">
-        <label>分支</label>
-        <input type="text" id="cfgBranch" placeholder="main" value="main">
-      </div>
-      <div class="form-group">
-        <label>图片存储路径</label>
-        <input type="text" id="cfgPath" placeholder="images/" value="images/">
+        <label>仓库链接</label>
+        <input type="url" id="cfgRepoUrl" placeholder="https://github.com/用户名/仓库名/tree/分支/路径" autocomplete="off">
+        <div style="font-size:11px;color:var(--text3);margin-top:4px">粘贴 GitHub 上你的目标文件夹链接，自动解析仓库/分支/路径</div>
       </div>
       <div class="form-note">
         🔒 Token 仅存储在浏览器本地，仅用于向 GitHub API 上传图片。<br>
@@ -430,6 +448,34 @@ header h1 span{color:var(--text3);font-weight:400}
 
 <!-- ===== Toast Container ===== -->
 <div class="toast-container" id="toastContainer"></div>
+
+
+<!-- ===== Vault Modal ===== -->
+<div class="modal-overlay" id="vaultModal" style="align-items:center">
+  <div class="modal" style="width:700px;max-width:94vw;max-height:90vh;display:flex;flex-direction:column">
+    <div class="modal-header">
+      <h2>🗄 存储库</h2>
+      <span style="display:flex;align-items:center;gap:6px">
+        <button class="btn btn-sm btn-ghost" onclick="vaultClearAll()" style="font-size:11px;padding:3px 10px;color:var(--text3)">清空当前</button>
+        <button class="btn-icon" onclick="closeVaultModal()" title="关闭" style="width:32px;height:32px;font-size:14px">✕</button>
+      </span>
+    </div>
+    <!-- Fixed top section: search + tags -->
+    <div style="padding:14px 18px 8px;flex-shrink:0">
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px">
+        <input type="text" id="vaultFilter" placeholder="搜索文件名或标签…" style="flex:1;padding:8px 12px;border:1px solid var(--border);border-radius:6px;font-size:13px;font-family:var(--font);outline:none;background:var(--bg);color:var(--text);width:0">
+        <button class="btn btn-sm" onclick="renderVault()" style="padding:8px 12px">🔍</button>
+      </div>
+      <div id="vaultTagBar" class="vault-tag-bar" style="display:flex;flex-wrap:wrap;gap:6px;min-height:22px;margin-bottom:8px"></div>
+    </div>
+    <!-- Scrollable grid -->
+    <div style="flex:1;overflow-y:auto;padding:4px 18px 18px;min-height:200px">
+      <div id="vaultGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:12px">
+        <div class="empty-state" style="grid-column:1/-1;padding:50px 16px;text-align:center;color:var(--text3);font-size:13px">存储库为空</div>
+      </div>
+    </div>
+  </div>
+</div>
 
 <script>
 /* ============================================================
@@ -484,19 +530,28 @@ function loadSettings() {
 
 function saveSettings() {
   const token = $('#cfgToken').value.trim();
-  const repo = $('#cfgRepo').value.trim();
-  const branch = $('#cfgBranch').value.trim();
-  const path = $('#cfgPath').value.trim();
+  const repoUrl = $('#cfgRepoUrl').value.trim();
 
   if (!token) return showToast('请输入 GitHub Token', 'error');
-  if (!repo) return showToast('请输入仓库地址', 'error');
-  if (!branch) branch = 'main';
-  if (!path) path = 'images/';
+  if (!repoUrl) return showToast('请输入仓库链接', 'error');
+
+  // Parse repo URL: https://github.com/owner/repo/tree/branch/path
+  let repo = '', branch = 'main', path = 'images/';
+  const urlMatch = repoUrl.match(/github\.com\/([^/]+\/[^/]+?)(?:\/tree\/([^/]+)(?:\/(.*))?)?$/);
+  if (urlMatch) {
+    repo = urlMatch[1];
+    if (urlMatch[2]) branch = urlMatch[2];
+    if (urlMatch[3]) path = urlMatch[3].replace(/^\/+|\/+$/g, '') + '/';
+  } else {
+    // Fallback: treat as raw repo format "user/repo"
+    repo = repoUrl.replace(/^\/+|\/+$/g, '');
+    if (!repo.includes('/')) return showToast('链接格式不正确，请粘贴 GitHub 仓库链接', 'error');
+  }
 
   state.settings.token = token;
   state.settings.repo = repo;
   state.settings.branch = branch;
-  state.settings.path = path.replace(/^\/+|\/+$/g,'') + '/';
+  state.settings.path = path;
 
   localStorage.setItem('st-image-settings', JSON.stringify(state.settings));
   closeSettings();
@@ -510,9 +565,10 @@ function closeSettings() {
 
 function openSettings() {
   $('#cfgToken').value = state.settings.token;
-  $('#cfgRepo').value = state.settings.repo;
-  $('#cfgBranch').value = state.settings.branch;
-  $('#cfgPath').value = state.settings.path.replace(/\/$/,'');
+  // Reconstruct repo URL from saved components
+  const r = state.settings.repo, b = state.settings.branch, p = state.settings.path.replace(/\/$/,'');
+  const urlEl = $('#cfgRepoUrl');
+  if (urlEl) urlEl.value = r ? 'https://github.com/' + r + '/tree/' + b + (p ? '/' + p : '') : '';
   renderProfileSelect();
   settingsModal.classList.add('active');
 }
@@ -526,6 +582,181 @@ function updateStatusBar() {
     statusText.className = 'header-status ok';
   }
 }
+
+
+// ===== Vault Management =====
+
+function saveToVaultFromHistory(name, url, size) {
+  if (isInVault(url)) { showToast('已在存储库中', 'info'); return; }
+  const tags = prompt('添加标签（用逗号分隔，直接确定则不添加）：');
+  const tagList = tags ? tags.split(/[,，]/).map(t => t.trim()).filter(Boolean) : [];
+  addToVault(name, url, size, tagList);
+  showToast('已存入存储库', 'success');
+}
+
+function getVault() {
+  try { return JSON.parse(localStorage.getItem('st-image-vault') || '[]'); }
+  catch(e) { return []; }
+}
+function saveVault(v) {
+  localStorage.setItem('st-image-vault', JSON.stringify(v));
+}
+function addToVault(name, url, size, tags) {
+  const v = getVault();
+  v.unshift({id:Date.now()+'_'+Math.random().toString(36).slice(2,6), name, url, size, time:Date.now(), tags: tags || []});
+  if (v.length > 500) v = v.slice(0, 500);
+  saveVault(v);
+}
+function isInVault(url) {
+  return getVault().some(i => i.url === url);
+}
+function deleteFromVault(id) {
+  let v = getVault();
+  v = v.filter(i => i.id !== id);
+  saveVault(v);
+  renderVault();
+  showToast('已从存储库删除', 'info');
+}
+
+
+function vaultClearAll() {
+  const filter = document.getElementById('vaultFilter').value.trim().toLowerCase();
+  let items = getVault();
+  let toDelete = items;
+  if (filter) {
+    toDelete = items.filter(i => i.name.toLowerCase().includes(filter) || i.tags.some(t => t.toLowerCase().includes(filter)));
+  }
+  if (toDelete.length === 0) { showToast('没有可删除的项', 'info'); return; }
+  const msg = filter ? '确定清空当前筛选出的 ' + toDelete.length + ' 项？文件仍保留在 GitHub 仓库中。' : '确定清空存储库所有 ' + toDelete.length + ' 项？文件仍保留在 GitHub 仓库中。';
+  if (!confirm(msg)) return;
+  const deleteIds = new Set(toDelete.map(i => i.id));
+  items = items.filter(i => !deleteIds.has(i.id));
+  saveVault(items);
+  renderVault();
+  showToast('已清空', 'info');
+  renderVault();
+  showToast('已清空', 'info');
+}
+
+function openVaultModal() {
+  document.getElementById('vaultFilter').value = '';
+  document.getElementById('vaultModal').classList.add('active');
+  renderVault();
+}
+function closeVaultModal() {
+  document.getElementById('vaultModal').classList.remove('active');
+}
+
+
+function editVaultTags(id) {
+  const vault = getVault();
+  const item = vault.find(i => i.id === id);
+  if (!item) return;
+  const current = item.tags.join(', ');
+  const input = prompt('编辑标签（用逗号分隔）：', current);
+  if (input === null) return;
+  item.tags = input.split(/[,，]/).map(t => t.trim()).filter(Boolean);
+  saveVault(vault);
+  renderVault();
+}
+
+function renderVault() {
+  const grid = document.getElementById('vaultGrid');
+  const filter = document.getElementById('vaultFilter').value.trim().toLowerCase();
+  let items = getVault();
+  if (filter) {
+    items = items.filter(i => i.name.toLowerCase().includes(filter) || i.tags.some(t => t.toLowerCase().includes(filter)));
+  }
+  if (items.length === 0) {
+    grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1;padding:40px 16px">' + (filter ? '没有匹配的文件' : '存储库为空') + '</div>';
+    return;
+  }
+  const allVault = getVault();
+  const allTags = [...new Set(allVault.flatMap(i => i.tags || []))].sort();
+  const tagBar = document.getElementById('vaultTagBar');
+  if (tagBar) {
+    const activeTag = filter || '';
+    tagBar.innerHTML = '<span class="vtb-item' + (!activeTag ? ' active' : '') + '" onclick="vaultFilterByTag(this, &apos;&apos;)">全部</span>' +
+      allTags.map(t => '<span class="vtb-item' + (activeTag === t.toLowerCase() ? ' active' : '') + '" onclick="vaultFilterByTag(this, &apos;' + escapeHtml(t) + '&apos;)">' + escapeHtml(t) + '</span>').join('');
+  }
+  // Clear grid and append items directly (grid items need to be direct children)
+  grid.innerHTML = '';
+  for (const item of items) {
+    const div = document.createElement('div');
+    div.className = 'vault-item';
+    div.dataset.id = item.id;
+
+    const img = document.createElement('img');
+    img.className = 'vi-thumb';
+    img.src = item.url;
+    img.alt = item.name;
+    img.loading = 'lazy';
+    img.onerror = function() { this.alt = '加载失败'; this.style.opacity = '0.3'; };
+    div.appendChild(img);
+
+    const act = document.createElement('div');
+    act.className = 'vi-actions';
+    const copyBtn = document.createElement('button');
+    copyBtn.textContent = '📋';
+    copyBtn.title = '复制';
+    copyBtn.onclick = function(u) { return function() { copyUrl(u); }; }(item.url);
+    act.appendChild(copyBtn);
+    const tagBtn = document.createElement('button');
+    tagBtn.textContent = '🏷';
+    tagBtn.title = '编辑标签';
+    tagBtn.onclick = function(id) { return function() { editVaultTags(id); }; }(item.id);
+    act.appendChild(tagBtn);
+    const delBtn = document.createElement('button');
+    delBtn.className = 'vi-del';
+    delBtn.textContent = '✕';
+    delBtn.title = '删除';
+    delBtn.onclick = function(id) { return function() { deleteFromVault(id); }; }(item.id);
+    act.appendChild(delBtn);
+    div.appendChild(act);
+
+    const info = document.createElement('div');
+    info.className = 'vi-info';
+    const nameDiv = document.createElement('div');
+    nameDiv.className = 'vi-name';
+    nameDiv.textContent = item.name;
+    info.appendChild(nameDiv);
+    const tagsDiv = document.createElement('div');
+    tagsDiv.className = 'vi-tags';
+    for (const tag of item.tags) {
+      const span = document.createElement('span');
+      span.className = 'vi-tag';
+      span.textContent = tag;
+      span.onclick = function(t) { return function() { vaultFilterByTagName(t); }; }(tag);
+      tagsDiv.appendChild(span);
+    }
+    info.appendChild(tagsDiv);
+    div.appendChild(info);
+
+    grid.appendChild(div);
+  }
+}function vaultFilterByTag(el, tag) {
+  document.querySelectorAll('.vtb-item').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('vaultFilter').value = tag || '';
+  renderVault();
+}
+function vaultClearTagFilter() {
+  document.getElementById('vaultFilter').value = '';
+  const tagBar = document.getElementById('vaultTagBar');
+  if (tagBar) tagBar.querySelectorAll('.vtb-item').forEach(t => t.classList.remove('active'));
+  renderVault();
+}
+function vaultFilterByTagName(tag) {
+  document.getElementById('vaultFilter').value = tag;
+  const tagBar = document.getElementById('vaultTagBar');
+  if (tagBar) {
+    tagBar.querySelectorAll('.vtb-item').forEach(t => t.classList.remove('active'));
+    const match = Array.from(tagBar.children).find(t => t.textContent === tag);
+    if (match) match.classList.add('active');
+  }
+  renderVault();
+}
+function vaultFilterTag() { renderVault(); }
 
 // ===== Toast =====
 let toastTimer = 0;
@@ -610,7 +841,8 @@ function renderHistory() {
         </div>
         <div class="hi-time">${sizeStr}</div>
         <div class="hi-actions">
-          <button onclick="copyUrl('${escapeHtml(h.url)}')" title="复制链接">📋</button>
+          <button onclick="saveToVaultFromHistory('${esc(h.name)}', '${esc(h.url)}', ${h.size})" title="存入存储库" style="background:none;border:none;cursor:pointer;padding:4px 6px;border-radius:4px;font-size:12px;color:var(--text2);transition:var(--transition)">✤</button>
+          <button onclick="copyUrl('${esc(h.url)}')" title="复制链接">📋</button>
           <button onclick="deleteHistory('${h.id}')" title="删除记录" class="btn-danger">✕</button>
         </div>
       </div>`;
@@ -677,7 +909,10 @@ function renderQueue() {
       <div class="queue-item" data-id="${q.id}">
         <div class="qi-header">
           <span class="qi-name" title="${escapeHtml(q.name)}">${escapeHtml(q.name)}</span>
-          ${statusHtml}
+          <span style="display:flex;align-items:center;gap:6px">
+            ${statusHtml}
+            <button onclick="cancelQueueItem('${q.id}')" class="qi-cancel" title="取消" style="background:none;border:none;cursor:pointer;font-size:14px;color:var(--text3);padding:2px;border-radius:4px;line-height:1">✕</button>
+          </span>
         </div>
         ${barHtml}
         <div class="qi-size">${sizeStr}</div>
@@ -689,6 +924,16 @@ function renderQueue() {
 }
 
 // ===== Upload Logic =====
+function cancelQueueItem(id) {
+  const item = state.queue.find(q => q.id === id);
+  if (!item) return;
+  if (item.status === 'uploading') return showToast('正在上传中，无法取消', 'error');
+  item.status = 'done';
+  if (item.previewUrl) URL.revokeObjectURL(item.previewUrl);
+  renderQueue();
+  showToast('已取消', 'info');
+}
+
 async function processQueue() {
   if (state.uploading) return;
   const next = state.queue.find(q => q.status === 'waiting');
@@ -702,6 +947,7 @@ async function processQueue() {
     const previewUrl = URL.createObjectURL(next.file);
     const url = await uploadFile(next);
     addHistory(next.name, url, next.size, previewUrl);
+
     next.status = 'done';
     next.progress = 100;
     showToast(`${next.name} 上传成功 ✓`, 'success');
@@ -921,6 +1167,11 @@ function bindEvents() {
     if (e.target === document.getElementById('tutorialModal')) closeTutorial();
   });
 
+  // Vault modal
+  document.getElementById('vaultModal').addEventListener('click', (e) => {
+    if (e.target === document.getElementById('vaultModal')) closeVaultModal();
+  });
+
   // Profile popover
   $('#profileBtn').addEventListener('click', (e) => {
     e.stopPropagation();
@@ -938,7 +1189,7 @@ function bindEvents() {
     if (e.target === settingsModal) closeSettings();
   });
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') { closeSettings(); closeTutorial(); }
+    if (e.key === 'Escape') { closeSettings(); closeTutorial(); closeVaultModal(); }
   });
 
   // File pickers (folder button removed - use drag & drop)
@@ -1013,6 +1264,15 @@ function escapeHtml(str) {
   div.textContent = str;
   return div.innerHTML;
 }
+function esc(str) {
+  // Full HTML + JS-safe escaping (handles single quotes for onclick attributes)
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
 
 // ===== Clipboard =====
 async function copyUrl(url) {
@@ -1063,9 +1323,11 @@ function renderProfileList() {
   if (names.length === 0) { list.innerHTML = '<div class="popover-empty">还没有保存的配置</div>'; return; }
   let html = '';
   for (const name of names) {
+    const pf = profiles[name];
     const safeName = escapeHtml(name);
+    const noteHtml = (pf && pf.note) ? '<br><span style="font-weight:400;font-size:10px;color:var(--text3)">' + escapeHtml(pf.note) + '</span>' : '';
     html += '<div class="popover-item' + (name === active ? ' active' : '') + '" data-profile="' + safeName + '" onclick="loadProfile(this.dataset.profile)">' +
-      '<span class="pi-name">' + safeName + '</span>' +
+      '<span class="pi-name">' + safeName + noteHtml + '</span>' +
       '<button class="pi-del" onclick="event.stopPropagation();deleteProfile(this.parentElement.dataset.profile)" title="删除">✕</button></div>';
   }
   list.innerHTML = html;
@@ -1089,14 +1351,20 @@ function refreshProfileUI() { renderProfileList(); renderProfileSelect(); }
 
 function saveCurrentProfile() {
   const token = (document.getElementById('cfgToken')?.value || state.settings.token || '').trim();
-  const repo = (document.getElementById('cfgRepo')?.value || state.settings.repo || '').trim();
-  const branch = (document.getElementById('cfgBranch')?.value || state.settings.branch || 'main').trim();
-  const path = (document.getElementById('cfgPath')?.value || state.settings.path || 'images/').trim();
-  if (!repo) { showToast('请先填写仓库地址', 'error'); return; }
+  const repoUrl = (document.getElementById('cfgRepoUrl')?.value || '').trim() || 
+    (state.settings.repo ? 'https://github.com/' + state.settings.repo + '/tree/' + state.settings.branch + (state.settings.path.replace(/\/$/,'') ? '/' + state.settings.path.replace(/\/$/,'') : '') : '');
+  let repo = state.settings.repo || '', branch = state.settings.branch || 'main', path = state.settings.path || 'images/';
+  if (repoUrl) {
+    const m = repoUrl.match(/github\.com\/([^/]+\/[^/]+?)(?:\/tree\/([^/]+)(?:\/(.*))?)?$/);
+    if (m) { repo = m[1]; if (m[2]) branch = m[2]; if (m[3]) path = m[3].replace(/^\/+|\/+$/g,'') + '/'; }
+    else { repo = repoUrl.replace(/^\/+|\/+$/g,''); }
+  }
+  if (!repo) { showToast('请先填写仓库链接', 'error'); return; }
   const name = prompt('配置模板名称：', repo.replace('/', '-'));
   if (!name) return;
+  const note = prompt('备注（可选，用于区分不同配置）：', '');
   const profiles = getProfiles();
-  profiles[name] = { token, repo, branch: branch || 'main', path: path || 'images/' };
+  profiles[name] = { token, repo, branch: branch || 'main', path: path || 'images/', note: note || '' };
   saveProfiles(profiles);
   setActiveProfile(name);
   refreshProfileUI();
@@ -1113,13 +1381,9 @@ function loadProfile(name) {
   setActiveProfile(name);
   updateStatusBar();
   const t = document.getElementById('cfgToken');
-  const r = document.getElementById('cfgRepo');
-  const b = document.getElementById('cfgBranch');
-  const pt = document.getElementById('cfgPath');
+  const u = document.getElementById('cfgRepoUrl');
   if (t) t.value = p.token || '';
-  if (r) r.value = p.repo || '';
-  if (b) b.value = p.branch || '';
-  if (pt) pt.value = (p.path || 'images/').replace(/\/$/,'');
+  if (u) u.value = p.repo ? 'https://github.com/' + p.repo + '/tree/' + (p.branch || 'main') + ((p.path || 'images/').replace(/\/$/,'') ? '/' + (p.path || 'images/').replace(/\/$/,'') : '') : '';
   refreshProfileUI();
   closeProfilePopover();
   showToast('已加载配置「' + name + '」', 'success');
