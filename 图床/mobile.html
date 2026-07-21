@@ -12,7 +12,7 @@
   --radius:10px;--font:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans SC",sans-serif;
   --safe-bottom:env(safe-area-inset-bottom,0px);
 }
-body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;-webkit-tap-highlight-color:transparent}
+body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;-webkit-tap-highlight-color:transparent;padding-top:30px}
 
 /* ===== Header ===== */
 header{
@@ -323,19 +323,9 @@ header h1{font-size:17px;font-weight:700;white-space:nowrap}
         <input type="url" id="cfgRepoUrl" placeholder="https://github.com/用户名/仓库名/tree/分支/路径" autocomplete="off">
         <div style="font-size:11px;color:var(--text3);margin-top:4px">粘贴 GitHub 上你的目标文件夹链接，自动解析仓库/分支/路径</div>
       </div>
-      <div class="fg" style="border-top:1px solid var(--border);padding-top:12px">
-        <label>💾 配置模板</label>
-        <div style="display:flex;gap:8px">
-          <select id="cfgProfileSelect" style="flex:1;padding:8px 10px;border:1px solid var(--border);border-radius:6px;font-size:12px;font-family:var(--font);background:var(--bg);color:var(--text);outline:none">
-            <option value="">-- 选择模板快速填入 --</option>
-          </select>
-          <button class="btn-primary" onclick="saveCurrentProfile()" style="padding:8px 12px;border:none;border-radius:6px;font-size:12px;cursor:pointer" type="button">💾</button>
-          <button onclick="deleteSelectedProfile()" style="padding:8px 12px;border:1px solid var(--border);border-radius:6px;font-size:12px;cursor:pointer;background:none" type="button">✕</button>
-        </div>
-      </div>
       <div class="form-note">
         🔒 Token 仅存在本地，仅发往 GitHub API。<br>
-        📦 单文件最大 25MB · 🌐 jsDelivr CDN 加速
+        📦 单文件最大 25MB · 🌐 全球加速
       </div>
     </div>
     <div class="modal-footer">
@@ -355,7 +345,7 @@ header h1{font-size:17px;font-weight:700;white-space:nowrap}
     <div class="modal-body" style="padding-top:0">
       <!-- Tabs -->
       <div style="display:flex;gap:0;border-bottom:1px solid var(--border);margin:0 -18px 8px;padding:0 18px">
-        <div class="tuto-tab active" onclick="switchTab(this,'steps')" style="padding:8px 14px;font-size:13px;font-weight:600;color:var(--text3);border-bottom:2px solid transparent;cursor:pointer">📖 步骤</div>
+        <div class="tuto-tab active" onclick="switchTab(this,'steps')" style="padding:8px 14px;font-size:13px;font-weight:600;color:var(--text3);border-bottom:2px solid transparent;cursor:pointer">📖 使用步骤</div>
         <div class="tuto-tab" onclick="switchTab(this,'disc')" style="padding:8px 14px;font-size:13px;font-weight:600;color:var(--text3);border-bottom:2px solid transparent;cursor:pointer">⚠️ 声明</div>
       </div>
       <!-- Steps -->
@@ -371,7 +361,7 @@ header h1{font-size:17px;font-weight:700;white-space:nowrap}
         <h3>📤 上传文件</h3>
         <ul><li>拖拽到上方区域，或点「上传文件」/「文件夹」按钮</li><li>支持所有格式，单文件 ≤ 25MB</li></ul>
         <h3>🔗 复制链接</h3>
-        <ul><li>在「已上传」列表中点击 📋 复制 CDN 链接</li></ul>
+        <ul><li>在「已上传」列表中点击 📋 复制链接</li></ul>
       </div>
       <!-- Disclaimer -->
       <div id="tutoDisc" class="tuto-content" style="display:none">
@@ -380,7 +370,7 @@ header h1{font-size:17px;font-weight:700;white-space:nowrap}
         <p><strong>1. 数据安全</strong><br>Token 仅存 localStorage，仅发往 api.github.com。</p>
         <p><strong>2. 文件存储</strong><br>文件存入你的 GitHub 仓库。随机文件名防止猜测。</p>
         <p><strong>3. API 限制</strong><br>每小时 5000 次请求，单文件 ≤ 25MB。</p>
-        <p><strong>4. CDN 缓存</strong><br>新文件需几分钟全球生效。</p>
+        <p><strong>4. 缓存说明</strong><br>新文件需几分钟全球生效。</p>
         <p><strong>5. 责任</strong><br>请勿上传违法内容，后果自负。</p>
         <div class="tuto-green"><strong>✅ 总结</strong><br>随机文件名保护是核心安全机制。不传链接即安全。</div>
       </div>
@@ -681,9 +671,9 @@ async function uploadFile(q) {
   const ref=await gh(`https://api.github.com/repos/${repo}/git/ref/heads/${branch}`,'GET');
   const co=await gh(ref.object.url,'GET');
   const tr=await gh(`https://api.github.com/repos/${repo}/git/trees`,'POST',{base_tree:co.tree.sha,tree:[{path:filePath,mode:'100644',type:'blob',sha:blob.sha}]});
-  await gh(`https://api.github.com/repos/${repo}/git/commits`,'POST',{message:'Upload '+filename,tree:tr.sha,parents:[co.sha]});
-  await gh(`https://api.github.com/repos/${repo}/git/refs/heads/${branch}`,'PATCH',{sha:co.sha,force:false});
-  return `https://cdn.jsdelivr.net/gh/${repo}/${filePath}`;
+  const nc=await gh(`https://api.github.com/repos/${repo}/git/commits`,'POST',{message:'Upload '+filename,tree:tr.sha,parents:[co.sha]});
+  await gh(`https://api.github.com/repos/${repo}/git/refs/heads/${branch}`,'PATCH',{sha:nc.sha,force:false});
+  return `https://jsd.onmicrosoft.cn/gh/${repo}/${filePath}`;
 }
 
 function upQ(q,pct){ q.progress=pct; const el=$id('queueBody').querySelector('[data-id="'+q.id+'"]'); if(!el)return; const bar=el.querySelector('.qi-bar-inner'); if(bar){bar.style.width=pct+'%';bar.className='qi-bar-inner'} const st=el.querySelector('.qi-status'); if(st)st.textContent=pct>0&&pct<100?'上传 '+pct+'%':''; }

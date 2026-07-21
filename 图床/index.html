@@ -374,7 +374,7 @@ queue-item .qi-size{font-size:11px;color:var(--text3)}
           <h3 style="font-size:15px;color:var(--text);margin:20px 0 12px">🔗 复制链接</h3>
           <ul style="margin-left:18px">
             <li>在「已上传」列表中点击 <strong>📋</strong> 按钮一键复制链接</li>
-            <li>链接可通过 jsDelivr 全球 CDN 加速，所有平台均可正常显示</li>
+            <li>链接可通过全球加速节点访问，所有平台均可正常显示</li>
           </ul>
 
           <h3 style="font-size:15px;color:var(--text);margin:20px 0 12px">💾 配置模板</h3>
@@ -402,7 +402,7 @@ queue-item .qi-size{font-size:11px;color:var(--text3)}
           <p>已验证的请求每小时最多 5000 次，单文件大小不得超过 25MB。超限后会暂时无法上传，等待一段时间后自动恢复。</p>
 
           <h4 style="font-size:13px;color:var(--text);margin:16px 0 6px">4. CDN 缓存</h4>
-          <p>jsDelivr 全球 CDN 有缓存机制，新上传的文件可能需要几分钟才能全球生效，您可以直接使用 GitHub raw 链接作为备用。</p>
+          <p>全球加速节点有缓存机制，新上传的文件可能需要几分钟才能全球生效，您可以直接使用 GitHub raw 链接作为备用。</p>
 
           <h4 style="font-size:13px;color:var(--text);margin:16px 0 6px">5. 责任声明</h4>
           <p>本工具仅供个人使用，使用者应自行承担上传内容的合规性责任。请勿上传非法、侵权或敏感内容。</p>
@@ -436,7 +436,7 @@ queue-item .qi-size{font-size:11px;color:var(--text3)}
       <div class="form-note">
         🔒 Token 仅存储在浏览器本地，仅用于向 GitHub API 上传图片。<br>
         📦 通过 GitHub Git Data API 上传，单文件最大 25MB。<br>
-        🌐 访问链接通过 <code>cdn.jsdelivr.net</code> 全球 CDN 加速。
+        🌐 访问链接通过 <code>jsd.onmicrosoft.cn</code> 全球加速。
       </div>
     </div>
     <div class="modal-footer">
@@ -1036,8 +1036,8 @@ async function uploadFile(qItem) {
 
   updateProgress(qItem, 100, '完成');
 
-  // Return jsDelivr CDN URL
-  return `https://cdn.jsdelivr.net/gh/${repo}/${filePath}`;
+  // Return CDN URL via jsd.onmicrosoft.cn
+  return `https://jsd.onmicrosoft.cn/gh/${repo}/${filePath}`;
 }
 
 function updateProgress(qItem, pct, label) {
