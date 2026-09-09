@@ -132,6 +132,18 @@
   .ai-loading{display:flex;align-items:center;gap:6px;padding:8px;font-size:.72rem;color:var(--text-muted)}
   .ai-loading .spinner{width:14px;height:14px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite}
   .ai-inject-btn{margin-top:8px}
+  .ai-msg-wrap{display:flex;flex-direction:column;max-width:95%;animation:fadeIn .2s}
+  .ai-msg-wrap.user{align-self:flex-end;align-items:flex-end}
+  .ai-msg-wrap.assistant,.ai-msg-wrap.system{align-self:flex-start;align-items:flex-start}
+  .ai-msg-wrap .ai-msg{max-width:100%;margin:0}
+  .ai-msg-actions{display:flex;gap:1px;opacity:0;transition:opacity .15s;margin-top:2px;flex-wrap:wrap}
+  .ai-msg-wrap:hover .ai-msg-actions,.ai-msg-wrap.editing .ai-msg-actions{opacity:1}
+  .ai-msg-actions button{font-size:.6rem;padding:1px 6px;border:none;background:transparent;color:var(--text-muted);cursor:pointer;border-radius:4px;line-height:1.5}
+  .ai-msg-actions button:hover{background:var(--surface2);color:var(--accent)}
+  .ai-msg-edit{width:100%;min-height:64px;font-size:.76rem;background:var(--surface);color:var(--text);border:1px solid var(--accent);border-radius:8px;padding:6px 8px;resize:vertical;line-height:1.5}
+  .ai-msg-hist{font-size:.66rem;color:var(--text-muted);margin-top:4px;border-left:2px solid var(--border);padding:2px 8px;white-space:pre-wrap}
+  .ai-msg-verbtn{font-size:.6rem;color:var(--text-muted);background:none;border:none;cursor:pointer;padding:1px 4px}
+  .ai-msg-verbtn:hover{color:var(--accent)}
   .inject-card{border:1px solid var(--border);border-radius:8px;padding:8px 10px;margin-bottom:8px;background:var(--surface2)}
   .inject-card .inject-card-head{font-size:.68rem;font-weight:700;color:var(--text-muted);margin-bottom:6px}
   .inject-card .field-group{margin-bottom:8px}
@@ -478,6 +490,7 @@
       <div style="padding:6px 10px;border-bottom:1px solid var(--border);flex-shrink:0;display:flex;align-items:center;justify-content:space-between">
         <span style="font-size:.7rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em" id="aiPersonaLabel">🤖 山停 · 万能辅助</span>
         <div style="display:flex;gap:4px">
+          <button class="btn btn-secondary btn-xs" onclick="openBranchModal()" title="对话分支：查看/切换">🪵</button>
           <button class="btn btn-secondary btn-xs" onclick="openArchiveModal()" title="聊天存档：保存/载入对话">💾</button>
           <button class="btn btn-secondary btn-xs" onclick="clearAIChat()" title="清空对话">🗑</button>
         </div>
@@ -621,6 +634,11 @@
 <div class="modal-overlay" id="archiveModal" onclick="if(event.target===this)closeArchiveModal()">
   <div class="modal-dialog" onclick="event.stopPropagation()" style="width:540px;max-width:92vw">
     <h3>💾 聊天存档</h3>
+    <div style="display:flex;gap:6px;align-items:center;margin-bottom:6px">
+      <span style="font-size:.7rem;color:var(--text-muted)">助手：</span>
+      <select id="archPersonaSel" style="font-size:.72rem;flex:1;max-width:220px" onchange="setArchView(this.value)"></select>
+      <span style="font-size:.62rem;color:var(--text-muted)" id="archPersonaHint"></span>
+    </div>
     <div style="display:flex;gap:6px;margin-bottom:8px;align-items:center">
       <input type="text" id="archiveNote" placeholder="存档备注（可选）…" style="flex:1;font-size:.76rem"/>
       <button class="btn btn-success btn-xs" onclick="saveChatArchive()">💾 存档当前对话</button>
@@ -629,6 +647,24 @@
     <div class="modal-actions">
       <span style="font-size:.68rem;color:var(--text-muted);flex:1">共 <span id="archiveCount">0</span> 份存档</span>
       <button class="btn btn-secondary btn-sm" onclick="closeArchiveModal()">关闭</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ 对话分支弹窗 ═══════ -->
+<div class="modal-overlay" id="branchModal" onclick="if(event.target===this)closeBranchModal()">
+  <div class="modal-dialog" onclick="event.stopPropagation()" style="width:560px;max-width:92vw">
+    <h3>🪵 对话分支</h3>
+    <div style="display:flex;gap:6px;align-items:center;margin-bottom:6px">
+      <span style="font-size:.7rem;color:var(--text-muted)">助手：</span>
+      <select id="branchPersonaSel" style="font-size:.72rem;flex:1;max-width:220px" onchange="setBranchView(this.value)"></select>
+      <span style="font-size:.62rem;color:var(--text-muted)" id="branchPersonaHint"></span>
+    </div>
+    <div style="font-size:.7rem;color:var(--text-muted);margin-bottom:8px">重说/修改/删除导致截断时自动存档为新分支，可查看或切换。</div>
+    <div id="branchList" style="max-height:46vh;overflow-y:auto"></div>
+    <div class="modal-actions">
+      <span style="font-size:.68rem;color:var(--text-muted);flex:1">共 <span id="branchCount">0</span> 个分支</span>
+      <button class="btn btn-secondary btn-sm" onclick="closeBranchModal()">关闭</button>
     </div>
   </div>
 </div>
@@ -686,6 +722,11 @@ let presetBatchMode=false, presetBatchSet=new Set(); // 预设批量模式
 // AI 状态
 let aiConfig={baseUrl:'https://api.openai.com/v1',apiKey:'',model:'gpt-4o',maxTokens:2000,temperature:0.7,topP:0.9,frequencyPenalty:0,presencePenalty:0};
 let aiMessages=[];
+let msgSeq=0;
+let aiReplyHistory={};   // user消息id → [旧assistant回复内容...]
+let aiEditingId=null;    // 正在编辑的消息 id
+let archPersonaView='cur';   // 存档面板视图: cur|all|<personaKey>
+let branchPersonaView='cur'; // 分支面板视图: cur|all|<personaKey>
 let pendingInject=null,pendingInjectMode='append'; // AI 注入预览状态
 let aiAbort=null;              // 发送/暂停控制器
 let toolChecked=new Set();     // 🧰 常用内容勾选索引
@@ -1513,6 +1554,7 @@ function showGuide(){
     {id:'worldbook',title:'编写世界书',content:'<h2>📚 编写世界书</h2><p>世界书条目按需触发，AI 仅在检测到触发词时才加载对应内容。</p><h3>条目字段</h3><ul><li><b>触发词 (keys)</b>：逗号分隔，AI消息中包含时触发</li><li><b>内容 (content)</b>：条目正文，使用陈述句写下客观事实</li><li><b>常驻 (constant)</b>：始终注入，用于世界法则铁则</li><li><b>选择性 (selective)</b>：仅当触发词匹配时注入</li></ul>'},
     {id:'regex',title:'正则表达式',content:'<h2>🔧 正则表达式</h2><p>正则用于对 AI 输出进行后处理替换。内置测试工具可实时预览HTML渲染效果。</p><h3>常用技巧</h3><ul><li>使用 <code>$1</code>、<code>$2</code> 引用捕获组</li><li>支持 JavaScript 正则语法</li><li>可设置作用深度和位置</li><li>测试区输入文本点击 ▶，下方显示替换后的HTML预览</li></ul>'},
     {id:'editdesk',title:'编辑台',content:'<h2>🗂 编辑台</h2><p>编辑台是多文件整合工作区。左侧可打开多个源文件作为参考，右侧是工作区。</p><h3>使用技巧</h3><ul><li>拖拽源条目到工作区 = 复制</li><li>工作区内部拖拽 = 排序</li><li>📂 按钮可打开已有文件作为模板</li><li>工作区独立导出，不影响主编辑器内容</li></ul>'},
+    {id:'aiassist',title:'AI 助手',content:'<h2>🤖 AI 助手使用指南</h2><p>AI 助手在右侧面板的「🤖 AI助手」标签。它既是写作搭子，也能把 AI 生成的条目直接注入各编辑器（预设 / 世界书 / 正则 / 角色卡）。</p><h3>1 · API 配置与助手人格</h3><p>首次使用先点顶栏「🔌 API设置」：填写 Base URL、API Key，拉取并选择模型，并可设置全局采样参数（最大 Token、温度、Top P、频率/存在惩罚）。</p><p>顶栏助手下拉可切换人格（山停 / 影 / 弦 / 壤 及自定义）；点 ✏️ 可编辑当前助手的系统提示词，并单独设置该助手的采样参数（留空 = 跟随全局）。</p><h3>2 · 发送与暂停</h3><ul><li>底部输入框输入内容后，点 ▶ 或按回车发送</li><li>发送中按钮会变为 ⏸，点击可中止本次生成</li><li>输入框可上下拖拽调高，便于长文编辑</li></ul><h3>3 · ✨ 生成并注入</h3><p>点击「✨ 生成并注入」，会按当前编辑器模式自动写好生成指令并<b>注入输入框</b>（不自动发送），检查 / 编辑后按 ▶ 发送。</p><p>例：在世界书模式下，会生成「请生成若干条世界书条目，仅输出 JSON 数组…」的指令，让 AI 直接产出可注入的世界书条目。</p><h3>4 · 📥 注入上下文（多选）</h3><p>点击「📥 注入上下文」弹出当前编辑器的全部条目，勾选多条后点「注入所选」，把多条条目摘要作为上下文发给 AI——适合<b>批量修改预设 / 世界书</b>。勾选的索引会被记住，供批量替换使用。</p><h3>5 · 📥 注入到当前编辑器</h3><p>当 AI 回复含 JSON 数组时，把鼠标移到该回复上，操作栏会出现「📥注入」。点击打开<b>预览确认弹窗</b>：每条目字段可编辑，可微调后再注入。</p><p>注入方式三种：</p><ul><li>追加为新条目（默认）</li><li>替换当前选中条目</li><li>批量替换所选：当之前勾选过「注入上下文」时出现，AI 条目按顺序写回那几条（适合批量修改后整体回填）</li></ul><h3>6 · 🧰 常用内容工具</h3><p>把高频指令 / 片段存入工具库。每条可标注入位置：<b>前端</b>（插入输入框最前）或 <b>后端</b>（追加到输入框最后）。勾选若干条后点「注入输入框」，按各自位置合并填入，原输入框内容居中。</p><h3>7 · 消息操作</h3><p>把鼠标移到某条消息上会显示操作按钮：</p><ul><li>↩ 重说：重新生成该条回复，旧版保留可回看</li><li>✏️ 修改：编辑文本；可选「发送修改并重说」或「仅保存修改」（助理与输入消息一致）</li><li>📎 引用：直接发送一条引用该内容的提问</li><li>📋 复制：复制内容</li><li>🗑 删除：删除该条及其后（会存档为分支）</li></ul><p>若一条输入重说 / 修改过多次，其下方会出现「🕘 上次的回复」，可展开逐版查看。</p><h3>8 · 💾 存档</h3><p>顶栏 💾 可把当前对话存为本地存档（可填备注），存档界面可载入 / 删除。存档归属于当前 AI 助手。</p><h3>9 · 🪵 分支</h3><p>当重说 / 修改 / 删除触及<b>中间消息</b>导致对话截断时，当前对话会自动存档为分支，并从截断点继续。点 🪵 可查看 / 切换 / 删除分支。</p><p>存档与分支均按 AI 助手隔离：面板默认只显示当前助手的分支与存档，可切到「全部」查看其它助手。存档卡上能看到该助手对应的分支数。</p>'},
     {id:'templates',title:'模板',content:'<h2>📋 模板</h2><p>快速注入预置模板到对应的子模块。点击按钮即可在对应模块载入默认模板。</p><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px"><div class="field-group" style="margin:0"><label>📚 世界书模板</label><p style="font-size:.72rem;color:var(--text-muted);margin:4px 0">注入基础世界书条目结构</p><button class="btn btn-secondary btn-sm" onclick="injectTemplate(\'worldbook\');closeTutorial()" style="width:100%">📥 注入到世界书</button></div><div class="field-group" style="margin:0"><label>🎭 单人卡模板</label><p style="font-size:.72rem;color:var(--text-muted);margin:4px 0">注入单人角色卡框架</p><button class="btn btn-secondary btn-sm" onclick="injectTemplate(\'charcard_single\');closeTutorial()" style="width:100%">📥 注入到角色卡</button></div><div class="field-group" style="margin:0"><label>👥 多人卡模板</label><p style="font-size:.72rem;color:var(--text-muted);margin:4px 0">注入多人角色卡框架</p><button class="btn btn-secondary btn-sm" onclick="injectTemplate(\'charcard_multi\');closeTutorial()" style="width:100%">📥 注入到角色卡</button></div><div class="field-group" style="margin:0"><label>🔧 正则模板</label><p style="font-size:.72rem;color:var(--text-muted);margin:4px 0">注入常用正则脚本</p><button class="btn btn-secondary btn-sm" onclick="injectTemplate(\'regex\');closeTutorial()" style="width:100%">📥 注入到正则</button></div></div><p style="color:var(--text-muted);font-size:.7rem;margin-top:10px">默认模板内容待填充。你也可以 <button class="btn btn-secondary btn-xs" onclick="doImport();closeTutorial()">📂 从文件导入</button> 已有的模板。</p>'},
     {id:'tips',title:'高级技巧',content:'<h2>💡 高级技巧</h2><ul><li><b>AI助手</b>：右侧面板可选4种AI人格辅助写作（需配置API Key）</li><li><b>JSON预览</b>：右侧面板实时显示当前编辑器的导出JSON</li><li><b>拖拽排序</b>：所有列表条目支持拖拽重排</li><li><b>分模块清除</b>：每个模块工具栏右侧有 🗑 清除按钮</li><li><b>主题切换</b>：点击右上角 🌙/☀️ 切换深色/浅色</li><li><b>更多资源</b>：点击 ⋯ 更多 查看 GitHub 仓库</li></ul>'}
   ];
@@ -1951,7 +1993,9 @@ function updatePersonaLabel(){
 }
 function clearAIChat(){
   aiMessages=[];
-  document.getElementById('aiChatArea').innerHTML=`<div class="ai-msg system">💡 对话已清空。点击「注入上下文」将当前编辑内容发送给 AI 作为参考。</div>`;
+  aiReplyHistory={};
+  aiEditingId=null;
+  renderChatAll();
   toast('🗑 对话已清空');
 }
 
@@ -2068,13 +2112,11 @@ function injectSelectedCtx(){
   if(!idxs.length){toast('⚠ 请先勾选要注入的条目');return}
   pendingCtxIndices=idxs;
   const ctxParts=idxs.map(i=>getEntryContext(mode,list[i],i));
-  const ctx=ctxParts.join('\n\n');
-  const chatArea=document.getElementById('aiChatArea');
-  const msgDiv=document.createElement('div');msgDiv.className='ai-msg system';msgDiv.textContent=`📥 已注入 ${idxs.length} 条编辑上下文：\n${ctx}`;
-  chatArea.appendChild(msgDiv);chatArea.scrollTop=chatArea.scrollHeight;
-  aiMessages.push({role:'system',content:`以下为 ${idxs.length} 条编辑内容参考（按顺序，可据此批量修改）：\n${ctx}`});
+  const ctx=`📥 已注入 ${idxs.length} 条编辑上下文：\n【以下为 ${idxs.length} 条编辑内容参考（按顺序，可据此批量修改）】\n`+ctxParts.join('\n\n');
+  addMessage('system',ctx);
   ctxPicked=new Set();
   closeCtxPickModal();
+  renderChatAll();
   toast(`📥 已注入 ${idxs.length} 条上下文`);
 }
 
@@ -2083,76 +2125,159 @@ async function sendAIMessage(){
   const input=document.getElementById('aiInput');
   const text=input.value.trim();
   if(!text)return;
-  if(!aiConfig.apiKey){toast('⚠️ 请先点击「🔌 API设置」配置 API Key');return}
-
-  const chatArea=document.getElementById('aiChatArea');
-  const userDiv=document.createElement('div');userDiv.className='ai-msg user';userDiv.textContent=text;
-  chatArea.appendChild(userDiv);
-  aiMessages.push({role:'user',content:text});
   input.value='';
-  chatArea.scrollTop=chatArea.scrollHeight;
+  await sendUserText(text);
+}
 
+/* ── AI 消息操作 / 统一渲染 / 版本历史 / 发送复用 ── */
+function chatAreaEl(){return document.getElementById('aiChatArea')}
+function chatScrollBottom(){const a=chatAreaEl();if(a)a.scrollTop=a.scrollHeight}
+function nextMsgId(){msgSeq++;return 'm'+Date.now()+'_'+msgSeq}
+function addMessage(role,content,extra){const m=Object.assign({id:nextMsgId(),role:role,content:String(content)},extra||{});aiMessages.push(m);return m}
+function findMsgIndex(id){for(let i=0;i<aiMessages.length;i++){if(aiMessages[i].id===id)return i}return -1}
+function findMsg(id){const i=findMsgIndex(id);return i>=0?aiMessages[i]:null}
+function prevUserIndex(i){for(let k=i-1;k>=0;k--){if(aiMessages[k].role==='user')return k}return -1}
+function roleCls(role){return role==='user'?'user':(role==='assistant'?'assistant':'system')}
+function msgActionsHtml(m){
+  const injBtn=(m.role==='assistant'&&m.inj)?`<button onclick="injectFromMsg('${m.id}')" title="注入到当前编辑器">📥注入</button>`:'';
+  if(m.role==='user')return`<button onclick="editMsg('${m.id}')">✏️修改</button><button onclick="copyMsg('${m.id}')">📋复制</button>`;
+  if(m.role==='assistant')return`<button onclick="resendMsg('${m.id}')">↩重说</button><button onclick="editMsg('${m.id}')">✏️修改</button><button onclick="quoteMsg('${m.id}')">📎引用</button><button onclick="copyMsg('${m.id}')">📋复制</button>${injBtn}<button onclick="deleteMsg('${m.id}')">🗑删除</button>`;
+  return`<button onclick="deleteMsg('${m.id}')">🗑删除</button>`;
+}
+function histHtml(uid){
+  const arr=aiReplyHistory[uid]||[];
+  return`<details class="ai-msg-hist"><summary>🕘 上次的回复 (${arr.length})</summary>${arr.map((c,k)=>escHtml('—— 第'+(arr.length-k)+'版 ——\n'+c)).join('\n\n')}</details>`;
+}
+function renderChatAll(){
+  const area=chatAreaEl();if(!area)return;
+  if(!aiMessages.length){area.innerHTML='<div class="ai-msg system">💡 对话已清空。点击「注入上下文」将当前编辑内容发送给 AI 作为参考。</div>';chatScrollBottom();return}
+  let h='';
+  aiMessages.forEach(m=>{
+    const editing=(aiEditingId===m.id);
+    const body=editing?`<textarea class="ai-msg-edit" id="aiEditBox">${escHtml(m.content)}</textarea>`:`<div class="ai-msg ${roleCls(m.role)}">${escHtml(m.content)}</div>`;
+    const editBtns=editing?`<div class="ai-msg-actions" style="opacity:1"><button onclick="submitEdit('${m.id}','resend')">▶ 发送修改并重说</button><button onclick="submitEdit('${m.id}','save')">💾 仅保存修改</button><button onclick="cancelEdit()">✕ 取消</button></div>`:`<div class="ai-msg-actions">${msgActionsHtml(m)}</div>`;
+    const hist=(m.role==='user'&&aiReplyHistory[m.id]&&aiReplyHistory[m.id].length)?histHtml(m.id):'';
+    h+=`<div class="ai-msg-wrap ${roleCls(m.role)}${editing?' editing':''}">${body}${editBtns}${hist}</div>`;
+  });
+  area.innerHTML=h;
+  chatScrollBottom();
+}
+function copyMsg(id){
+  const m=findMsg(id);if(!m)return;
+  const t=m.content;
+  function fb(){const ta=document.createElement('textarea');ta.value=t;document.body.appendChild(ta);ta.select();try{document.execCommand('copy')}catch(e){}ta.remove();toast('📋 已复制')}
+  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t).then(()=>toast('📋 已复制'),fb)}else fb();
+}
+function quoteMsg(id){
+  const m=findMsg(id);if(!m)return;
+  if(!aiConfig.apiKey){toast('⚠ 请先配置 API Key');return}
+  sendUserText(`📎 引用：\n${m.content}\n`);
+}
+function deleteMsg(id){
+  const i=findMsgIndex(id);if(i<0)return;
+  const n=aiMessages.length-i;
+  if(!confirm(`删除该消息${n>1?'及其后 '+(n-1)+' 条':''}？删除将自动存档为分支。`))return;
+  truncateFrom(i);
+}
+function truncateFrom(i){
+  archiveBranch();
+  aiMessages.splice(i);
+  aiEditingId=null;
+  renderChatAll();
+  toast('🗑 已截断，并存档为分支');
+}
+function editMsg(id){const m=findMsg(id);if(!m)return;aiEditingId=id;renderChatAll();const b=document.getElementById('aiEditBox');if(b)b.focus()}
+function cancelEdit(){aiEditingId=null;renderChatAll()}
+function submitEdit(id,action){
+  const box=document.getElementById('aiEditBox');
+  const newText=box?box.value.trim():'';
+  const i=findMsgIndex(id);if(i<0)return;
+  const m=aiMessages[i];
+  if(!newText){toast('⚠ 内容不能为空');return}
+  aiEditingId=null;
+  const isUser=(m.role==='user');
+  const j=prevUserIndex(i);
+  if(!isUser&&j>=0){const key=aiMessages[j].id;(aiReplyHistory[key]=aiReplyHistory[key]||[]).push(m.content)}
+  if(action==='save'){
+    archiveBranch();
+    m.content=newText;
+    aiMessages.splice(i+1);
+    renderChatAll();
+    toast('💾 已保存修改');
+  }else{ // resend
+    archiveBranch();
+    if(isUser){
+      m.content=newText;
+      aiMessages.splice(i+1);
+      renderChatAll();
+      requestAIReply();
+    }else{
+      aiMessages.splice(i);
+      const mm=addMessage('user',newText);
+      aiReplyHistory[mm.id]=aiReplyHistory[mm.id]||[];
+      renderChatAll();
+      requestAIReply();
+    }
+    toast('▶ 已重说');
+  }
+}
+function resendMsg(id){
+  const i=findMsgIndex(id);if(i<0)return;
+  const m=aiMessages[i];if(m.role!=='assistant')return;
+  const j=prevUserIndex(i);
+  if(j<0){toast('⚠ 无法重说（找不到对应输入）');return}
+  const key=aiMessages[j].id;
+  (aiReplyHistory[key]=aiReplyHistory[key]||[]).push(m.content);
+  archiveBranch();
+  aiMessages.splice(i);
+  renderChatAll();
+  requestAIReply();
+  toast('↩ 已重说');
+}
+function injectFromMsg(id){
+  const m=findMsg(id);if(!m||!m.inj)return;
+  pendingInject={mode:m.inj.mode,entries:JSON.parse(JSON.stringify(m.inj.entries)),modeName:m.inj.modeName};
+  pendingInjectMode='append';
+  openInjectModal();
+}
+async function sendUserText(text){
+  addMessage('user',text);
+  renderChatAll();
+  await requestAIReply();
+}
+async function requestAIReply(){
+  if(aiLoading)return;
+  if(!aiConfig.apiKey){toast('⚠️ 请先点击「🔌 API设置」配置 API Key');return}
+  const area=chatAreaEl();if(!area)return;
   const loadDiv=document.createElement('div');loadDiv.className='ai-loading';loadDiv.innerHTML='<div class="spinner"></div><span>AI 思考中…</span>';
-  chatArea.appendChild(loadDiv);chatArea.scrollTop=chatArea.scrollHeight;
-  aiLoading=true;
-  aiAbort=new AbortController();
-  updateAISendBtn(true);
-
+  area.appendChild(loadDiv);chatScrollBottom();
+  aiLoading=true;aiAbort=new AbortController();updateAISendBtn(true);
   try{
     const persona=AI_PERSONAS[aiCurrentPersona]||AI_PERSONAS.caelum;
     const messages=[{role:'system',content:persona.prompt}];
     const lastSys=aiMessages.filter(m=>m.role==='system').slice(-2);
     const lastUser=aiMessages.filter(m=>m.role==='user').slice(-6);
     messages.push(...lastSys,...lastUser);
-
     const pparams=getPersonaParams(aiCurrentPersona);
-    const reqBody={
-      model:aiConfig.model,
-      messages:messages,
-      max_tokens:pparams.max_tokens??(aiConfig.maxTokens||2000),
-      temperature:pparams.temperature??aiConfig.temperature??0.7,
-      top_p:pparams.top_p??aiConfig.topP??0.9,
-      frequency_penalty:pparams.frequency_penalty??aiConfig.frequencyPenalty??0,
-      presence_penalty:pparams.presence_penalty??aiConfig.presencePenalty??0
-    };
-    const resp=await fetch(`${aiConfig.baseUrl}/chat/completions`,{
-      method:'POST',
-      headers:{'Content-Type':'application/json','Authorization':`Bearer ${aiConfig.apiKey}`},
-      body:JSON.stringify(reqBody),
-      signal:aiAbort.signal
-    });
+    const reqBody={model:aiConfig.model,messages:messages,max_tokens:pparams.max_tokens??(aiConfig.maxTokens||2000),temperature:pparams.temperature??aiConfig.temperature??0.7,top_p:pparams.top_p??aiConfig.topP??0.9,frequency_penalty:pparams.frequency_penalty??aiConfig.frequencyPenalty??0,presence_penalty:pparams.presence_penalty??aiConfig.presencePenalty??0};
+    const resp=await fetch(`${aiConfig.baseUrl}/chat/completions`,{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${aiConfig.apiKey}`},body:JSON.stringify(reqBody),signal:aiAbort.signal});
     if(!resp.ok){const err=await resp.text();throw new Error(`HTTP ${resp.status}: ${err}`)}
     const data=await resp.json();
     const reply=data.choices?.[0]?.message?.content||'(空回复)';
     loadDiv.remove();
-    const botDiv=document.createElement('div');botDiv.className='ai-msg assistant';botDiv.textContent=reply;
     const injMode=resolveInjectMode();
     const inj=injMode?parseAIReply(reply):null;
-    if(inj&&inj.length){
-      pendingInject={mode:injMode,entries:inj,modeName:getModeName(injMode)};
-      pendingInjectMode='append';
-      const btn=document.createElement('button');
-      btn.className='btn btn-primary btn-xs ai-inject-btn';
-      btn.textContent='📥 注入到当前编辑器';
-      btn.onclick=openInjectModal;
-      botDiv.appendChild(btn);
-    }
-    chatArea.appendChild(botDiv);aiMessages.push({role:'assistant',content:reply});
-    chatArea.scrollTop=chatArea.scrollHeight;
+    const extra={};
+    if(inj&&inj.length)extra.inj={mode:injMode,entries:JSON.parse(JSON.stringify(inj)),modeName:getModeName(injMode)};
+    addMessage('assistant',reply,extra);
+    renderChatAll();
   }catch(e){
     loadDiv.remove();
-    if(e.name==='AbortError'){
-      const abDiv=document.createElement('div');abDiv.className='ai-msg system';abDiv.textContent='⏸ 已暂停生成';
-      chatArea.appendChild(abDiv);chatArea.scrollTop=chatArea.scrollHeight;
-    }else{
-      const errDiv=document.createElement('div');errDiv.className='ai-msg system';errDiv.textContent=`❌ 请求失败：${e.message}`;
-      chatArea.appendChild(errDiv);
-      chatArea.scrollTop=chatArea.scrollHeight;
-    }
+    if(e.name==='AbortError')toast('⏸ 已暂停生成');
+    else toast('❌ 请求失败：'+e.message);
+    renderChatAll();
   }
-  aiLoading=false;
-  aiAbort=null;
-  updateAISendBtn(false);
+  aiLoading=false;aiAbort=null;updateAISendBtn(false);
 }
 
 /* ── AI 注入：解析、预览、同步到当前编辑器 ── */
@@ -2434,32 +2559,56 @@ function injectToolsToInput(){
 }
 
 /* ── 💾 聊天存档 ── */
+function personaName(key){return AI_PERSONAS[key]?AI_PERSONAS[key].name:(key?key:'旧版数据')}
+function fillPersonaSel(selId,viewVal,isArch){
+  const sel=document.getElementById(selId);if(!sel)return;
+  const list=isArch?getArchives():getBranches();
+  const keys={};list.forEach(r=>{if(r.persona)keys[r.persona]=1});
+  let opts='<option value="cur">当前助手 · '+escHtml(personaName(aiCurrentPersona))+'</option><option value="all">全部助手</option>';
+  Object.keys(keys).sort().forEach(k=>{opts+='<option value="'+k+'">'+escHtml(personaName(k))+'</option>'});
+  sel.innerHTML=opts;
+  sel.value=(viewVal&&Array.from(sel.options).some(o=>o.value===viewVal))?viewVal:'cur';
+}
+function setArchView(v){archPersonaView=v;renderArchiveModal()}
+function setBranchView(v){branchPersonaView=v;renderBranchModal()}
 function getArchives(){try{return JSON.parse(localStorage.getItem('st_ai_chat_archives')||'[]')}catch(e){return[]}}
 function saveArchives(list){localStorage.setItem('st_ai_chat_archives',JSON.stringify(list))}
 function openArchiveModal(){document.getElementById('archiveModal').classList.add('show');renderArchiveModal()}
 function closeArchiveModal(){document.getElementById('archiveModal').classList.remove('show')}
 function renderArchiveModal(){
-  const list=getArchives();
+  const all=getArchives();
+  fillPersonaSel('archPersonaSel',archPersonaView,true);
+  const v=archPersonaView;
+  const idxArr=[];
+  all.forEach((a,i)=>{if(v==='all'||(v==='cur'?(a.persona===undefined||a.persona===aiCurrentPersona):a.persona===v))idxArr.push(i)});
   const box=document.getElementById('archiveList');
   const cnt=document.getElementById('archiveCount');
-  if(cnt)cnt.textContent=list.length;
+  if(cnt)cnt.textContent=idxArr.length;
+  const hint=document.getElementById('archPersonaHint');
+  if(hint)hint.textContent=(v==='all'?'· 全部助手':(v==='cur'?'· 仅当前助手':'· '+personaName(v)));
   if(!box)return;
-  if(!list.length){box.innerHTML='<p style="color:var(--text-muted);font-size:.74rem;padding:20px;text-align:center">暂无存档</p>';return}
-  box.innerHTML=list.map((a,i)=>`
-    <div class="inject-card" style="display:flex;gap:8px;align-items:flex-start">
+  if(!idxArr.length){box.innerHTML='<p style="color:var(--text-muted);font-size:.74rem;padding:20px;text-align:center">暂无存档</p>';return}
+  box.innerHTML=idxArr.map(i=>{
+    const a=all[i];
+    const pk=a.persona||'';
+    const brCount=getBranches().filter(b=>(b.persona||'')===pk).length;
+    const brBtn=brCount?`<button class="btn btn-secondary btn-xs" title="该助手有 ${brCount} 个分支" onclick="openBranchFor('${escHtml(pk)}')">🪵 ${brCount}</button>`:'';
+    return`<div class="inject-card" style="display:flex;gap:8px;align-items:flex-start">
       <div style="flex:1;min-width:0">
         <div style="font-size:.76rem;font-weight:700">${escHtml(a.note||'（无备注）')}</div>
         <div style="font-size:.64rem;color:var(--text-muted)">${new Date(a.time).toLocaleString()} · ${a.messages?a.messages.length:0} 条消息</div>
+        <div style="font-size:.6rem;color:var(--text-muted)">助手：${escHtml(personaName(a.persona))}</div>
       </div>
+      ${brBtn}
       <button class="btn btn-primary btn-xs" onclick="loadChatArchive(${i})">📥 载入</button>
       <button class="btn btn-danger btn-xs" onclick="deleteChatArchive(${i})">🗑</button>
-    </div>`).join('');
+    </div>`;}).join('');
 }
 function saveChatArchive(){
   if(!aiMessages.length){toast('⚠ 当前没有可存档的对话');return}
   const note=document.getElementById('archiveNote').value.trim();
   const list=getArchives();
-  list.push({note:note||'未命名存档',time:Date.now(),messages:JSON.parse(JSON.stringify(aiMessages))});
+  list.push({note:note||'未命名存档',time:Date.now(),messages:JSON.parse(JSON.stringify(aiMessages)),replyHistory:JSON.parse(JSON.stringify(aiReplyHistory)),persona:aiCurrentPersona});
   saveArchives(list);
   document.getElementById('archiveNote').value='';
   renderArchiveModal();
@@ -2468,8 +2617,11 @@ function saveChatArchive(){
 function loadChatArchive(i){
   const list=getArchives();
   if(i<0||i>=list.length)return;
+  if(aiMessages.length)archiveBranch();
   aiMessages=JSON.parse(JSON.stringify(list[i].messages||[]));
-  renderAIChatFromMessages(aiMessages);
+  aiReplyHistory=JSON.parse(JSON.stringify(list[i].replyHistory||{}));
+  aiEditingId=null;
+  renderChatAll();
   closeArchiveModal();
   toast('📥 已载入存档');
 }
@@ -2482,18 +2634,76 @@ function deleteChatArchive(i){
   renderArchiveModal();
   toast('🗑 已删除存档');
 }
-function renderAIChatFromMessages(messages){
-  const area=document.getElementById('aiChatArea');
-  if(!area)return;
-  area.innerHTML='';
-  if(!messages||!messages.length){area.innerHTML='<div class="ai-msg system">💡 对话已清空。点击「注入上下文」将当前编辑内容发送给 AI 作为参考。</div>';return}
-  messages.forEach(m=>{
-    const div=document.createElement('div');
-    div.className='ai-msg '+(m.role==='user'?'user':m.role==='assistant'?'assistant':'system');
-    div.textContent=m.content;
-    area.appendChild(div);
-  });
-  area.scrollTop=area.scrollHeight;
+function openBranchFor(pk){
+  branchPersonaView=(pk&&pk===aiCurrentPersona)?'cur':(pk?pk:'all');
+  openBranchModal();
+  const sel=document.getElementById('branchPersonaSel');
+  if(sel&&Array.from(sel.options).every(o=>o.value!==branchPersonaView)){branchPersonaView='all'}
+}
+
+/* ── 🪵 对话分支 ── */
+function getBranches(){try{return JSON.parse(localStorage.getItem('st_chat_branches')||'[]')}catch(e){return[]}}
+function saveBranches(list){localStorage.setItem('st_chat_branches',JSON.stringify(list))}
+function archiveBranch(){
+  if(!aiMessages.length)return;
+  const list=getBranches();
+  const firstUser=aiMessages.find(m=>m.role==='user');
+  const note=firstUser?String(firstUser.content).substring(0,22):'对话';
+  list.push({time:Date.now(),note:note,messages:JSON.parse(JSON.stringify(aiMessages)),replyHistory:JSON.parse(JSON.stringify(aiReplyHistory)),persona:aiCurrentPersona});
+  if(list.length>120)list.splice(0,list.length-120);
+  saveBranches(list);
+}
+function openBranchModal(){document.getElementById('branchModal').classList.add('show');renderBranchModal()}
+function closeBranchModal(){document.getElementById('branchModal').classList.remove('show')}
+function renderBranchModal(){
+  const all=getBranches();
+  fillPersonaSel('branchPersonaSel',branchPersonaView,false);
+  const v=branchPersonaView;
+  const idxArr=[];
+  all.forEach((b,i)=>{if(v==='all'||(v==='cur'?(b.persona===undefined||b.persona===aiCurrentPersona):b.persona===v))idxArr.push(i)});
+  const box=document.getElementById('branchList');const cnt=document.getElementById('branchCount');
+  if(cnt)cnt.textContent=idxArr.length;
+  const hint=document.getElementById('branchPersonaHint');
+  if(hint)hint.textContent=(v==='all'?'· 全部助手':(v==='cur'?'· 仅当前助手':'· '+personaName(v)));
+  if(!box)return;
+  if(!idxArr.length){box.innerHTML='<p style="color:var(--text-muted);font-size:.74rem;padding:20px;text-align:center">暂无分支。重说/修改/删除导致截断时会自动存档为新分支。</p>';return}
+  box.innerHTML=idxArr.map(i=>{
+    const b=all[i];
+    const preview=(b.messages||[]).slice(-3).map(m=>'['+(m.role==='user'?'我':m.role==='assistant'?'AI':'系统')+'] '+String(m.content||'').substring(0,60)).join('\n');
+    return`<div class="inject-card">
+      <div style="display:flex;gap:6px;align-items:center">
+        <span style="flex:1;font-size:.74rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escHtml(b.note||'对话')}</span>
+        <span style="font-size:.6rem;color:var(--text-muted)">${escHtml(personaName(b.persona))}</span>
+        <span style="font-size:.62rem;color:var(--text-muted)">${new Date(b.time).toLocaleString()}</span>
+      </div>
+      <div style="font-size:.62rem;color:var(--text-muted);margin:2px 0 6px">${(b.messages||[]).length} 条消息</div>
+      <details><summary style="font-size:.66rem;color:var(--text-muted);cursor:pointer">📄 查看内容</summary><pre style="font-size:.66rem;white-space:pre-wrap;background:var(--surface);padding:6px;border-radius:4px;max-height:150px;overflow:auto">${escHtml(preview)}</pre></details>
+      <div style="display:flex;gap:6px;justify-content:flex-end;margin-top:4px">
+        <button class="btn btn-primary btn-xs" onclick="loadBranch(${i})">↪ 切换为当前</button>
+        <button class="btn btn-danger btn-xs" onclick="deleteBranch(${i})">🗑</button>
+      </div>
+    </div>`;}).join('');
+}
+function loadBranch(i){
+  const list=getBranches();
+  if(i<0||i>=list.length)return;
+  if(aiMessages.length)archiveBranch();
+  const b=list[i];
+  aiMessages=JSON.parse(JSON.stringify(b.messages||[]));
+  aiReplyHistory=JSON.parse(JSON.stringify(b.replyHistory||{}));
+  aiEditingId=null;
+  closeBranchModal();
+  renderChatAll();
+  toast('↪ 已切换分支');
+}
+function deleteBranch(i){
+  const list=getBranches();
+  if(i<0||i>=list.length)return;
+  if(!confirm('确定删除该分支？'))return;
+  list.splice(i,1);
+  saveBranches(list);
+  renderBranchModal();
+  toast('🗑 已删除分支');
 }
 
 // Auto-load AI config on startup
