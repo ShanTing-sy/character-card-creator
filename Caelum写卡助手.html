@@ -1050,7 +1050,12 @@ function renderPromptDetail(p,idx){
 function updateField(key,value){if(selectedIndex<0)return;state.prompts[selectedIndex][key]=value;syncPromptOrder();updatePreview()}
 function updateEntryName(val){var item=document.getElementById('pitem_'+selectedIndex);if(item){var nd=item.querySelector('.entry-title');if(nd)nd.textContent=val||'未命名'}}
 function insertMacro(m){const ta=document.getElementById('contentArea');if(!ta)return;const s=ta.selectionStart,e=ta.selectionEnd,v=ta.value;ta.value=v.substring(0,s)+m+v.substring(e);ta.selectionStart=ta.selectionEnd=s+m.length;updateField('content',ta.value);ta.focus()}
-function syncPromptOrder(){const m={};(state.prompt_order[0]?.order||[]).forEach(o=>{m[o.identifier]=o.enabled});state.prompt_order[0]={character_id:state.prompt_order[0]?.character_id??100001,order:state.prompts.map(p=>({identifier:p.identifier,enabled:m[p.identifier]!==undefined?m[p.identifier]:p.enabled}))}}
+function genPromptId(seen){let base=Date.now(),id='prompt_'+base;while(seen&&seen[id]){base++;id='prompt_'+base}return id}
+function syncPromptOrder(){
+  // 保证 identifier 唯一：重复(或空)的 prompt 重新分配新 id，避免酒馆按 id 合并时吞条目
+  const seen={};
+  state.prompts.forEach((p,ix)=>{if(p.identifier==null||p.identifier===''||seen[p.identifier]){state.prompts[ix].identifier=genPromptId(seen)}seen[state.prompts[ix].identifier]=1});
+  const m={};(state.prompt_order[0]?.order||[]).forEach(o=>{m[o.identifier]=o.enabled});state.prompt_order[0]={character_id:state.prompt_order[0]?.character_id??100001,order:state.prompts.map(p=>({identifier:p.identifier,enabled:m[p.identifier]!==undefined?m[p.identifier]:p.enabled}))}}
 function setOrderNumber(idx,val){
   const order=state.prompt_order[0]?.order||[];
   const n=order.length;
@@ -1433,6 +1438,9 @@ function renderGlobalEditor(){
   if(editorMode!=='global')return;
   const pane=document.getElementById('paneGlobal');
   let h='<div style="padding:14px 18px;display:flex;flex-direction:column;gap:11px">';
+
+  // Preset name
+  h+=`<div class="param-section"><div class="param-section-header"><span>🏷️ 预设名称</span></div><div class="param-section-body"><input type="text" value="${escHtml(state.preset_name||'')}" placeholder="预设名称（导出后为 preset_name 字段）" oninput="state.preset_name=this.value;updatePreview()"/></div></div>`;
 
   // Sampling
   h+=`<div class="param-section"><div class="param-section-header"><span>🎲 采样参数</span></div><div class="param-section-body">${msf('temperature','Temperature',state.temperature,0,2,0.01,'控制输出随机性。越高越创意，越低越确定')}${msf('top_p','Top P',state.top_p,0,1,0.01,'核采样阈值')}${msf('top_k','Top K',state.top_k,0,200,1,'限制候选Token数，0=不限制')}${msf('top_a','Top A',state.top_a,0,1,0.01,'Top-A采样，0=禁用')}${msf('min_p','Min P',state.min_p,0,1,0.01,'最小概率阈值，0=禁用')}${msf('repetition_penalty','Repetition Penalty',state.repetition_penalty,1,2,0.01,'重复惩罚，>1降低重复')}${msf('frequency_penalty','Frequency Penalty',state.frequency_penalty,-2,2,0.01,'频率惩罚')}${msf('presence_penalty','Presence Penalty',state.presence_penalty,-2,2,0.01,'存在惩罚')}</div></div>`;
